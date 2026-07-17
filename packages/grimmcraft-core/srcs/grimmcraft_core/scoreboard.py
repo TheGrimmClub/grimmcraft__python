@@ -1,30 +1,36 @@
+"""A minimal Minecraft-style scoreboard of named integer counters."""
+
+from __future__ import annotations
+
 
 class ScoreBoard:
+    """A set of integer counters keyed by name (a single scoreboard objective).
+
+    Reading an unset counter yields 0; writing auto-creates it.  This backs
+    higher-level features such as the in-world :mod:`clock`.
     """
-    A full scoreboard for integer counters.
-    """
+
     def __init__(self, name: str) -> None:
         self.name = name
-        self.counters = {}
+        self._counters: dict[str, int] = {}
 
-    def add_score(self, name: str, value: int = 0):
-        if name not in self.counters:
-            self.counters[name] = 0
-        self.counters[name] += value
+    def get(self, key: str) -> int:
+        """The current value of ``key`` (0 if it has never been set)."""
+        return self._counters.get(key, 0)
 
-    def score_reset(self, name: str):
-        if name in self.counters:
-            self.counters[name] = 0
+    def set(self, key: str, value: int) -> None:
+        """Set ``key`` to ``value``."""
+        self._counters[key] = value
 
-    @property
-    def score(self, name: str):
-        if name not in self.counters:
-            return 0
-        return self.counters[name]
+    def add(self, key: str, delta: int = 1) -> int:
+        """Add ``delta`` to ``key`` and return the new value."""
+        self._counters[key] = self.get(key) + delta
+        return self._counters[key]
 
-    @score.setter
-    def score(self, name: str, value: int):
-        if name not in self.counters.keys():
-            self.add_score(name)
+    def reset(self, key: str) -> None:
+        """Set ``key`` back to 0."""
+        self._counters[key] = 0
 
-        self.counters[name] = value
+    def keys(self) -> list[str]:
+        """All counter names currently tracked."""
+        return list(self._counters)

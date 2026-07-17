@@ -1,0 +1,32 @@
+# Per-package tasks for grimmcraft-control.
+# Included by the root Taskfile as the `control:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+version: '3'
+
+vars:
+  PKG: grimmcraft-control
+
+tasks:
+  default:
+    cmds:
+      - task: test
+
+  test:
+    desc: Run this package's tests
+    cmds:
+      - uv run --package {{.PKG}} pytest tests
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs tests
+
+  typecheck:
+    desc: Type-check this package
+    cmds:
+      - uv run mypy srcs
+
+  build:
+    desc: Build wheel + sdist for this package
+    cmds:
+      - uv build --package {{.PKG}}

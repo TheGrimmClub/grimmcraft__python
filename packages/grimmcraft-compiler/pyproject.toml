@@ -1,0 +1,33 @@
+[project]
+name = "grimmcraft-compiler"
+version = "0.1.0"
+description = "Compile grimmcraft state machines into installable Minecraft datapacks"
+readme = "README.md"
+authors = [
+    { name = "Andreas **Felix** Häberle", email = "felix@42sol.eu" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "grimmcraft-core",
+    "grimmcraft-data",
+    "grimmcraft-control",
+    "click>=8.1",
+    "rich>=13.0",
+]
+
+[project.scripts]
+grimmcraft-compile = "grimmcraft_compiler.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.28,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Package sources live under srcs/ (not the uv default src/).
+module-root = "srcs"
+
+# Resolve sibling packages from the local workspace instead of an index.
+[tool.uv.sources]
+grimmcraft-core = { workspace = true }
+grimmcraft-data = { workspace = true }
+grimmcraft-control = { workspace = true }

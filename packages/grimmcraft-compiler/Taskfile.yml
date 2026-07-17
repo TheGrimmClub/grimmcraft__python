@@ -1,0 +1,50 @@
+# Per-package tasks for grimmcraft-compiler.
+# Included by the root Taskfile as the `compiler:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+version: '3'
+
+vars:
+  PKG: grimmcraft-compiler
+
+tasks:
+  default:
+    cmds:
+      - task: test
+
+  test:
+    desc: Run this package's tests
+    cmds:
+      - uv run --package {{.PKG}} pytest tests
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs tests examples
+
+  typecheck:
+    desc: Type-check this package
+    cmds:
+      - uv run mypy srcs
+
+  build:
+    desc: Build wheel + sdist for this package
+    cmds:
+      - uv build --package {{.PKG}}
+
+  example:
+    desc: Compile the demo machines for 1.20.4 and 1.21.1 into dist/examples/
+    cmds:
+      - uv run --package {{.PKG}} python examples/compile_demos.py
+
+  run:
+    desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.1 --dry-run)'
+    cmds:
+      - uv run --package {{.PKG}} grimmcraft-compile {{.CLI_ARGS}}
+
+  docs:
+    desc: Render the docs to dist/docs/ (Markdown copy; renders anywhere)
+    cmds:
+      - mkdir -p dist/docs
+      - cp -f docs/*.md dist/docs/
+      - cmd: echo "Docs are Markdown in docs/ (copied to dist/docs/)."
+        silent: true

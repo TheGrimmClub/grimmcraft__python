@@ -1,5 +1,5 @@
 # Task: define the domain classes for the grimmcraft core package
-> [ ] TODO: execute PROMPT__CLASSES.md 
+> [x] run PROMPT__CLASSES.md 
 
 Create the core domain model in the core package (e.g.
 `packages/grimmcraft-core/src/grimmcraft_core/`). **First inspect the sibling

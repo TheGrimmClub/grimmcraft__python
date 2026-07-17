@@ -1,5 +1,5 @@
 # Task: build the grimmcraft → mcfunction datapack compiler
-> [ ] TODO: execute PROMPT__COMPILER.md 
+> [\] TODO: execute PROMPT__COMPILER.md 
 
 Implement a Python compiler that lowers the grimmcraft domain model into a
 **complete, installable Minecraft datapack** ready to test in-game. Put it in a

@@ -26,6 +26,12 @@ includes:
   data:
     taskfile: ./packages/grimmcraft-data/Taskfile.yaml
     dir: ./packages/grimmcraft-data
+  control:
+    taskfile: ./packages/grimmcraft-control/Taskfile.yml
+    dir: ./packages/grimmcraft-control
+  compiler:
+    taskfile: ./packages/grimmcraft-compiler/Taskfile.yml
+    dir: ./packages/grimmcraft-compiler
 tasks:
   default:
     cmds:

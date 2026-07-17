@@ -23,6 +23,22 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
+# Resolve sibling workspace packages from source (editable installs use .pth
+# files, which mypy does not process). Mirrors the ruff `src` setting above.
+mypy_path = [
+    "packages/grimmcraft-data/srcs",
+    "packages/grimmcraft-core/srcs",
+    "packages/grimmcraft-control/srcs",
+    "packages/grimmcraft-compiler/srcs",
+    "packages/grimmcraft-cli/srcs",
+]
+
+# grimmcraft-data is generated (and not strict-typed); type-check *against* its
+# public types but don't report errors inside it when a downstream package pulls
+# it in.
+[[tool.mypy.overrides]]
+module = ["grimmcraft_data.*"]
+follow_imports = "silent"
 
 [tool.pytest.ini_options]
 addopts = "-ra"
