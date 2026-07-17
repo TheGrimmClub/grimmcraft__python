@@ -1,0 +1,8 @@
+version: "1"
+decissions:
+    -
+      id: core-001
+      name: magic strings should be avoided
+      reasoning: |
+        A string is quickly miss spelled and it has no auto completion.ß
+        Use enums where possible to make the code more readable and less error-prone.

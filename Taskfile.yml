@@ -23,7 +23,9 @@ includes:
   cli:
     taskfile: ./packages/grimmcraft-cli/Taskfile.yml
     dir: ./packages/grimmcraft-cli
-
+  data:
+    taskfile: ./packages/grimmcraft-data/Taskfile.yml
+    dir: ./packages/grimmcraft-data
 tasks:
   default:
     cmds:
@@ -82,9 +84,3 @@ tasks:
       - cd {{.CLI_ARGS}} | mkdir -p srcs/{{.CLI_ARGS}} | mkdir -p docs | mkdir -p tests
       - cmd: echo "Created packages/{{.CLI_ARGS}} - add an 'includes' entry in the root Taskfile to expose per-package tasks."
         silent: true
-
-
-  generate-block-enum:
-    desc: Generate the Minecraft block enum from PrismarineJS/minecraft-data
-    cmds:
-      - uv run packages/grimmcraft-data/src/grimmcraft_data/_generate_blocks.py
