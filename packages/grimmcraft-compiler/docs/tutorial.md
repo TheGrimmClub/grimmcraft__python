@@ -40,17 +40,17 @@ class E(StrEnum):   # events
 builder = MachineBuilder[dict]({})
 builder.named("lamp")
 
-# The OFF state: keep the lamp dark on entry.
+# The OFF state: remove the light (set it to air) on entry.
 builder.state(S.OFF, enter=(
-    Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
-                                   "state": {"lit": "false"}}),
+    Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.AIR}),
 ))
 
-# The ON state: light it, click, arm a timer; count the timer down every tick.
+# The ON state: place a full-bright invisible light, click, arm a timer; count
+# the timer down every tick. minecraft:light[level=15] stays lit with no power.
 builder.state(S.ON,
     enter=(
-        Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
-                                       "state": {"lit": "true"}}),
+        Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.LIGHT,
+                                       "state": {"level": "15"}}),
         Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.lever.click"}),
         Command(CommandName.SCOREBOARD_SET, {"objective": TIMER, "entry": "lamp", "value": 100}),
     ),

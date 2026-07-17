@@ -85,26 +85,26 @@ def build_lamp() -> Machine[dict[str, Any]]:
     builder.named("lamp")  # the grimmcraft_state scoreboard entry + function folder
     builder.for_entity(Block.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
-    # 1. The OFF state: make sure the lamp block is dark when we land here.
-    #    `enter` commands run once, when the machine enters the state.
+    # 1. The OFF state: remove the light so the area goes dark when we land here.
+    #    `enter` commands run once, when the machine enters the state. We use the
+    #    invisible `minecraft:light` block, so "off" just means setting it to air.
     builder.state(
         LampState.OFF,
         enter=(
-            Command(
-                CommandName.SETBLOCK,
-                {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP, "state": {"lit": "false"}},
-            ),
+            Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.AIR}),
         ),
     )
 
-    # 2. The ON state: light the lamp, click, announce it, and arm a 100-tick timer.
+    # 2. The ON state: place a full-bright invisible light, click, announce it,
+    #    and arm a 100-tick timer. `minecraft:light[level=15]` emits light 15 with
+    #    no visible block and — unlike a redstone_lamp — stays lit with no power.
     #    `cycle` commands run every tick while the machine sits in this state.
     builder.state(
         LampState.ON,
         enter=(
             Command(
                 CommandName.SETBLOCK,
-                {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP, "state": {"lit": "true"}},
+                {"pos": LAMP_POS, "block": Block.LIGHT, "state": {"level": "15"}},
             ),
             Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.lever.click"}),
             Command(CommandName.SAY, {"text": "The lamp glows."}),
