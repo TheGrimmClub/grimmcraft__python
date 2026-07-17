@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache, lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 _DATA = "data/1.21.11/recipes.json"
 _HERE = Path(__file__).parent
@@ -37,8 +37,8 @@ class Recipe:
 
     result_item: object          # Item member, or raw int id
     result_count: int
-    shape: Optional[tuple]        # tuple[tuple[Ingredient, ...], ...] if shaped
-    ingredients: Optional[tuple]  # tuple[Ingredient, ...] if shapeless
+    shape: tuple | None        # tuple[tuple[Ingredient, ...], ...] if shaped
+    ingredients: tuple | None  # tuple[Ingredient, ...] if shapeless
 
     @property
     def is_shaped(self) -> bool:
@@ -90,7 +90,7 @@ def _parse(rec) -> Recipe:
     return Recipe(_resolve_item(rid), count or 1, shape, ingredients)
 
 
-@lru_cache(maxsize=None)
+@cache
 def recipes_for(item) -> list[Recipe]:
     """All recipes producing `item` (an `Item` member, int id, or id string)."""
     key = str(item.value if hasattr(item, "value") else item)

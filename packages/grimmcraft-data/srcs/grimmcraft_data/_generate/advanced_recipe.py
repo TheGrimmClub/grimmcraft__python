@@ -92,8 +92,8 @@ class Recipe:
 
     result_item: object          # Item member, or raw int id
     result_count: int
-    shape: Optional[tuple]        # tuple[tuple[Ingredient, ...], ...] if shaped
-    ingredients: Optional[tuple]  # tuple[Ingredient, ...] if shapeless
+    shape: tuple | None        # tuple[tuple[Ingredient, ...], ...] if shaped
+    ingredients: tuple | None  # tuple[Ingredient, ...] if shapeless
 
     @property
     def is_shaped(self) -> bool:
