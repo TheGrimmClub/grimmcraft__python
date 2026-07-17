@@ -1172,3 +1172,10 @@ class Block(str, Enum):
     POTTED_OPEN_EYEBLOSSOM = "minecraft:potted_open_eyeblossom"
     POTTED_CLOSED_EYEBLOSSOM = "minecraft:potted_closed_eyeblossom"
     FIREFLY_BUSH = "minecraft:firefly_bush"
+
+    def __str__(self) -> str:
+        """compact string representation."""
+        return super().__str__().replace("minecraft:", "")
+
+    def to_int(self) -> int:
+        """get integer value."""

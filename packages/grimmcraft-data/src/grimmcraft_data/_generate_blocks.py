@@ -83,6 +83,15 @@ def main():
     print(f"Fetching block list for Java Edition {version} ...")
     blocks = fetch_json(blocks_url(version))
     code = build_enum(blocks, version)
+    code += '''
+    def __str__(self) -> str:
+        """compact string representation."""
+        return super().__str__().replace("minecraft:", "")
+
+    def to_int(self) -> int:
+        """get integer value."""
+        return int(self.value.split(":")[1])
+    '''
 
     with open(OUTPUT_PATH, "w") as f:
         f.write(code)
