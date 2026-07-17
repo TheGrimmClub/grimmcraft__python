@@ -6,3 +6,8 @@ decissions:
       reasoning: |
         A string is quickly miss spelled and it has no auto completion.ß
         Use enums where possible to make the code more readable and less error-prone.
+    -
+      id: core-002
+      name: all data types base and advanced should be available in the `grimmcraft-data` package
+      reasoning: |
+        Have access to the full game data.
