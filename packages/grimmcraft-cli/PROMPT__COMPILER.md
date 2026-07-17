@@ -9,6 +9,8 @@ version, dataclass/pydantic choice, layout, lint/type config, Taskfile).
 **First inspect all sibling packages** and reuse them — do not re-implement what
 they already provide.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 ## Use all available packages
 
 - **grimmcraft-data** — the source of truth for the target version. Validate

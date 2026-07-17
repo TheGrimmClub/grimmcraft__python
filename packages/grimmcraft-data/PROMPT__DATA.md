@@ -7,6 +7,8 @@ directory (the package you were invoked from, e.g.
 authoritative list from PrismarineJS/minecraft-data and writes a Python `Enum`
 module next to itself.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 ## Files to create
 
 For each `{type}` below, create `_generate_{type}.py` that writes `{type}.py`:

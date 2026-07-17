@@ -22,6 +22,7 @@ from grimmcraft_control.machine.event import Event
 from grimmcraft_control.machine.result import Result
 from grimmcraft_control.machine.state import State
 from grimmcraft_control.machine.transition import Action, Condition, Guard, Transition
+from grimmcraft_control.machine.vocabulary import ConditionName
 
 Ctx = TypeVar("Ctx")
 
@@ -130,15 +131,109 @@ class Machine(Generic[Ctx]):
         return None
 
 
+class StateDraft:
+    """A state under construction — add its commands one method call at a time.
+
+    Returned by :meth:`MachineBuilder.add_state`. ``on_enter`` / ``on_exit`` /
+    ``on_cycle`` each append one or more :class:`Command`\\ s (build them with the
+    constructors in :mod:`grimmcraft_control.machine.effects`), so a beginner
+    writes one readable line per effect instead of nesting tuples of ``Command``.
+    """
+
+    def __init__(self, name: str, *, final: bool = False) -> None:
+        self.name = name
+        self._final = final
+        self._enter: list[Command] = []
+        self._exit: list[Command] = []
+        self._cycle: list[Command] = []
+
+    def final(self) -> StateDraft:
+        """Mark this state as terminal."""
+        self._final = True
+        return self
+
+    def on_enter(self, *commands: Command) -> StateDraft:
+        """Add command(s) to run once when the machine enters this state."""
+        self._enter.extend(commands)
+        return self
+
+    def on_exit(self, *commands: Command) -> StateDraft:
+        """Add command(s) to run once when the machine leaves this state."""
+        self._exit.extend(commands)
+        return self
+
+    def on_cycle(self, *commands: Command) -> StateDraft:
+        """Add command(s) to run every tick while in this state."""
+        self._cycle.extend(commands)
+        return self
+
+    def to_state(self) -> State:
+        """Freeze this draft into an immutable :class:`State`."""
+        return State(
+            self.name, self._final, tuple(self._enter), tuple(self._exit),
+            tuple(self._cycle),
+        )
+
+
+class TransitionDraft:
+    """A transition under construction (from :meth:`MachineBuilder.add_transition`)."""
+
+    def __init__(self, source: str, event: str, target: str) -> None:
+        self.source = source
+        self.event = event
+        self.target = target
+        self._guard: Guard | None = None
+        self._condition: Condition | None = None
+        self._commands: list[Command] = []
+
+    def do(self, *commands: Command) -> TransitionDraft:
+        """Add command(s) this transition runs when it fires."""
+        self._commands.extend(commands)
+        return self
+
+    def when_score(self, objective: str, entry: str, value: int) -> TransitionDraft:
+        """Fire only when ``entry``'s ``objective`` score equals ``value``
+        (a declarative guard the compiler can lower)."""
+        self._condition = Condition(
+            ConditionName.SCORE_MATCHES,
+            {"objective": objective, "entry": entry, "value": value},
+        )
+        return self
+
+    def guarded_by(self, guard: Guard) -> TransitionDraft:
+        """Fire only when the runtime ``guard`` predicate returns True."""
+        self._guard = guard
+        return self
+
+    def to_transition(self) -> Transition:
+        """Freeze this draft into an immutable :class:`Transition`."""
+        return Transition(
+            self.source, self.event, self.target, self._guard, None,
+            tuple(self._commands), self._condition,
+        )
+
+
 class MachineBuilder(Generic[Ctx]):
-    """A fluent DSL for declaring a :class:`Machine`, validated at :meth:`build`."""
+    """A DSL for declaring a :class:`Machine`, validated at :meth:`build`.
+
+    Two mixable styles:
+
+    * **Compact** — pass everything in one call: ``.state("ON", enter=(...))``
+      and ``.transition("A", "go", to="B", commands=(...))``. These return the
+      builder, so they chain.
+    * **Step by step** — ``.add_state("ON")`` / ``.add_transition("A", "go",
+      to="B")`` return a :class:`StateDraft` / :class:`TransitionDraft` you
+      configure with one method call per command. Friendliest for beginners and
+      pairs with the constructors in :mod:`grimmcraft_control.machine.effects`.
+    """
 
     def __init__(self, context: Ctx, *, name: str = "machine") -> None:
         self._context = context
         self._name = name
         self._entity: str | None = None
-        self._states: dict[str, State] = {}
+        self._states: dict[str, StateDraft] = {}
         self._transitions: list[Transition] = []
+        self._transition_drafts: list[TransitionDraft] = []
         self._initial: str | None = None
 
     def named(self, name: str) -> MachineBuilder[Ctx]:
@@ -160,11 +255,20 @@ class MachineBuilder(Generic[Ctx]):
         exit: Iterable[Command] = (),
         cycle: Iterable[Command] = (),
     ) -> MachineBuilder[Ctx]:
-        """Declare a state with optional final flag and enter/exit/cycle commands."""
-        self._states[name] = State(
-            name, final, tuple(enter), tuple(exit), tuple(cycle)
-        )
+        """Declare a state and its commands in one call; returns the builder."""
+        draft = StateDraft(name, final=final)
+        draft.on_enter(*enter)
+        draft.on_exit(*exit)
+        draft.on_cycle(*cycle)
+        self._states[name] = draft
         return self
+
+    def add_state(self, name: str, *, final: bool = False) -> StateDraft:
+        """Declare a state and return a :class:`StateDraft` to add commands to one
+        method call at a time (the beginner-friendly style)."""
+        draft = StateDraft(name, final=final)
+        self._states[name] = draft
+        return draft
 
     def transition(
         self,
@@ -177,11 +281,18 @@ class MachineBuilder(Generic[Ctx]):
         commands: Iterable[Command] = (),
         condition: Condition | None = None,
     ) -> MachineBuilder[Ctx]:
-        """Declare a ``(source, event) -> to`` edge with optional guard/effects."""
+        """Declare a ``(source, event) -> to`` edge in one call; returns the builder."""
         self._transitions.append(
             Transition(source, event, to, guard, action, tuple(commands), condition)
         )
         return self
+
+    def add_transition(self, source: str, event: str, *, to: str) -> TransitionDraft:
+        """Declare an edge and return a :class:`TransitionDraft` to configure its
+        commands and guard step by step."""
+        draft = TransitionDraft(source, event, to)
+        self._transition_drafts.append(draft)
+        return draft
 
     def initial(self, name: str) -> MachineBuilder[Ctx]:
         """Choose the initial state."""
@@ -202,10 +313,14 @@ class MachineBuilder(Generic[Ctx]):
                 f"initial state '{self._initial}' is not a declared state"
             )
 
+        states = {name: draft.to_state() for name, draft in self._states.items()}
+        transitions = list(self._transitions)
+        transitions += [draft.to_transition() for draft in self._transition_drafts]
+
         seen_unguarded: set[tuple[str, str]] = set()
-        for t in self._transitions:
+        for t in transitions:
             for role, ref in (("source", t.source), ("target", t.target)):
-                if ref not in self._states:
+                if ref not in states:
                     raise MachineBuildError(
                         f"transition {t.source}--{t.event}-->{t.target} references "
                         f"unknown {role} state '{ref}'"
@@ -221,8 +336,8 @@ class MachineBuilder(Generic[Ctx]):
 
         return Machine(
             self._name,
-            dict(self._states),
-            list(self._transitions),
+            states,
+            transitions,
             self._initial,
             self._context,
             entity=self._entity,

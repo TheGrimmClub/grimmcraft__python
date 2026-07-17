@@ -9,6 +9,8 @@ the enum modules (`block`, `item`, `entity`, `biome`, `effect`, `enchantment`,
 `banner_pattern`, `dimension_type`, …), and the advanced data loaders (`recipe`,
 `loot`, `collision_shape`, `attribute`, `language`).
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 Use **pytest**, run via `uv run pytest`. Put tests under the package's `tests/`
 dir. **Tests must be hermetic — no network.** Any test that would hit the
 internet must be marked `@pytest.mark.online` and skipped by default (register

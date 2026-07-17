@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "pack_format": 26,
+    "description": "grimmcraft — grimmcraft datapack for 1.20.4 vanilla",
+    "supported_formats": {
+      "min_inclusive": 26,
+      "max_inclusive": 26
+    }
+  }
+}

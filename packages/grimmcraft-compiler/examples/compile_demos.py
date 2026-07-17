@@ -18,7 +18,9 @@ from pathlib import Path
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control.demos import door_machine, furnace_machine
 
-OUT = Path("dist/examples")
+# Write next to this example (tracked, committed reference copies) instead of the
+# gitignored dist/, so the generated datapacks are visible in the repo.
+OUT = Path(__file__).resolve().parent / "generated"
 TARGETS = [("1.20.4", "vanilla"), ("1.21.1", "vanilla")]
 
 
@@ -26,7 +28,7 @@ def main() -> None:
     for version, flavor in TARGETS:
         target = Target.resolve(version, flavor)
         machines = [door_machine(), furnace_machine()]
-        out_dir = OUT / f"{version}-{flavor}"
+        out_dir = OUT / f"demo-{version}-{flavor}"
         result = compile_machines(machines, target, namespace="grimmcraft",
                                   output=out_dir)
 

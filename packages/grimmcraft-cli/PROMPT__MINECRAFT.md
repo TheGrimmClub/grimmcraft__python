@@ -8,6 +8,8 @@ create it if needed and match the repo's conventions (uv, Python version,
 dataclass/pydantic, layout, lint/type config, Taskfile, docs tooling).
 **First inspect the sibling packages** and reuse them.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 ## Architecture reality (design around this)
 
 - A Java **server** is controllable and readable from the shell; the vanilla

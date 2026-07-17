@@ -7,6 +7,9 @@ grimmcraft monorepo, aggregating the docs of every package
 (`grimmcraft-data`, `grimmcraft-core`, `grimmcraft-control`,
 `grimmcraft-compiler`, `grimmcraft-redstone`) into one site.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
+
 **Zensical is pre-1.0 and evolving fast — pin a version and verify the current
 CLI, config schema, and plugin compatibility against the official docs before
 finalizing** (Get started: https://zensical.org/docs/get-started/ ; Compatibility:

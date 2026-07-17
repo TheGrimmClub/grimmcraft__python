@@ -13,6 +13,8 @@ Python version, `dataclass` vs `pydantic`, typing style, module layout,
 lint/type-check config, and how docs/tests are already organized. Examples below
 use stdlib `dataclasses` + `typing`; follow the repositories actual choice.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 ## Core design principle — a pure machine
 
 The machine must be **deterministic and side-effect-free**. Dispatching an event

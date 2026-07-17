@@ -1,13 +1,16 @@
 [project]
 name = "grimmcraft-redstone"
 version = "0.1.0"
-description = "Add your description here"
+description = "Simulatable model of Minecraft redstone as a component graph"
 readme = "README.md"
 authors = [
     { name = "Andreas **Felix** Häberle", email = "felix@42sol.eu" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "grimmcraft-core",
+    "grimmcraft-data",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.28,<0.12.0"]
@@ -16,3 +19,8 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 # Package sources live under srcs/ (not the uv default src/).
 module-root = "srcs"
+
+# Resolve sibling packages from the local workspace instead of an index.
+[tool.uv.sources]
+grimmcraft-core = { workspace = true }
+grimmcraft-data = { workspace = true }

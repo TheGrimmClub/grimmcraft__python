@@ -13,15 +13,17 @@ A lamp has two states, `OFF` and `ON`, toggled by a `pull` event. Turning `ON`
 lights the block, clicks, and arms a 100-tick timer; a per-tick **cycle** counts
 that timer down, and an automatic transition switches back `OFF` at zero.
 
-Identifiers are **enums, not magic strings**: `CommandName` / `ConditionName`
-(both `StrEnum`) name the command vocabulary, and the lamp's own states/events are
-a local `StrEnum` each. `Block.REDSTONE_LAMP` is a `grimmcraft-data` enum member,
-so the block id is valid by construction.
+The builder is designed to read like a recipe: add each state/transition with its
+own method call, and describe effects with the typed **command constructors**
+(`setblock`, `say`, `playsound`, `set_score`, `add_score`) — no payload dicts or
+`Command(...)` wrappers. `Block.LIGHT` is a `grimmcraft-data` enum member, so the
+block id is valid by construction.
 
 ```python
 from enum import StrEnum
 from grimmcraft_control.machine import (
-    Command, CommandName, Condition, ConditionName, MachineBuilder, TICK_EVENT,
+    MachineBuilder, TICK_EVENT,
+    setblock, playsound, say, set_score, add_score,   # typed command constructors
 )
 from grimmcraft_data import Block
 from grimmcraft_core import BlockPos
@@ -35,38 +37,29 @@ class S(StrEnum):   # states
 class E(StrEnum):   # events
     PULL = "pull"
 
-# Keep a builder and call one method per line — no chaining, so every step is
-# its own readable statement you can comment out or reorder.
 builder = MachineBuilder[dict]({})
 builder.named("lamp")
 
-# The OFF state: remove the light (set it to air) on entry.
-builder.state(S.OFF, enter=(
-    Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.AIR}),
-))
+# OFF: remove the light (set it to air) on entry.
+off = builder.add_state(S.OFF)
+off.on_enter(setblock(LAMP_POS, Block.AIR))
 
-# The ON state: place a full-bright invisible light, click, arm a timer; count
-# the timer down every tick. minecraft:light[level=15] stays lit with no power.
-builder.state(S.ON,
-    enter=(
-        Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.LIGHT,
-                                       "state": {"level": "15"}}),
-        Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.lever.click"}),
-        Command(CommandName.SCOREBOARD_SET, {"objective": TIMER, "entry": "lamp", "value": 100}),
-    ),
-    cycle=(  # runs every tick while ON
-        Command(CommandName.SCOREBOARD_ADD, {"objective": TIMER, "entry": "lamp", "value": -1}),
-    ),
-)
+# ON: place a full-bright invisible light, click, arm a timer — one line each —
+# and count the timer down every tick. light[level=15] stays lit with no power.
+on = builder.add_state(S.ON)
+on.on_enter(setblock(LAMP_POS, Block.LIGHT, level=15))
+on.on_enter(playsound("minecraft:block.lever.click"))
+on.on_enter(say("The lamp glows."))
+on.on_enter(set_score(TIMER, "lamp", 100))
+on.on_cycle(add_score(TIMER, "lamp", -1))
 
 # Pulling the lever toggles OFF <-> ON.
 builder.transition(S.OFF, E.PULL, to=S.ON)
 builder.transition(S.ON, E.PULL, to=S.OFF)
 
 # Automatic: checked every tick after ON's cycle; off when the timer hits 0.
-builder.transition(S.ON, TICK_EVENT, to=S.OFF,
-                   condition=Condition(ConditionName.SCORE_MATCHES,
-                                       {"objective": TIMER, "entry": "lamp", "value": 0}))
+auto = builder.add_transition(S.ON, TICK_EVENT, to=S.OFF)
+auto.when_score(TIMER, "lamp", 0)
 
 builder.initial(S.OFF)
 lamp = builder.build()

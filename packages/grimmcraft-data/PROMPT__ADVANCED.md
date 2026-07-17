@@ -10,6 +10,8 @@ This extends the `_generate/{type}.py` enum generators.
 section (`recipe`, `loot`, `collision_shape`, `attribute`, `language`,
 `registry`). Create `_generate/` (with an `__init__.py`) if it doesn't exist.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 **Where generated output goes.** The *generated importable modules* and the
 bundled `data/` assets belong at the package root (one level up from
 `_generate/`), so callers can do `from grimmcraft_data import recipe`. Use

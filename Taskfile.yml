@@ -11,6 +11,13 @@
 
 version: '3'
 
+env:
+  # `uv run` auto-syncs before every command, which re-applies the iCloud
+  # UF_HIDDEN flag to the editable .pth files (see `fix-venv`). Disable the
+  # implicit sync so syncing only happens through `task install`, which clears
+  # the flag afterwards. Run `task install` when dependencies change.
+  UV_NO_SYNC: "1"
+
 vars:
   # Auto-discovered list of package directory names under packages/.
   PACKAGES:
@@ -41,9 +48,20 @@ tasks:
     desc: Sync the whole workspace (all packages + dev tools) into .venv
     cmds:
       - uv sync --all-packages
+      # This repo lives under an iCloud-synced folder (~/Desktop), which sets the
+      # macOS UF_HIDDEN flag on files it touches. CPython's site.py silently skips
+      # *hidden* .pth files, so the editable workspace packages would not import.
+      # Clear the flag on every sync so the .pth files are honored at startup.
+      - task: fix-venv
+
+  fix-venv:
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    cmds:
+      - "chflags nohidden .venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
 
   test:
     desc: Run tests for every package (auto-discovers packages/*/tests)
+    deps: [fix-venv]
     cmds:
       - uv run pytest packages
 

@@ -15,6 +15,8 @@ changes), so entities/containers are **mutable**, while pure value objects
 `grimmcraft-data` (`Block`, `Item`, `Entity`, `VillagerProfession`,
 `MobEffect`, …) as the *type* fields — never re-declare those constants here.
 
+If you suggest a task to execute show it as a taskfile like task with a description element (`desc`).
+
 ## Package layout
 
 ```

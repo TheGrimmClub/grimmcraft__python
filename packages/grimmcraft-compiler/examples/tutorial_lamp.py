@@ -5,11 +5,11 @@ This is the "learn the API in one file" example. It builds a **redstone lamp**
 state machine by hand (no demo helpers), compiles it for one target, and prints
 the generated ``mcfunction`` so you can see exactly how each primitive lowers.
 
-Identifiers are **enums, not magic strings**: command kinds come from
-``CommandName`` / ``ConditionName`` (both ``StrEnum``, so they *are* their string
-value), and the lamp's own states and events are the ``LampState`` / ``LampEvent``
-enums declared below. The compiler validates ids the same way either style is
-used — enums just make typos impossible and let editors autocomplete.
+The API is built for readability: states and transitions are added one method
+call at a time (``builder.add_state(...)`` → ``on_enter(...)`` / ``on_cycle(...)``),
+and commands come from typed constructors (``setblock``, ``say``, ``playsound``,
+``set_score``, ``add_score``) instead of raw ``Command(name, payload-dict)``. The
+lamp's states and events are the ``LampState`` / ``LampEvent`` enums below.
 
 The lamp:
 
@@ -39,12 +39,13 @@ from grimmcraft_compiler.emit import render_function
 # the CommandName / ConditionName vocabularies so nothing is stringly-typed.
 from grimmcraft_control.machine import (
     TICK_EVENT,
-    Command,
-    CommandName,
-    Condition,
-    ConditionName,
     Machine,
     MachineBuilder,
+    add_score,
+    playsound,
+    say,
+    set_score,
+    setblock,
 )
 
 # grimmcraft-core gives us real world types to reuse (here: a block position).
@@ -56,6 +57,11 @@ from grimmcraft_data import Block
 
 LAMP_POS = BlockPos(0, 64, 0)
 TIMER = "lamp_timer"
+
+# Write the datapack next to this example (a tracked, committed reference copy)
+# rather than into the gitignored dist/, so the generated output is visible in
+# the repo. Re-running this script refreshes it in place.
+GENERATED = Path(__file__).resolve().parent / "generated"
 
 
 class LampState(StrEnum):
@@ -74,10 +80,10 @@ class LampEvent(StrEnum):
 def build_lamp() -> Machine[dict[str, Any]]:
     """Assemble the lamp machine one step at a time.
 
-    We keep a ``builder`` variable and call one method per line instead of
-    chaining them together. Each line does exactly one thing, so you can read it
-    top-to-bottom, comment a line out, or reorder steps without untangling a
-    single big expression.
+    We keep a ``builder`` variable and add each state/transition with its own
+    method call. Commands come from the typed constructors (``setblock``,
+    ``say``, …) so there are no payload dicts or ``Command(...)`` wrappers — every
+    line reads like a sentence and can be commented out or reordered on its own.
     """
     # The context (here an empty dict) is whatever runtime state your handlers
     # need; the compiler doesn't use it, so keep it simple.
@@ -85,58 +91,31 @@ def build_lamp() -> Machine[dict[str, Any]]:
     builder.named("lamp")  # the grimmcraft_state scoreboard entry + function folder
     builder.for_entity(Block.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
-    # 1. The OFF state: remove the light so the area goes dark when we land here.
-    #    `enter` commands run once, when the machine enters the state. We use the
-    #    invisible `minecraft:light` block, so "off" just means setting it to air.
-    builder.state(
-        LampState.OFF,
-        enter=(
-            Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.AIR}),
-        ),
-    )
+    # 1. The OFF state: remove the light so the area goes dark. `on_enter` runs
+    #    once, when the machine enters the state; "off" is just setting air.
+    off = builder.add_state(LampState.OFF)
+    off.on_enter(setblock(LAMP_POS, Block.AIR))
 
     # 2. The ON state: place a full-bright invisible light, click, announce it,
-    #    and arm a 100-tick timer. `minecraft:light[level=15]` emits light 15 with
-    #    no visible block and — unlike a redstone_lamp — stays lit with no power.
-    #    `cycle` commands run every tick while the machine sits in this state.
-    builder.state(
-        LampState.ON,
-        enter=(
-            Command(
-                CommandName.SETBLOCK,
-                {"pos": LAMP_POS, "block": Block.LIGHT, "state": {"level": "15"}},
-            ),
-            Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.lever.click"}),
-            Command(CommandName.SAY, {"text": "The lamp glows."}),
-            Command(
-                CommandName.SCOREBOARD_SET,
-                {"objective": TIMER, "entry": "lamp", "value": 100},
-            ),
-        ),
-        cycle=(
-            Command(
-                CommandName.SCOREBOARD_ADD,
-                {"objective": TIMER, "entry": "lamp", "value": -1},
-            ),
-        ),
-    )
+    #    and arm a 100-tick timer — one command per line. `minecraft:light[level=15]`
+    #    emits light 15 with no visible block and stays lit with no redstone.
+    #    `on_cycle` runs every tick while the machine sits in this state.
+    on = builder.add_state(LampState.ON)
+    on.on_enter(setblock(LAMP_POS, Block.LIGHT, level=15))
+    on.on_enter(playsound("minecraft:block.lever.click"))
+    on.on_enter(say("The lamp glows."))
+    on.on_enter(set_score(TIMER, "lamp", 100))
+    on.on_cycle(add_score(TIMER, "lamp", -1))
 
-    # 3. Pulling the lever toggles between OFF and ON (an event transition).
+    # 3. Pulling the lever toggles between OFF and ON (event transitions).
     builder.transition(LampState.OFF, LampEvent.PULL, to=LampState.ON)
     builder.transition(LampState.ON, LampEvent.PULL, to=LampState.OFF)
 
-    # 4. An automatic transition: TICK_EVENT is checked every tick, *after* ON's
-    #    cycle commands. When the timer hits 0 the lamp turns itself off. The
-    #    Condition becomes an `execute if score …` guard in the datapack.
-    builder.transition(
-        LampState.ON,
-        TICK_EVENT,
-        to=LampState.OFF,
-        condition=Condition(
-            ConditionName.SCORE_MATCHES,
-            {"objective": TIMER, "entry": "lamp", "value": 0},
-        ),
-    )
+    # 4. An automatic transition: checked every tick, *after* ON's cycle commands.
+    #    `when_score` turns the lamp off once the timer reaches 0; it becomes an
+    #    `execute if score …` guard in the datapack.
+    auto = builder.add_transition(LampState.ON, TICK_EVENT, to=LampState.OFF)
+    auto.when_score(TIMER, "lamp", 0)
 
     # 5. Start in OFF, then freeze the definition into an immutable Machine.
     builder.initial(LampState.OFF)
@@ -149,7 +128,7 @@ def main() -> None:
 
     # Compile: collect → IR → validate → render → emit → verify, all in one call.
     result = compile_machines(
-        [lamp], target, namespace="tutorial", output=Path("dist/tutorial-lamp")
+        [lamp], target, namespace="tutorial", output=GENERATED / "tutorial-lamp"
     )
 
     print(f"target      : {target}")

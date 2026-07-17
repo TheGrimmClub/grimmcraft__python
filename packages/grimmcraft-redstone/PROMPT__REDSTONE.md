@@ -1,6 +1,8 @@
 # Task: implement the redstone model in the grimmcraft-redstone package
 > [\] TODO: run PROMPT_REDSTONE.md 
 
+If you sugesst a task to execute show it as a taskfile like task with a description element (`desc`)
+
 Model Minecraft redstone as a simulatable component graph. Write it in the
 **`grimmcraft-redstone`** package
 (`packages/grimmcraft-redstone/src/grimmcraft_redstone/`), with `tests/`,

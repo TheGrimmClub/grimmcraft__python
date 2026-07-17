@@ -11,6 +11,17 @@ declarative structure to emit an ``mcfunction`` datapack.
 from __future__ import annotations
 
 from grimmcraft_control.machine.command import Command, CommandBus, CommandHandler
+from grimmcraft_control.machine.effects import (
+    add_score,
+    give,
+    particle,
+    playsound,
+    say,
+    set_score,
+    setblock,
+    summon,
+    tellraw,
+)
 from grimmcraft_control.machine.errors import (
     GuardError,
     InvalidTransition,
@@ -23,6 +34,8 @@ from grimmcraft_control.machine.machine import (
     TICK_EVENT,
     Machine,
     MachineBuilder,
+    StateDraft,
+    TransitionDraft,
 )
 from grimmcraft_control.machine.result import Result
 from grimmcraft_control.machine.state import State
@@ -49,10 +62,22 @@ __all__ = [
     "Result",
     "Machine",
     "MachineBuilder",
+    "StateDraft",
+    "TransitionDraft",
     "STATE_OBJECTIVE",
     "TICK_EVENT",
     "StateMachineError",
     "MachineBuildError",
     "InvalidTransition",
     "GuardError",
+    # command constructors (grimmcraft_control.machine.effects)
+    "setblock",
+    "say",
+    "tellraw",
+    "playsound",
+    "particle",
+    "summon",
+    "give",
+    "set_score",
+    "add_score",
 ]

@@ -41,6 +41,11 @@ tasks:
     cmds:
       - uv run --package {{.PKG}} python examples/tutorial_lamp.py
 
+  chess:
+    desc: Compile a machine that lays out an 8x8 wool chessboard (loop example)
+    cmds:
+      - uv run --package {{.PKG}} python examples/chessboard.py
+
   run:
     desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.1 --dry-run)'
     cmds:
