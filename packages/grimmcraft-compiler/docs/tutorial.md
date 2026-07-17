@@ -13,48 +13,76 @@ A lamp has two states, `OFF` and `ON`, toggled by a `pull` event. Turning `ON`
 lights the block, clicks, and arms a 100-tick timer; a per-tick **cycle** counts
 that timer down, and an automatic transition switches back `OFF` at zero.
 
+Identifiers are **enums, not magic strings**: `CommandName` / `ConditionName`
+(both `StrEnum`) name the command vocabulary, and the lamp's own states/events are
+a local `StrEnum` each. `Block.REDSTONE_LAMP` is a `grimmcraft-data` enum member,
+so the block id is valid by construction.
+
 ```python
-from grimmcraft_control.machine import Command, Condition, MachineBuilder, TICK_EVENT
+from enum import StrEnum
+from grimmcraft_control.machine import (
+    Command, CommandName, Condition, ConditionName, MachineBuilder, TICK_EVENT,
+)
 from grimmcraft_data import Block
 from grimmcraft_core import BlockPos
 
 LAMP_POS, TIMER = BlockPos(0, 64, 0), "lamp_timer"
 
-lamp = (
-    MachineBuilder[dict]({})
-    .named("lamp")
-    .state("OFF", enter=(
-        Command("setblock", {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
-                             "state": {"lit": "false"}}),
-    ))
-    .state("ON",
-        enter=(
-            Command("setblock", {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
-                                 "state": {"lit": "true"}}),
-            Command("playsound", {"sound": "minecraft:block.lever.click"}),
-            Command("scoreboard_set", {"objective": TIMER, "entry": "lamp", "value": 100}),
-        ),
-        cycle=(  # runs every tick while ON
-            Command("scoreboard_add", {"objective": TIMER, "entry": "lamp", "value": -1}),
-        ),
-    )
-    .transition("OFF", "pull", to="ON")
-    .transition("ON", "pull", to="OFF")
-    .transition("ON", TICK_EVENT, to="OFF",   # automatic, checked after the cycle
-                condition=Condition("score_matches",
-                                    {"objective": TIMER, "entry": "lamp", "value": 0}))
-    .initial("OFF")
-    .build()
+class S(StrEnum):   # states
+    OFF = "OFF"
+    ON = "ON"
+
+class E(StrEnum):   # events
+    PULL = "pull"
+
+# Keep a builder and call one method per line — no chaining, so every step is
+# its own readable statement you can comment out or reorder.
+builder = MachineBuilder[dict]({})
+builder.named("lamp")
+
+# The OFF state: keep the lamp dark on entry.
+builder.state(S.OFF, enter=(
+    Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
+                                   "state": {"lit": "false"}}),
+))
+
+# The ON state: light it, click, arm a timer; count the timer down every tick.
+builder.state(S.ON,
+    enter=(
+        Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
+                                       "state": {"lit": "true"}}),
+        Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.lever.click"}),
+        Command(CommandName.SCOREBOARD_SET, {"objective": TIMER, "entry": "lamp", "value": 100}),
+    ),
+    cycle=(  # runs every tick while ON
+        Command(CommandName.SCOREBOARD_ADD, {"objective": TIMER, "entry": "lamp", "value": -1}),
+    ),
 )
+
+# Pulling the lever toggles OFF <-> ON.
+builder.transition(S.OFF, E.PULL, to=S.ON)
+builder.transition(S.ON, E.PULL, to=S.OFF)
+
+# Automatic: checked every tick after ON's cycle; off when the timer hits 0.
+builder.transition(S.ON, TICK_EVENT, to=S.OFF,
+                   condition=Condition(ConditionName.SCORE_MATCHES,
+                                       {"objective": TIMER, "entry": "lamp", "value": 0}))
+
+builder.initial(S.OFF)
+lamp = builder.build()
 ```
 
 Key ideas:
 
+- **One step per line.** Keep a `builder` and call methods as separate statements
+  instead of chaining — each line does one thing, so beginners can read it
+  top-to-bottom and edit a single step without touching the rest.
+- **Enums over strings.** `CommandName.SETBLOCK` *is* `"setblock"` (a `StrEnum`),
+  so it drops into `Command(...)` with no ceremony — but typos become import
+  errors and editors autocomplete. Same for `ConditionName` and your state/event
+  enums.
 - **`enter` / `exit` / `cycle`** are tuples of declarative `Command`s. `enter`
   and `exit` fire on state change; `cycle` runs every tick while in the state.
-- Using **`Block.REDSTONE_LAMP`** (a `grimmcraft-data` enum member) instead of a
-  raw string means the id is valid by construction — the compiler never has to
-  guess or warn.
 - **`TICK_EVENT`** transitions are *automatic*: the compiler checks them every
   tick, after the state's cycle commands. Their `Condition` becomes an
   `execute if score …` guard.

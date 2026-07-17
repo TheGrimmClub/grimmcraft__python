@@ -12,14 +12,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from grimmcraft_control.machine import Command
+from grimmcraft_control.machine import Command, CommandName
 
 # --- names the Dialect must know how to render -------------------------------
 
-#: Domain effect command names produced by machines.
-DOMAIN_COMMANDS = frozenset(
-    {"say", "tellraw", "setblock", "summon", "give", "playsound", "particle", "raw"}
-)
+#: Domain effect command names produced by machines (the ``CommandName`` vocab).
+DOMAIN_COMMANDS = frozenset(str(name) for name in CommandName)
 
 #: Compiler-internal command names produced by lowering.
 INTERNAL_COMMANDS = frozenset(

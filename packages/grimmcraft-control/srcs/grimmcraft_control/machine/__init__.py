@@ -32,6 +32,7 @@ from grimmcraft_control.machine.transition import (
     Guard,
     Transition,
 )
+from grimmcraft_control.machine.vocabulary import CommandName, ConditionName
 
 __all__ = [
     "State",
@@ -41,6 +42,8 @@ __all__ = [
     "Guard",
     "Action",
     "Command",
+    "CommandName",
+    "ConditionName",
     "CommandHandler",
     "CommandBus",
     "Result",

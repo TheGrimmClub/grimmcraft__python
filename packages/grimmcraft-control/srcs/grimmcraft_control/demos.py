@@ -14,7 +14,9 @@ from typing import Any
 from grimmcraft_control.machine import (
     TICK_EVENT,
     Command,
+    CommandName,
     Condition,
+    ConditionName,
     Machine,
     MachineBuilder,
 )
@@ -41,22 +43,33 @@ def door_machine() -> Machine[dict[str, Any]]:
         .state(
             "OPEN",
             enter=(
-                Command("setblock", {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP,
-                                     "state": {"lit": "true"}}),
-                Command("playsound", {"sound": "minecraft:block.wooden_door.open"}),
+                Command(
+                    CommandName.SETBLOCK,
+                    {"pos": LAMP_POS, "block": Block.REDSTONE_LAMP, "state": {"lit": "true"}},
+                ),
+                Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.wooden_door.open"}),
             ),
-            exit=(
-                Command("setblock", {"pos": LAMP_POS, "block": Block.AIR}),
-            ),
+            exit=(Command(CommandName.SETBLOCK, {"pos": LAMP_POS, "block": Block.AIR}),),
         )
         .state("LOCKED")
-        .transition("CLOSED", "open", to="OPEN",
-                    commands=(Command("say", {"text": "The door creaks open."}),))
-        .transition("OPEN", "close", to="CLOSED",
-                    commands=(Command("say", {"text": "The door swings shut."}),))
-        .transition("CLOSED", "lock", to="LOCKED",
-                    commands=(Command("playsound",
-                                      {"sound": "minecraft:block.chain.place"}),))
+        .transition(
+            "CLOSED",
+            "open",
+            to="OPEN",
+            commands=(Command(CommandName.SAY, {"text": "The door creaks open."}),),
+        )
+        .transition(
+            "OPEN",
+            "close",
+            to="CLOSED",
+            commands=(Command(CommandName.SAY, {"text": "The door swings shut."}),),
+        )
+        .transition(
+            "CLOSED",
+            "lock",
+            to="LOCKED",
+            commands=(Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.chain.place"}),),
+        )
         .transition("LOCKED", "unlock", to="CLOSED")
         .initial("CLOSED")
         .build()
@@ -81,43 +94,70 @@ def furnace_machine() -> Machine[dict[str, Any]]:
         .state(
             "SMELTING",
             enter=(
-                Command("say", {"text": "The furnace roars to life."}),
-                Command("playsound", {"sound": "minecraft:block.furnace.fire_crackle"}),
-                Command("scoreboard_set",
-                        {"objective": "furnace_timer", "entry": "furnace", "value": 200}),
+                Command(CommandName.SAY, {"text": "The furnace roars to life."}),
+                Command(CommandName.PLAYSOUND, {"sound": "minecraft:block.furnace.fire_crackle"}),
+                Command(
+                    CommandName.SCOREBOARD_SET,
+                    {"objective": "furnace_timer", "entry": "furnace", "value": 200},
+                ),
             ),
             # Per-tick processing loop: burn down the smelt timer each tick.
             cycle=(
-                Command("scoreboard_add",
-                        {"objective": "furnace_timer", "entry": "furnace", "value": -1}),
+                Command(
+                    CommandName.SCOREBOARD_ADD,
+                    {"objective": "furnace_timer", "entry": "furnace", "value": -1},
+                ),
             ),
         )
         .state(
             "DONE",
             enter=(
-                Command("particle", {"particle": "minecraft:flame", "pos": FURNACE_POS}),
-                Command("say", {"text": "A smelt has finished."}),
+                Command(CommandName.PARTICLE, {"particle": "minecraft:flame", "pos": FURNACE_POS}),
+                Command(CommandName.SAY, {"text": "A smelt has finished."}),
             ),
         )
-        .transition("EMPTY", "insert_ore", to="SMELTING",
-                    commands=(Command("setblock",
-                                      {"pos": FURNACE_POS, "block": Block.FURNACE,
-                                       "state": {"lit": "true"}}),))
         .transition(
-            # Automatic: evaluated each tick after SMELTING's cycle commands.
-            "SMELTING", TICK_EVENT, to="DONE",
-            condition=Condition("score_matches",
-                                {"objective": "furnace_timer", "entry": "furnace",
-                                 "value": 0}),
-            commands=(Command("setblock",
-                              {"pos": FURNACE_POS, "block": Block.FURNACE,
-                               "state": {"lit": "false"}}),),
+            "EMPTY",
+            "insert_ore",
+            to="SMELTING",
+            commands=(
+                Command(
+                    CommandName.SETBLOCK,
+                    {"pos": FURNACE_POS, "block": Block.FURNACE, "state": {"lit": "true"}},
+                ),
+            ),
         )
         .transition(
-            "DONE", "collect", to="EMPTY",
-            commands=(Command("give",
-                              {"target": "@p", "item": Item.IRON_INGOT, "count": 1,
-                               "name": "Freshly Smelted Ingot"}),),
+            # Automatic: evaluated each tick after SMELTING's cycle commands.
+            "SMELTING",
+            TICK_EVENT,
+            to="DONE",
+            condition=Condition(
+                ConditionName.SCORE_MATCHES,
+                {"objective": "furnace_timer", "entry": "furnace", "value": 0},
+            ),
+            commands=(
+                Command(
+                    CommandName.SETBLOCK,
+                    {"pos": FURNACE_POS, "block": Block.FURNACE, "state": {"lit": "false"}},
+                ),
+            ),
+        )
+        .transition(
+            "DONE",
+            "collect",
+            to="EMPTY",
+            commands=(
+                Command(
+                    CommandName.GIVE,
+                    {
+                        "target": "@p",
+                        "item": Item.IRON_INGOT,
+                        "count": 1,
+                        "name": "Freshly Smelted Ingot",
+                    },
+                ),
+            ),
         )
         .initial("EMPTY")
         .build()
