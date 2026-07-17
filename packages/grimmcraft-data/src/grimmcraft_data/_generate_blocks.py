@@ -16,7 +16,6 @@ import json
 import keyword
 import sys
 import urllib.request
-
 from pathlib import Path
 
 BASE = "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data"
@@ -51,24 +50,37 @@ def member_name(block_id):
 
 
 def build_enum(blocks, version):
-    seen = {}
+    seen = set()
     lines = [
         '"""Auto-generated from PrismarineJS/minecraft-data.',
         f"Minecraft Java Edition {version} — {len(blocks)} block types.",
+        "",
+        "Each member's .value is the integer registry id for this version;",
+        ".string_id is the namespaced id and .default_state is the block-state",
+        "palette id. NOTE: numeric ids are stable within a version but change",
+        "between versions (Java has no permanent numeric block ids since 1.13).",
         'Do not edit by hand; regenerate with generate_block_enum.py."""',
         "",
         "from enum import Enum",
         "",
         "",
-        "class Block(str, Enum):",
+        "class Block(Enum):",
+        "    def __new__(cls, num_id, string_id, default_state):",
+        "        obj = object.__new__(cls)",
+        "        obj._value_ = num_id           # Block.OAK_LOG.value -> int",
+        "        obj.string_id = string_id      # -> 'minecraft:oak_log'",
+        "        obj.default_state = default_state",
+        "        return obj",
+        "",
     ]
     for b in blocks:
         full_id = b["name"] if ":" in b["name"] else f"minecraft:{b['name']}"
         name = member_name(full_id)
         while name in seen:            # guard against collisions
             name += "_"
-        seen[name] = full_id
-        lines.append(f'    {name} = "{full_id}"')
+        seen.add(name)
+        default_state = b.get("defaultState", b.get("minStateId"))
+        lines.append(f'    {name} = ({b["id"]}, "{full_id}", {default_state})')
     lines.append("")
     return "\n".join(lines)
 
