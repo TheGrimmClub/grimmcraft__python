@@ -41,6 +41,7 @@ Also runnable as `python -m grimmcraft_compiler`.
 
 ## Docs
 
+- [Tutorial](docs/tutorial.md) — build a machine from scratch and see how it lowers.
 - [Architecture](docs/architecture.md) — IR → dialect → emit.
 - [Support matrix](docs/support-matrix.md) — versions, pack formats, flavors.
 - [Diagnostics index](docs/diagnostics.md) — every `GC####` with an example.

@@ -36,6 +36,11 @@ tasks:
     cmds:
       - uv run --package {{.PKG}} python examples/compile_demos.py
 
+  tutorial:
+    desc: Build a lamp machine from scratch and show how it lowers (teaching example)
+    cmds:
+      - uv run --package {{.PKG}} python examples/tutorial_lamp.py
+
   run:
     desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.1 --dry-run)'
     cmds:
