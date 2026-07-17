@@ -1,0 +1,112 @@
+"""Auto-generated from PrismarineJS/minecraft-data loot tables.
+
+Minecraft Java Edition 1.21.11 — 925 block and 81 entity loot tables.
+Bundled source assets: data/1.21.11/blockLoot.json, data/1.21.11/entityLoot.json (loaded lazily).
+
+`Drop.item` is the `Item` enum member for the dropped item (or its bare string
+id if that member is absent); `.drop_chance` is the base chance and
+`.stack_min`/`.stack_max` the stack-size range.  `block_loot()` / `entity_loot()`
+are keyed by bare string id (e.g. "stone", "zombie") and also accept enum
+members.
+Do not edit by hand; regenerate with _generate/advanced_loot.py."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from functools import lru_cache
+from importlib.resources import files
+from pathlib import Path
+from typing import Optional
+
+_BLOCK_DATA = "data/1.21.11/blockLoot.json"
+_ENTITY_DATA = "data/1.21.11/entityLoot.json"
+_HERE = Path(__file__).parent
+
+try:
+    from .item import Item
+except Exception:  # pragma: no cover - Item enum optional
+    Item = None
+
+
+@dataclass(frozen=True, slots=True)
+class Drop:
+    """A single possible drop within a loot table."""
+
+    item: object                  # Item member, or bare string id
+    drop_chance: Optional[float]
+    stack_min: Optional[int]
+    stack_max: Optional[int]
+    silk_touch: Optional[bool]
+    no_silk_touch: Optional[bool]
+    player_kill: Optional[bool]
+    block_age: Optional[int]
+
+
+@dataclass(frozen=True, slots=True)
+class LootTable:
+    """The set of drops for one source block or entity."""
+
+    source: str                   # bare string id
+    drops: tuple[Drop, ...]
+
+
+def _name(x) -> str:
+    """Normalise an Item/enum member or id string to a bare (un-namespaced) name."""
+    s = getattr(x, "string_id", x)
+    return str(s).split(":", 1)[-1]
+
+
+@lru_cache(maxsize=1)
+def _item_by_name() -> dict:
+    if Item is None:
+        return {}
+    return {m.string_id.split(":", 1)[-1]: m for m in Item}
+
+
+def _resolve_item(name):
+    return _item_by_name().get(name, name)
+
+
+def _open(rel):
+    try:
+        return files(__package__).joinpath(rel).open("r", encoding="utf-8")
+    except (ModuleNotFoundError, TypeError, FileNotFoundError):
+        return (_HERE / rel).open("r", encoding="utf-8")
+
+
+def _parse_drop(d) -> Drop:
+    rng = d.get("stackSizeRange") or [None, None]
+    lo = rng[0] if len(rng) > 0 else None
+    hi = rng[1] if len(rng) > 1 else lo
+    return Drop(
+        item=_resolve_item(d.get("item")),
+        drop_chance=d.get("dropChance"),
+        stack_min=lo,
+        stack_max=hi,
+        silk_touch=d.get("silkTouch"),
+        no_silk_touch=d.get("noSilkTouch"),
+        player_kill=d.get("playerKill"),
+        block_age=d.get("blockAge"),
+    )
+
+
+@lru_cache(maxsize=1)
+def _tables(rel, source_field) -> dict:
+    with _open(rel) as fh:
+        rows = json.load(fh)
+    out = {}
+    for row in rows:
+        src = row[source_field]
+        out[src] = LootTable(src, tuple(_parse_drop(d) for d in row.get("drops", [])))
+    return out
+
+
+def block_loot(block) -> Optional[LootTable]:
+    """Loot table for a block (an `Item`/`Block` member or bare/namespaced id)."""
+    return _tables(_BLOCK_DATA, "block").get(_name(block))
+
+
+def entity_loot(entity) -> Optional[LootTable]:
+    """Loot table for an entity (an `Entity` member or bare/namespaced id)."""
+    return _tables(_ENTITY_DATA, "entity").get(_name(entity))

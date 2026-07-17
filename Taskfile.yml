@@ -24,7 +24,7 @@ includes:
     taskfile: ./packages/grimmcraft-cli/Taskfile.yml
     dir: ./packages/grimmcraft-cli
   data:
-    taskfile: ./packages/grimmcraft-data/Taskfile.yml
+    taskfile: ./packages/grimmcraft-data/Taskfile.yaml
     dir: ./packages/grimmcraft-data
 tasks:
   default:
@@ -37,9 +37,9 @@ tasks:
       - uv sync --all-packages
 
   test:
-    desc: Run tests for every package
+    desc: Run tests for every package (auto-discovers packages/*/tests)
     cmds:
-      - uv run pytest {{range $p := (.PACKAGES | splitLines)}}{{if $p}}packages/{{$p}}/tests {{end}}{{end}}
+      - uv run pytest packages
 
   lint:
     desc: Lint the entire workspace
@@ -80,7 +80,8 @@ tasks:
   new-package:
     desc: 'Scaffold a new workspace package (usage: task new-package -- <name>)'
     cmds:
-      - uv init --package --lib --name {{.CLI_ARGS}} packages/{{.CLI_ARGS}}
-      - cd {{.CLI_ARGS}} | mkdir -p srcs/{{.CLI_ARGS}} | mkdir -p docs | mkdir -p tests
-      - cmd: echo "Created packages/{{.CLI_ARGS}} - add an 'includes' entry in the root Taskfile to expose per-package tasks."
+      - uv init --package --lib --build-backend uv --name {{.CLI_ARGS}} packages/{{.CLI_ARGS}}
+      - mkdir -p packages/{{.CLI_ARGS}}/srcs/{{.CLI_ARGS | replace "-" "_"}} packages/{{.CLI_ARGS}}/tests
+      - rm -rf packages/{{.CLI_ARGS}}/src
+      - cmd: echo "Created packages/{{.CLI_ARGS}} - set module-root='srcs' in its pyproject and add an 'includes' entry here to expose per-package tasks."
         silent: true
