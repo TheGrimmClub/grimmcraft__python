@@ -25,8 +25,8 @@ The `minecraft:load` hook initialises each machine's state; if the pack has a
 
 Fire an event by calling its trigger function:
 
-- `/function grove:tree/on_chop`
-- `/function grove:tree/on_grow`
+- `/function grove:spruce/on_chop`
+- `/function grove:spruce/on_grow`
 
 State is tracked in the `grimmcraft_state` scoreboard objective — inspect it with:
 

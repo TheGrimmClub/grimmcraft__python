@@ -92,6 +92,31 @@ def test_new_machine_and_state_object_references() -> None:
     assert machine.dispatch(Event("pull")).to_state == "ON"
 
 
+def test_if_score_gates_a_command_in_a_cycle() -> None:
+    # A growing structure: each tick bump a stage, then place only the step whose
+    # number matches — if_score wraps the step in an `execute if score` guard.
+    from grimmcraft_control import fill, if_score, new_machine
+    from grimmcraft_data import Block
+
+    steps = [fill((0, 64, 0), (0, 68, 0), Block.SPRUCE_LOG), say("done")]
+
+    builder = new_machine("grow")
+    seed = builder.add_state("SEED")
+    growing = builder.add_state("GROWING")
+    growing.on_cycle(add_score("stage", "e", 1))
+    for number, step in enumerate(steps, start=1):
+        growing.on_cycle(if_score("stage", "e", number, step))
+    builder.transition(seed, "plant", to=growing)
+    machine = builder.initial(seed).build()
+
+    cycle = machine.states["GROWING"].cycle
+    assert cycle[0].name == CommandName.SCOREBOARD_ADD
+    guarded = cycle[1]
+    assert guarded.name == "execute_if_score"
+    assert guarded.payload["value"] == 1
+    assert guarded.payload["run"].name == CommandName.FILL
+
+
 def test_loop_builds_a_checkerboard() -> None:
     # The API is plain Python, so a loop can emit many commands (the chessboard
     # example): an 8x8 board is 64 wool setblocks, half of each colour.

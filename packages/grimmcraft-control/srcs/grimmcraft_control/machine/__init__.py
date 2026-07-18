@@ -15,6 +15,7 @@ from grimmcraft_control.machine.effects import (
     add_score,
     fill,
     give,
+    if_score,
     particle,
     playsound,
     say,
@@ -76,6 +77,7 @@ __all__ = [
     # command constructors (grimmcraft_control.machine.effects)
     "setblock",
     "fill",
+    "if_score",
     "say",
     "tellraw",
     "playsound",

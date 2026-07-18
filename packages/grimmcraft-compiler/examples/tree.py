@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-"""Example: compile a machine that grows a parametric oak tree.
+"""Example: compile a machine that grows a parametric spruce (conifer).
 
-A simple procedural tree, using ``fill`` for runs of blocks (not one ``setblock``
-per cell):
+A stack of shrinking square leaf rings around a tall trunk — wide at the base,
+tapering to a single-block tip. That cone shape is exactly what layered ``fill``\\ s
+produce, so a conifer is the natural fit (a rounded oak would need carved corners).
 
-* **Trunk** — a single vertical ``fill`` of ``TRUNK_HEIGHT`` logs.
-* **Canopy** — one ``fill`` per leaf layer (``mode="keep"`` so leaves only land in
-  air and never overwrite the trunk), then a few ``setblock``\\ s to round the
-  corners.
+* **Trunk** — one vertical ``fill`` of ``TRUNK_HEIGHT`` spruce logs.
+* **Foliage** — one ``fill`` per ring in :data:`FOLIAGE` (``mode="keep"`` so leaves
+  only land in air and never overwrite the trunk).
 * **Chop** — one ``fill`` that clears the whole bounding box back to air.
 
-``grow`` places the tree, ``chop`` removes it. Change ``TRUNK_HEIGHT`` /
-``LEAF_RADIUS`` to resize it.
+``grow`` places the spruce, ``chop`` removes it. Edit ``TRUNK_HEIGHT`` / ``FOLIAGE``
+to reshape it.
 
 Run it::
 
@@ -27,68 +27,56 @@ from typing import Any
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_compiler.dialect import Dialect
 from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import Machine, fill, new_machine, say, setblock
+from grimmcraft_control.machine import Machine, fill, new_machine, say
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
 BASE = BlockPos(0, 64, 0)  # the block the trunk grows from
-TRUNK_HEIGHT = 5
-LEAF_RADIUS = 2
+TRUNK_HEIGHT = 6
+# Foliage rings, bottom to top, as (y offset, radius): widest at the base,
+# shrinking to a single-block tip — the classic conifer silhouette.
+FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
 GENERATED = Path(__file__).resolve().parent / "generated"
 
 
 class Event(StrEnum):
-    """The tree's events (named once here, referenced by member below)."""
+    """The spruce's events (named once here, referenced by member below)."""
 
     GROW = "grow"
     CHOP = "chop"
 
 
-def build_tree() -> Machine[dict[str, Any]]:
-    """A ``tree`` machine: ``grow`` plants it, ``chop`` clears it to air.
-
-    Runs of blocks use ``fill``, not one ``setblock`` each — the trunk is a single
-    vertical fill, each leaf layer is one fill, and ``chop`` clears the whole
-    bounding box in one command.
-    """
-    top = TRUNK_HEIGHT - 1
-    r_wide = LEAF_RADIUS
-    r_narrow = LEAF_RADIUS - 1
-
-    builder = new_machine("tree")
+def build_spruce() -> Machine[dict[str, Any]]:
+    """A ``spruce`` machine: ``grow`` plants it, ``chop`` clears it to air."""
+    builder = new_machine("spruce")
 
     # Keep each state in a variable and refer to it by that variable below, so a
     # state name is written exactly once (no strings to keep in sync).
     bare = builder.add_state("BARE")
 
     grown = builder.add_state("GROWN")
-    grown.on_enter(say("A tree grows."))
+    grown.on_enter(say("A spruce grows."))
 
     # Trunk: one vertical fill from the base up.
-    grown.on_enter(fill(BASE, BASE.offset(0, top, 0), Block.OAK_LOG))
+    grown.on_enter(fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG))
 
-    # Canopy: two wide leaf slabs around the top, then two narrower ones above.
+    # Foliage: one fill per ring, widest at the bottom and tapering to the tip.
     # mode="keep" fills only air, so the leaves never overwrite the trunk.
-    for y, r in ((top - 1, r_wide), (top, r_wide),
-                 (top + 1, r_narrow), (top + 2, r_narrow)):
+    for y, r in FOLIAGE:
         grown.on_enter(
             fill(BASE.offset(-r, y, -r), BASE.offset(r, y, r),
-                 Block.OAK_LEAVES, mode="keep")
+                 Block.SPRUCE_LEAVES, mode="keep")
         )
-
-    # Round off the two wide layers by clearing their four corners.
-    for y in (top - 1, top):
-        for cx in (-r_wide, r_wide):
-            for cz in (-r_wide, r_wide):
-                grown.on_enter(setblock(BASE.offset(cx, y, cz), Block.AIR))
 
     builder.transition(bare, Event.GROW, to=grown)
 
-    # Chop: clear the whole tree's bounding box in a single fill.
+    # Chop: clear the whole bounding box in a single fill.
+    max_r = max(r for _y, r in FOLIAGE)
+    top_y = FOLIAGE[-1][0]
     chop = builder.add_transition(grown, Event.CHOP, to=bare)
     chop.do(
-        fill(BASE.offset(-r_wide, 0, -r_wide),
-             BASE.offset(r_wide, top + 2, r_wide), Block.AIR)
+        fill(BASE.offset(-max_r, 0, -max_r),
+             BASE.offset(max_r, top_y, max_r), Block.AIR)
     )
 
     builder.initial(bare)
@@ -96,10 +84,10 @@ def build_tree() -> Machine[dict[str, Any]]:
 
 
 def main() -> None:
-    tree = build_tree()
+    spruce = build_spruce()
     target = Target.resolve("1.21.1", "vanilla")
     result = compile_machines(
-        [tree], target, namespace="grove", output=GENERATED / "tree"
+        [spruce], target, namespace="grove", output=GENERATED / "spruce"
     )
 
     print(f"target    : {target}")
@@ -111,7 +99,7 @@ def main() -> None:
     grow_fn = next(f for f in result.pack.functions if f.id.path.endswith("grow__grown"))
     print(f"\n# {grow_fn.id}:")
     print(render_function(grow_fn, dialect).rstrip())
-    print(f"\nTrigger in-game with: /function grove:{tree.name}/on_{Event.GROW}")
+    print(f"\nTrigger in-game with: /function grove:{spruce.name}/on_{Event.GROW}")
 
 
 if __name__ == "__main__":

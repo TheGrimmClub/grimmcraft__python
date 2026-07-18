@@ -140,6 +140,11 @@ def _walk_command(
         if key in command.payload:
             _check_id(kind, command.payload[key], target.version, source, bag)
     _check_portability(command, target, source, bag)
+    # Recurse into a wrapped command (e.g. if_score's "run"), so ids inside a
+    # conditional command are validated too.
+    run = command.payload.get("run")
+    if isinstance(run, Command):
+        _walk_command(run, target, source, bag)
 
 
 def validate_machines(

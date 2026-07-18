@@ -100,3 +100,15 @@ def add_score(objective: str, entry: str, delta: int) -> Command:
         CommandName.SCOREBOARD_ADD,
         {"objective": objective, "entry": entry, "value": delta},
     )
+
+
+def if_score(objective: str, entry: str, value: int, then: Command) -> Command:
+    """Run ``then`` only when ``entry``'s ``objective`` score equals ``value``.
+
+    Renders as ``execute if score … run <then>``. Handy inside a state's cycle to
+    do a different thing on each tick/stage (e.g. place stage N's blocks only when
+    a counter reaches N)."""
+    return Command(
+        "execute_if_score",
+        {"objective": objective, "entry": entry, "value": value, "run": then},
+    )
