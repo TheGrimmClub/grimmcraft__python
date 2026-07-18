@@ -46,6 +46,11 @@ tasks:
     cmds:
       - uv run --package {{.PKG}} python examples/chessboard.py
 
+  tree:
+    desc: Compile a machine that grows a parametric oak tree (procedural example)
+    cmds:
+      - uv run --package {{.PKG}} python examples/tree.py
+
   run:
     desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.1 --dry-run)'
     cmds:

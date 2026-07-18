@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "pack_format": 48,
+    "description": "grove — grimmcraft datapack for 1.21.1 vanilla",
+    "supported_formats": {
+      "min_inclusive": 48,
+      "max_inclusive": 48
+    }
+  }
+}
