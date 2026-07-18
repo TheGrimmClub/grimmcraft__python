@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "grimmcraft — grimmcraft datapack for 1.21.11 vanilla",
+    "min_format": [
+      94,
+      1
+    ],
+    "max_format": 94
+  }
+}

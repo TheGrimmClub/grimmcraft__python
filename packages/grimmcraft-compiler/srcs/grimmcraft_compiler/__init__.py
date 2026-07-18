@@ -9,7 +9,7 @@ entry point is :func:`compile_machines`; diagnostics are first-class
 
 from __future__ import annotations
 
-from grimmcraft_compiler.compiler import CompileResult, compile_machines
+from grimmcraft_compiler.compiler import CompileResult, compile_machines, show_info
 from grimmcraft_compiler.diagnostics import (
     Code,
     Codes,
@@ -36,6 +36,7 @@ from grimmcraft_compiler.version import (
 __all__ = [
     "compile_machines",
     "CompileResult",
+    "show_info",
     "Target",
     "Flavor",
     "Dialect",

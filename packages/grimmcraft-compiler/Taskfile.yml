@@ -17,8 +17,19 @@ tasks:
     cmds:
       - task --list
 
+  fix-venv:
+    # Local copy of the root task: this Taskfile also runs standalone, so it
+    # cannot depend on the root's. UV_NO_SYNC stops us re-hiding the .pth
+    # files, but anything already hidden by an earlier sync stays hidden —
+    # without this, every task below fails with ModuleNotFoundError.
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    internal: true
+    cmds:
+      - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
   test:
     desc: Run this package's tests
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} pytest tests
 
@@ -39,31 +50,37 @@ tasks:
 
   example:
     desc: Compile the demo machines for 1.20.4 and 1.21.11 into dist/examples/
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} python examples/compile_demos.py
 
   tutorial:
     desc: Build a lamp machine from scratch and show how it lowers (teaching example)
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} python examples/tutorial_lamp.py
 
   chess:
     desc: Compile a machine that lays out an 8x8 wool chessboard (loop example)
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} python examples/chessboard.py
 
   tree:
     desc: Compile a machine that places a parametric spruce via fill (procedural example)
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} python examples/tree.py
 
   grow:
     desc: Compile a spruce that grows one ring per tick (cycle + scoreboard example)
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} python examples/tree_growing.py
 
   run:
     desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.11 --dry-run)'
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} compile {{.CLI_ARGS}}
 
