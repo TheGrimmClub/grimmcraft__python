@@ -1,10 +1,9 @@
 """Comparator: compare vs subtract modes, and container reading."""
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
+from grimmcraft_data.block import Block
 from grimmcraft_redstone import Circuit, Comparator, ComparatorMode, Container, Simulator
 from grimmcraft_redstone.inputs.sources import AnalogSource
-from grimmcraft_data.block import Block
 
 ORIGIN = BlockPos(0, 0, 0)
 BACK = BlockPos(0, 0, 1)  # south of origin (comparator faces north)

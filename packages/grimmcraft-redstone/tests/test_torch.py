@@ -1,7 +1,6 @@
 """Redstone torch: inversion and burnout."""
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone import Circuit, Lever, RedstoneTorch, Simulator
 from grimmcraft_redstone.functions.torch import BURNOUT_LIMIT
 

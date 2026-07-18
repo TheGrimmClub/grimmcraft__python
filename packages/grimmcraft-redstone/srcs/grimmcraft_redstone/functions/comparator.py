@@ -13,7 +13,6 @@ from enum import Enum
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
 from grimmcraft_redstone.component import RedstoneComponent, SignalChange, SimContext
 from grimmcraft_redstone.signal import OFF, Signal, clamp_power, redstone_ticks
 
@@ -101,8 +100,8 @@ class Comparator(RedstoneComponent):
 
     def _main_input(self, ctx: SimContext) -> int:
         target = ctx.component_at(self.read_pos)
-        if target is not None and getattr(target, "IS_CONTAINER", False):
-            return target.signal_strength()  # type: ignore[attr-defined]
+        if isinstance(target, Container):
+            return target.signal_strength()
         return ctx.power_into(self.position, self.facing.opposite).level
 
     def _side_input(self, ctx: SimContext) -> int:

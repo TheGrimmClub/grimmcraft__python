@@ -8,9 +8,11 @@ extends/retracts with the sticky-retract quirk and a 12-block push limit.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
+from grimmcraft_redstone.component import SignalChange, SimContext
 from grimmcraft_redstone.outputs.base import Load
 
 #: A piston can push at most this many blocks.
@@ -60,7 +62,7 @@ class Piston(Load):
         """Where the piston head sits when extended (one block along ``facing``)."""
         return self.position.step(self.facing)
 
-    def update(self, ctx, tick):  # type: ignore[override]
+    def update(self, ctx: SimContext, tick: int) -> Sequence[SignalChange]:
         powered = ctx.incoming_power(self).is_on
         if not powered and self.quasi_connectivity:
             # BUD: also read power from the block one above (Java-only).

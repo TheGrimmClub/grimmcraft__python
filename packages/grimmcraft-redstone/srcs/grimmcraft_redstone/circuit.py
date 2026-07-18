@@ -13,7 +13,6 @@ from collections.abc import Iterator
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
 from grimmcraft_redstone.component import RedstoneComponent
 
 

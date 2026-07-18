@@ -19,8 +19,7 @@ Run it (from the package dir, or via ``task compiler:grow``)::
     uv run --package grimmcraft-compiler python examples/tree_growing.py
 """
 
-from enum import StrEnum
-
+from grimmclub import StrEnum
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType

@@ -1,5 +1,5 @@
 # Task: implement the redstone model in the grimmcraft-redstone package
-> [\] TODO: run PROMPT_REDSTONE.md 
+> [x] run PROMPT_REDSTONE.md 
 
 If you sugesst a task to execute show it as a taskfile like task with a description element (`desc`)
 

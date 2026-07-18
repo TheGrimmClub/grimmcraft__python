@@ -21,7 +21,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone.circuit import Circuit
 from grimmcraft_redstone.component import RedstoneComponent, SignalChange
 from grimmcraft_redstone.signal import OFF, Signal

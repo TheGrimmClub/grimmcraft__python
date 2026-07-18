@@ -1,8 +1,8 @@
 """Logic-gate truth tables, driven through the real simulator."""
 
 import pytest
-from grimmcraft_core.coordinates import BlockPos, Direction
 
+from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_redstone import (
     AndGate,
     Circuit,

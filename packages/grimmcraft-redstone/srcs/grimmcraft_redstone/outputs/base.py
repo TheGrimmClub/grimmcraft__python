@@ -12,7 +12,6 @@ from collections.abc import Sequence
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
 from grimmcraft_redstone.component import RedstoneComponent, SignalChange, SimContext
 
 

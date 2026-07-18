@@ -1,0 +1,37 @@
+# Per-package tasks for grimmcraft-redstone.
+# Included by the root Taskfile as the `redstone:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+version: '3'
+
+vars:
+  PKG: grimmcraft-redstone
+
+tasks:
+  default:
+    cmds:
+      - task: test
+
+  test:
+    desc: Run this package's tests
+    cmds:
+      - uv run --package {{.PKG}} pytest tests
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs tests examples
+
+  typecheck:
+    desc: Type-check this package
+    cmds:
+      - uv run mypy srcs
+
+  build:
+    desc: Build wheel + sdist for this package
+    cmds:
+      - uv build --package {{.PKG}}
+
+  example:
+    desc: 'Run an example circuit (usage: task redstone:example -- clock)'
+    cmds:
+      - uv run --package {{.PKG}} python examples/{{.CLI_ARGS}}.py

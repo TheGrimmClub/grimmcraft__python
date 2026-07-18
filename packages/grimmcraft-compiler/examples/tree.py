@@ -18,8 +18,7 @@ Run it (from the package dir, or via ``task compiler:tree``)::
     uv run --package grimmcraft-compiler python examples/tree.py
 """
 
-from enum import StrEnum
-
+from grimmclub import StrEnum
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType

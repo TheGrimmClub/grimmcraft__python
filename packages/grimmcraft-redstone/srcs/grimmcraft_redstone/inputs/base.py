@@ -11,7 +11,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 
 from grimmcraft_core.coordinates import Direction
-
 from grimmcraft_redstone.component import RedstoneComponent, SignalChange, SimContext
 from grimmcraft_redstone.signal import OFF, Signal
 

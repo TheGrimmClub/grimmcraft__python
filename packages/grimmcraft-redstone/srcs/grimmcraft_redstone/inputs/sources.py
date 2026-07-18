@@ -12,7 +12,6 @@ from collections.abc import Sequence
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
 from grimmcraft_redstone.component import SignalChange, SimContext
 from grimmcraft_redstone.inputs.base import Source
 from grimmcraft_redstone.signal import MAX_POWER, OFF, Signal, clamp_power
@@ -204,7 +203,7 @@ class Observer(Source):
         super().__init__(position, facing=facing)
         self.pulse_ticks = pulse_ticks
         self._remaining = 0
-        self._last_seen: tuple[int, str] | None = None
+        self._last_seen: tuple[int, int] | None = None
 
     @property
     def watch_pos(self) -> BlockPos:

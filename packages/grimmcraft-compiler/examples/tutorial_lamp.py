@@ -19,8 +19,7 @@ Run it (from the package dir, or via ``task compiler:tutorial``)::
     uv run --package grimmcraft-compiler python examples/tutorial_lamp.py
 """
 
-from enum import StrEnum
-
+from grimmclub import StrEnum, banner
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
@@ -89,6 +88,7 @@ def main() -> None:
     print(f"output      : {result.output_path}\n")
 
     # Show input → output: every generated function's rendered mcfunction text.
+    banner("generated mcfunction")  # a grimmclub teaching helper
     for function_id, text in result.rendered().items():
         print(f"# ---- {function_id} ----")
         print(text.rstrip())

@@ -1,7 +1,6 @@
 """Simulator: stability, oscillation detection, and determinism."""
 
 from grimmcraft_core.coordinates import BlockPos
-
 from grimmcraft_redstone import (
     Circuit,
     Clock,

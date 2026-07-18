@@ -158,7 +158,6 @@ def analyze(circuit: Circuit) -> DiagnosticBag:
     """
     # Imported here (not at module top) to avoid an import cycle: the family
     # modules and simulator import diagnostics' types, not the other way round.
-    from grimmcraft_redstone.connectors.dust import RedstoneDust
     from grimmcraft_redstone.functions.comparator import Comparator
     from grimmcraft_redstone.functions.repeater import Repeater
     from grimmcraft_redstone.functions.torch import RedstoneTorch

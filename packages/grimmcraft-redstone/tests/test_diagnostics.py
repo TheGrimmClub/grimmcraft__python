@@ -1,7 +1,6 @@
 """Circuit analysis: floating components, comparator-without-container, clocks."""
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone import (
     Circuit,
     Clock,

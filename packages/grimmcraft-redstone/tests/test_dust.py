@@ -1,7 +1,6 @@
 """Redstone dust: 1 level lost per block, 15-block range."""
 
 from grimmcraft_core.coordinates import BlockPos
-
 from grimmcraft_redstone import Circuit, Lever, RedstoneDust, Simulator, dust_field
 
 

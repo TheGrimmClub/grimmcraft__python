@@ -11,7 +11,6 @@ from collections.abc import Iterable, Sequence
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
-
 from grimmcraft_redstone.component import RedstoneComponent, SignalChange, SimContext
 from grimmcraft_redstone.signal import OFF, Signal, redstone_ticks
 

@@ -31,6 +31,7 @@ mypy_path = [
     "packages/grimmcraft-control/srcs",
     "packages/grimmcraft-compiler/srcs",
     "packages/grimmcraft-cli/srcs",
+    "packages/grimmclub/srcs",
 ]
 
 # grimmcraft-data is generated (and not strict-typed); type-check *against* its
@@ -41,4 +42,6 @@ module = ["grimmcraft_data.*"]
 follow_imports = "silent"
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+# importlib mode lets sibling packages share test-file basenames (e.g. several
+# packages each having tests/test_diagnostics.py) without import collisions.
+addopts = "-ra --import-mode=importlib"

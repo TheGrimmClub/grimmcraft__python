@@ -6,7 +6,6 @@ Run with ``uv run --package grimmcraft-redstone python examples/lever_lamp.py``.
 from __future__ import annotations
 
 from grimmcraft_core.coordinates import BlockPos
-
 from grimmcraft_redstone import (
     Circuit,
     Lever,

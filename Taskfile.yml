@@ -36,9 +36,16 @@ includes:
   control:
     taskfile: ./packages/grimmcraft-control/Taskfile.yml
     dir: ./packages/grimmcraft-control
+  club:
+    taskfile: ./packages/grimmclub/Taskfile.yml
+    dir: ./packages/grimmclub
   compiler:
     taskfile: ./packages/grimmcraft-compiler/Taskfile.yml
     dir: ./packages/grimmcraft-compiler
+  redstone:
+    taskfile: ./packages/grimmcraft-redstone/Taskfile.yml
+    dir: ./packages/grimmcraft-redstone
+
 tasks:
   default:
     cmds:

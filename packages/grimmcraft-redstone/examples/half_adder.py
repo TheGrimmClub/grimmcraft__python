@@ -7,7 +7,6 @@ Run with ``uv run --package grimmcraft-redstone python examples/half_adder.py``.
 from __future__ import annotations
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone import AndGate, Circuit, Lever, Simulator, XorGate
 
 # Sum row (z=0): levers A/B either side of the XOR gate.

@@ -1,7 +1,6 @@
 """Repeater: delay timing, one-way diode, and side-lock."""
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone import Circuit, Lever, Repeater, Simulator
 
 

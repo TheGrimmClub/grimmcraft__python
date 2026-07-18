@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import TypeAlias
 
 #: The maximum signal strength a redstone source emits.
 MAX_POWER = 15
@@ -34,7 +35,7 @@ GAME_TICKS_PER_REDSTONE_TICK = 2
 
 #: A ``PowerLevel`` is conceptually an int in ``0..15``.  The alias documents
 #: intent; use :class:`Signal` or the helpers below to keep it clamped.
-type PowerLevel = int
+PowerLevel: TypeAlias = int
 
 
 def clamp_power(level: int) -> PowerLevel:

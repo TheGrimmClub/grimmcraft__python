@@ -1,7 +1,6 @@
 """Loads: piston extend/retract + sticky quirk, edge-triggered devices, hopper lock."""
 
 from grimmcraft_core.coordinates import BlockPos, Direction
-
 from grimmcraft_redstone import (
     Circuit,
     Hopper,
