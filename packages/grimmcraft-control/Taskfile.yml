@@ -11,8 +11,19 @@ tasks:
     cmds:
       - task: test
 
+  fix-venv:
+    # Local copy of the root task: this Taskfile also runs standalone, so it
+    # cannot depend on the root's. The macOS 'hidden' flag gets re-applied to
+    # the editable .pth files under iCloud, and Python then ignores them, so
+    # clear it immediately before anything that imports the workspace.
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    internal: true
+    cmds:
+      - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
   test:
     desc: Run this package's tests
+    deps: [fix-venv]
     cmds:
       - uv run --package {{.PKG}} pytest tests
 

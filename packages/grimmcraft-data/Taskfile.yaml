@@ -1,13 +1,11 @@
 # https://taskfile.dev
 #
-# Root orchestrator for the grimmcraft Python monorepo (uv workspace).
+# Per-package tasks for grimmcraft-data.
+# Included by the root Taskfile as the `data:` namespace, and reusable
+# standalone: run `task` from inside this directory.
 #
-# Aggregate tasks (install/test/lint/typecheck/build/...) operate across the
-# whole workspace and auto-discover packages under packages/* — no edits here
-# when you add a package.
-#
-# Per-package tasks are exposed via the includes below, e.g. `task core:test`
-# or `task cli:run -- Grimm`.
+# Beyond the usual test/lint/build, this package owns the `generate-*` tasks
+# that rebuild the Minecraft registry enums from PrismarineJS/minecraft-data.
 
 version: '3'
 
@@ -20,10 +18,23 @@ tasks:
       cmds:
         - task --list
 
+    fix-venv:
+      # Local copy of the root task: this Taskfile also runs standalone, so it
+      # cannot depend on the root's. The macOS 'hidden' flag gets re-applied to
+      # the editable .pth files under iCloud, and Python then ignores them, so
+      # clear it immediately before anything that imports the workspace.
+      desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+      internal: true
+      cmds:
+        - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
     test:
       desc: Run the grimmcraft-data test suite
+      deps: [fix-venv]
       cmds:
-        - uv run pytest packages/grimmcraft-data/tests -q
+        # Path is relative to this package: the root includes it with
+        # `dir: ./packages/grimmcraft-data`, and it also runs standalone.
+        - uv run pytest tests -q
 
     generate-blocks-enum:
       desc: Generate the Minecraft block enum from PrismarineJS/minecraft-data
