@@ -18,13 +18,14 @@ Run it::
 
 from __future__ import annotations
 
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_compiler.dialect import Dialect
 from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import Machine, MachineBuilder, say, setblock
+from grimmcraft_control.machine import Machine, new_machine, say, setblock
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
@@ -32,6 +33,13 @@ BASE = BlockPos(0, 64, 0)  # the block the trunk grows from
 TRUNK_HEIGHT = 5
 LEAF_RADIUS = 2
 GENERATED = Path(__file__).resolve().parent / "generated"
+
+
+class Event(StrEnum):
+    """The tree's events (named once here, referenced by member below)."""
+
+    GROW = "grow"
+    CHOP = "chop"
 
 
 def _tree_blocks() -> list[tuple[BlockPos, Any]]:
@@ -70,21 +78,23 @@ def build_tree() -> Machine[dict[str, Any]]:
     """A ``tree`` machine: ``grow`` plants it, ``chop`` clears it to air."""
     blocks = _tree_blocks()
 
-    builder = MachineBuilder[dict[str, Any]]({})
-    builder.named("tree")
-    builder.add_state("BARE")
+    builder = new_machine("tree")
+
+    # Keep each state in a variable and refer to it by that variable below, so a
+    # state name is written exactly once (no strings to keep in sync).
+    bare = builder.add_state("BARE")
 
     grown = builder.add_state("GROWN")
     grown.on_enter(say("A tree grows."))
     for pos, block in blocks:
         grown.on_enter(setblock(pos, block))
 
-    builder.transition("BARE", "grow", to="GROWN")
-    chop = builder.add_transition("GROWN", "chop", to="BARE")
+    builder.transition(bare, Event.GROW, to=grown)
+    chop = builder.add_transition(grown, Event.CHOP, to=bare)
     for pos, _block in blocks:
         chop.do(setblock(pos, Block.AIR))
 
-    builder.initial("BARE")
+    builder.initial(bare)
     return builder.build()
 
 
@@ -108,7 +118,7 @@ def main() -> None:
     lines = render_function(grow_fn, dialect).splitlines()
     print(f"\n# {grow_fn.id}  ({len(lines)} lines) — first 8:")
     print("\n".join(lines[:8]))
-    print(f"Trigger in-game with: /function grove:{tree.name}/on_grow")
+    print(f"Trigger in-game with: /function grove:{tree.name}/on_{Event.GROW}")
 
 
 if __name__ == "__main__":

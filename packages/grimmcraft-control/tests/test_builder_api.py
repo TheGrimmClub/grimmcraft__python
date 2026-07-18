@@ -11,6 +11,7 @@ from grimmcraft_control import (
     Event,
     MachineBuilder,
     add_score,
+    new_machine,
     say,
     set_score,
     setblock,
@@ -70,6 +71,25 @@ def test_compact_and_fluent_styles_mix() -> None:
     machine = builder.initial("A").build()
     assert machine.dispatch(Event("go")).to_state == "B"
     assert machine.states["B"].enter[0].payload == {"text": "world"}
+
+
+def test_new_machine_and_state_object_references() -> None:
+    # new_machine() hides the generic/context ceremony; add_state returns the
+    # state object, which transitions/initial accept directly — so a state name
+    # is written exactly once and can't drift out of sync.
+    builder = new_machine("lamp")
+    off = builder.add_state("OFF")
+    on = builder.add_state("ON")
+    on.on_enter(say("on"))
+
+    builder.transition(off, "pull", to=on)  # pass state objects, not name strings
+    builder.initial(off)
+    machine = builder.build()
+
+    assert set(machine.states) == {"OFF", "ON"}
+    edge = machine.transitions[0]
+    assert (edge.source, edge.event, edge.target) == ("OFF", "pull", "ON")
+    assert machine.dispatch(Event("pull")).to_state == "ON"
 
 
 def test_loop_builds_a_checkerboard() -> None:

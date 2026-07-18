@@ -13,13 +13,14 @@ Run it::
 
 from __future__ import annotations
 
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_compiler.dialect import Dialect
 from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import Machine, MachineBuilder, say, setblock
+from grimmcraft_control.machine import Machine, new_machine, say, setblock
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
@@ -28,12 +29,20 @@ SIZE = 8
 GENERATED = Path(__file__).resolve().parent / "generated"
 
 
+class Event(StrEnum):
+    """The board's events (named once here, referenced by member below)."""
+
+    BUILD = "build"
+    CLEAR = "clear"
+
+
 def build_chessboard() -> Machine[dict[str, Any]]:
     """A ``chessboard`` machine: ``build`` lays the board, ``clear`` removes it."""
-    builder = MachineBuilder[dict[str, Any]]({})
-    builder.named("chessboard")
+    builder = new_machine("chessboard")
 
-    builder.add_state("EMPTY")
+    # add_state returns the state; keep it in a variable and refer to it below,
+    # so the state names are written exactly once.
+    empty = builder.add_state("EMPTY")
 
     # The BUILT state paints the whole 8x8 grid on entry. A square is white when
     # its (row + col) is even, black when odd — the classic checkerboard.
@@ -45,13 +54,13 @@ def build_chessboard() -> Machine[dict[str, Any]]:
             built.on_enter(setblock(ORIGIN.offset(col, 0, row), wool))
 
     # `build` lays the board; `clear` wipes it back to air, square by square.
-    builder.transition("EMPTY", "build", to="BUILT")
-    clear = builder.add_transition("BUILT", "clear", to="EMPTY")
+    builder.transition(empty, Event.BUILD, to=built)
+    clear = builder.add_transition(built, Event.CLEAR, to=empty)
     for row in range(SIZE):
         for col in range(SIZE):
             clear.do(setblock(ORIGIN.offset(col, 0, row), Block.AIR))
 
-    builder.initial("EMPTY")
+    builder.initial(empty)
     return builder.build()
 
 
@@ -75,7 +84,7 @@ def main() -> None:
     lines = render_function(build_fn, dialect).splitlines()
     print(f"\n# {build_fn.id}  ({len(lines)} lines) — first 6:")
     print("\n".join(lines[:6]))
-    print(f"Trigger in-game with: /function chess:{board.name}/on_build")
+    print(f"Trigger in-game with: /function chess:{board.name}/on_{Event.BUILD}")
 
 
 if __name__ == "__main__":

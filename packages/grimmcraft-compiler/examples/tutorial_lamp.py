@@ -5,11 +5,14 @@ This is the "learn the API in one file" example. It builds a **redstone lamp**
 state machine by hand (no demo helpers), compiles it for one target, and prints
 the generated ``mcfunction`` so you can see exactly how each primitive lowers.
 
-The API is built for readability: states and transitions are added one method
-call at a time (``builder.add_state(...)`` → ``on_enter(...)`` / ``on_cycle(...)``),
-and commands come from typed constructors (``setblock``, ``say``, ``playsound``,
-``set_score``, ``add_score``) instead of raw ``Command(name, payload-dict)``. The
-lamp's states and events are the ``LampState`` / ``LampEvent`` enums below.
+The API is built for readability, avoiding magic strings you have to keep in sync:
+
+* ``new_machine("lamp")`` starts a builder — no generics or context to pass.
+* ``builder.add_state("OFF")`` returns a state object; refer to it by that
+  variable in transitions, so each state name is written exactly once.
+* commands come from typed constructors (``setblock``, ``say``, ``playsound``,
+  ``set_score``, ``add_score``) — no ``Command(name, payload-dict)``.
+* the one repeated event name lives in the small ``Event`` enum below.
 
 The lamp:
 
@@ -40,8 +43,8 @@ from grimmcraft_compiler.emit import render_function
 from grimmcraft_control.machine import (
     TICK_EVENT,
     Machine,
-    MachineBuilder,
     add_score,
+    new_machine,
     playsound,
     say,
     set_score,
@@ -64,15 +67,10 @@ TIMER = "lamp_timer"
 GENERATED = Path(__file__).resolve().parent / "generated"
 
 
-class LampState(StrEnum):
-    """This machine's states (a StrEnum, so each member is its own name)."""
-
-    OFF = "OFF"
-    ON = "ON"
-
-
-class LampEvent(StrEnum):
-    """This machine's events."""
+class Event(StrEnum):
+    """This machine's events. Using an enum means the repeated ``pull`` below is
+    written once and can't be mistyped (states are referenced by variable, so
+    they don't need an enum)."""
 
     PULL = "pull"
 
@@ -85,40 +83,43 @@ def build_lamp() -> Machine[dict[str, Any]]:
     ``say``, …) so there are no payload dicts or ``Command(...)`` wrappers — every
     line reads like a sentence and can be commented out or reordered on its own.
     """
-    # The context (here an empty dict) is whatever runtime state your handlers
-    # need; the compiler doesn't use it, so keep it simple.
-    builder = MachineBuilder[dict[str, Any]]({})
-    builder.named("lamp")  # the grimmcraft_state scoreboard entry + function folder
+    # Start a machine called "lamp" (this name is its grimmcraft_state scoreboard
+    # entry and its function folder). new_machine() hides the generic/context
+    # boilerplate — you only need it if you drive the machine at runtime.
+    builder = new_machine("lamp")
     builder.for_entity(Block.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
     # 1. The OFF state: remove the light so the area goes dark. `on_enter` runs
-    #    once, when the machine enters the state; "off" is just setting air.
-    off = builder.add_state(LampState.OFF)
+    #    once, when the machine enters the state; "off" is just setting air. We
+    #    keep the returned `off` object and refer to it by variable below, so the
+    #    name "OFF" is written exactly once.
+    off = builder.add_state("OFF")
     off.on_enter(setblock(LAMP_POS, Block.AIR))
 
     # 2. The ON state: place a full-bright invisible light, click, announce it,
     #    and arm a 100-tick timer — one command per line. `minecraft:light[level=15]`
     #    emits light 15 with no visible block and stays lit with no redstone.
     #    `on_cycle` runs every tick while the machine sits in this state.
-    on = builder.add_state(LampState.ON)
+    on = builder.add_state("ON")
     on.on_enter(setblock(LAMP_POS, Block.LIGHT, level=15))
     on.on_enter(playsound("minecraft:block.lever.click"))
     on.on_enter(say("The lamp glows."))
     on.on_enter(set_score(TIMER, "lamp", 100))
     on.on_cycle(add_score(TIMER, "lamp", -1))
 
-    # 3. Pulling the lever toggles between OFF and ON (event transitions).
-    builder.transition(LampState.OFF, LampEvent.PULL, to=LampState.ON)
-    builder.transition(LampState.ON, LampEvent.PULL, to=LampState.OFF)
+    # 3. Pulling the lever toggles between the two states — pass the state objects
+    #    (no repeated strings to keep in sync).
+    builder.transition(off, Event.PULL, to=on)
+    builder.transition(on, Event.PULL, to=off)
 
     # 4. An automatic transition: checked every tick, *after* ON's cycle commands.
     #    `when_score` turns the lamp off once the timer reaches 0; it becomes an
     #    `execute if score …` guard in the datapack.
-    auto = builder.add_transition(LampState.ON, TICK_EVENT, to=LampState.OFF)
+    auto = builder.add_transition(on, TICK_EVENT, to=off)
     auto.when_score(TIMER, "lamp", 0)
 
     # 5. Start in OFF, then freeze the definition into an immutable Machine.
-    builder.initial(LampState.OFF)
+    builder.initial(off)
     return builder.build()
 
 

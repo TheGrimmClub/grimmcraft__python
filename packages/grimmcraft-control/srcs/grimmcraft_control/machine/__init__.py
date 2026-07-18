@@ -36,6 +36,7 @@ from grimmcraft_control.machine.machine import (
     MachineBuilder,
     StateDraft,
     TransitionDraft,
+    new_machine,
 )
 from grimmcraft_control.machine.result import Result
 from grimmcraft_control.machine.state import State
@@ -62,6 +63,7 @@ __all__ = [
     "Result",
     "Machine",
     "MachineBuilder",
+    "new_machine",
     "StateDraft",
     "TransitionDraft",
     "STATE_OBJECTIVE",

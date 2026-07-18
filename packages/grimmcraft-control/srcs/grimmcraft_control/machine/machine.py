@@ -10,7 +10,7 @@ its context type ``Ctx``.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from grimmcraft_control.machine.command import Command
 from grimmcraft_control.machine.errors import (
@@ -213,6 +213,11 @@ class TransitionDraft:
         )
 
 
+def _state_name(state: str | StateDraft) -> str:
+    """Resolve a state reference to its name (accepts a name or a StateDraft)."""
+    return state.name if isinstance(state, StateDraft) else state
+
+
 class MachineBuilder(Generic[Ctx]):
     """A DSL for declaring a :class:`Machine`, validated at :meth:`build`.
 
@@ -272,31 +277,39 @@ class MachineBuilder(Generic[Ctx]):
 
     def transition(
         self,
-        source: str,
+        source: str | StateDraft,
         event: str,
         *,
-        to: str,
+        to: str | StateDraft,
         guard: Guard | None = None,
         action: Action | None = None,
         commands: Iterable[Command] = (),
         condition: Condition | None = None,
     ) -> MachineBuilder[Ctx]:
-        """Declare a ``(source, event) -> to`` edge in one call; returns the builder."""
+        """Declare a ``(source, event) -> to`` edge in one call; returns the builder.
+
+        ``source`` / ``to`` accept a state name *or* the :class:`StateDraft` from
+        ``add_state`` — pass the draft to avoid repeating the name.
+        """
         self._transitions.append(
-            Transition(source, event, to, guard, action, tuple(commands), condition)
+            Transition(_state_name(source), event, _state_name(to), guard, action,
+                       tuple(commands), condition)
         )
         return self
 
-    def add_transition(self, source: str, event: str, *, to: str) -> TransitionDraft:
+    def add_transition(
+        self, source: str | StateDraft, event: str, *, to: str | StateDraft
+    ) -> TransitionDraft:
         """Declare an edge and return a :class:`TransitionDraft` to configure its
-        commands and guard step by step."""
-        draft = TransitionDraft(source, event, to)
+        commands and guard step by step. ``source`` / ``to`` accept a name or a
+        :class:`StateDraft`."""
+        draft = TransitionDraft(_state_name(source), event, _state_name(to))
         self._transition_drafts.append(draft)
         return draft
 
-    def initial(self, name: str) -> MachineBuilder[Ctx]:
-        """Choose the initial state."""
-        self._initial = name
+    def initial(self, state: str | StateDraft) -> MachineBuilder[Ctx]:
+        """Choose the initial state (by name or :class:`StateDraft`)."""
+        self._initial = _state_name(state)
         return self
 
     def build(self) -> Machine[Ctx]:
@@ -342,3 +355,22 @@ class MachineBuilder(Generic[Ctx]):
             self._context,
             entity=self._entity,
         )
+
+
+def new_machine(name: str = "machine") -> MachineBuilder[dict[str, Any]]:
+    """Start defining a machine called ``name`` — the friendly entry point.
+
+    No generics, no context to pass. Returns a :class:`MachineBuilder` you fill in
+    with ``add_state`` / ``transition`` / ``add_transition`` and finish with
+    ``build()``::
+
+        builder = new_machine("lamp")
+        builder.add_state("OFF")
+        ...
+        lamp = builder.build()
+
+    (Advanced users who drive the machine at runtime and need a typed *context*
+    object for guards/actions can construct ``MachineBuilder(context, name=...)``
+    directly.)
+    """
+    return MachineBuilder[dict[str, Any]]({}, name=name)

@@ -18,7 +18,7 @@ from grimmcraft_control.machine import (
     Condition,
     ConditionName,
     Machine,
-    MachineBuilder,
+    new_machine,
 )
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block, Item
@@ -36,8 +36,7 @@ def door_machine() -> Machine[dict[str, Any]]:
     reverses it; ``lock``/``unlock`` gate the door from ``CLOSED``.
     """
     return (
-        MachineBuilder[dict[str, Any]]({})
-        .named("door")
+        new_machine("door")
         .for_entity(Block.OAK_DOOR.string_id)  # type: ignore[attr-defined]
         .state("CLOSED")
         .state(
@@ -87,8 +86,7 @@ def furnace_machine() -> Machine[dict[str, Any]]:
     1.20.5+ and as an NBT tag before it.
     """
     return (
-        MachineBuilder[dict[str, Any]]({})
-        .named("furnace")
+        new_machine("furnace")
         .for_entity(Block.FURNACE.string_id)  # type: ignore[attr-defined]
         .state("EMPTY")
         .state(
