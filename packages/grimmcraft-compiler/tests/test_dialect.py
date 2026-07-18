@@ -40,6 +40,19 @@ def test_setblock_with_state_is_version_stable() -> None:
     assert _dialect("1.21.1").render(cmd) == line
 
 
+def test_fill_render_with_and_without_mode() -> None:
+    from grimmcraft_control.machine import fill
+    from grimmcraft_data import Block
+
+    trunk = fill((0, 64, 0), (0, 68, 0), Block.OAK_LOG)
+    assert _dialect("1.21.1").render(trunk) == "fill 0 64 0 0 68 0 minecraft:oak_log"
+
+    leaves = fill((-2, 67, -2), (2, 67, 2), "minecraft:oak_leaves", mode="keep")
+    assert _dialect("1.21.1").render(leaves) == (
+        "fill -2 67 -2 2 67 2 minecraft:oak_leaves keep"
+    )
+
+
 def test_enum_member_id_is_accepted() -> None:
     from grimmcraft_data import Block
 

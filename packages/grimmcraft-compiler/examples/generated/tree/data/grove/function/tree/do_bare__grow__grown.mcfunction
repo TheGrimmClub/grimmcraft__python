@@ -1,58 +1,16 @@
 # BARE --grow--> GROWN
 scoreboard players set tree grimmcraft_state 1
 say A tree grows.
-setblock 0 64 0 minecraft:oak_log
-setblock 0 65 0 minecraft:oak_log
-setblock 0 66 0 minecraft:oak_log
-setblock 0 67 0 minecraft:oak_log
-setblock 0 68 0 minecraft:oak_log
-setblock -2 67 -1 minecraft:oak_leaves
-setblock -2 67 0 minecraft:oak_leaves
-setblock -2 67 1 minecraft:oak_leaves
-setblock -1 67 -2 minecraft:oak_leaves
-setblock -1 67 -1 minecraft:oak_leaves
-setblock -1 67 0 minecraft:oak_leaves
-setblock -1 67 1 minecraft:oak_leaves
-setblock -1 67 2 minecraft:oak_leaves
-setblock 0 67 -2 minecraft:oak_leaves
-setblock 0 67 -1 minecraft:oak_leaves
-setblock 0 67 1 minecraft:oak_leaves
-setblock 0 67 2 minecraft:oak_leaves
-setblock 1 67 -2 minecraft:oak_leaves
-setblock 1 67 -1 minecraft:oak_leaves
-setblock 1 67 0 minecraft:oak_leaves
-setblock 1 67 1 minecraft:oak_leaves
-setblock 1 67 2 minecraft:oak_leaves
-setblock 2 67 -1 minecraft:oak_leaves
-setblock 2 67 0 minecraft:oak_leaves
-setblock 2 67 1 minecraft:oak_leaves
-setblock -2 68 -1 minecraft:oak_leaves
-setblock -2 68 0 minecraft:oak_leaves
-setblock -2 68 1 minecraft:oak_leaves
-setblock -1 68 -2 minecraft:oak_leaves
-setblock -1 68 -1 minecraft:oak_leaves
-setblock -1 68 0 minecraft:oak_leaves
-setblock -1 68 1 minecraft:oak_leaves
-setblock -1 68 2 minecraft:oak_leaves
-setblock 0 68 -2 minecraft:oak_leaves
-setblock 0 68 -1 minecraft:oak_leaves
-setblock 0 68 1 minecraft:oak_leaves
-setblock 0 68 2 minecraft:oak_leaves
-setblock 1 68 -2 minecraft:oak_leaves
-setblock 1 68 -1 minecraft:oak_leaves
-setblock 1 68 0 minecraft:oak_leaves
-setblock 1 68 1 minecraft:oak_leaves
-setblock 1 68 2 minecraft:oak_leaves
-setblock 2 68 -1 minecraft:oak_leaves
-setblock 2 68 0 minecraft:oak_leaves
-setblock 2 68 1 minecraft:oak_leaves
-setblock -1 69 0 minecraft:oak_leaves
-setblock 0 69 -1 minecraft:oak_leaves
-setblock 0 69 0 minecraft:oak_leaves
-setblock 0 69 1 minecraft:oak_leaves
-setblock 1 69 0 minecraft:oak_leaves
-setblock -1 70 0 minecraft:oak_leaves
-setblock 0 70 -1 minecraft:oak_leaves
-setblock 0 70 0 minecraft:oak_leaves
-setblock 0 70 1 minecraft:oak_leaves
-setblock 1 70 0 minecraft:oak_leaves
+fill 0 64 0 0 68 0 minecraft:oak_log
+fill -2 67 -2 2 67 2 minecraft:oak_leaves keep
+fill -2 68 -2 2 68 2 minecraft:oak_leaves keep
+fill -1 69 -1 1 69 1 minecraft:oak_leaves keep
+fill -1 70 -1 1 70 1 minecraft:oak_leaves keep
+setblock -2 67 -2 minecraft:air
+setblock -2 67 2 minecraft:air
+setblock 2 67 -2 minecraft:air
+setblock 2 67 2 minecraft:air
+setblock -2 68 -2 minecraft:air
+setblock -2 68 2 minecraft:air
+setblock 2 68 -2 minecraft:air
+setblock 2 68 2 minecraft:air

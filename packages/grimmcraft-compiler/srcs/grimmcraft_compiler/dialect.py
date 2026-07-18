@@ -110,6 +110,13 @@ class Dialect:
         block = self.block_with_state(id_string(p["block"]), p.get("state"))
         return f"setblock {position(p['pos'])} {block}"
 
+    def _r_fill(self, p: dict[str, Any]) -> str:
+        block = self.block_with_state(id_string(p["block"]), p.get("state"))
+        line = f"fill {position(p['from'])} {position(p['to'])} {block}"
+        if p.get("mode"):
+            line += f" {p['mode']}"
+        return line
+
     def _r_summon(self, p: dict[str, Any]) -> str:
         pos = position(p["pos"]) if "pos" in p else "~ ~ ~"
         return f"summon {id_string(p['entity'])} {pos}"

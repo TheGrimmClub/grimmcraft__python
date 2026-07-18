@@ -13,6 +13,7 @@ from __future__ import annotations
 from grimmcraft_control.machine.command import Command, CommandBus, CommandHandler
 from grimmcraft_control.machine.effects import (
     add_score,
+    fill,
     give,
     particle,
     playsound,
@@ -74,6 +75,7 @@ __all__ = [
     "GuardError",
     # command constructors (grimmcraft_control.machine.effects)
     "setblock",
+    "fill",
     "say",
     "tellraw",
     "playsound",

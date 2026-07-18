@@ -19,6 +19,7 @@ class CommandName(StrEnum):
     SAY = "say"
     TELLRAW = "tellraw"
     SETBLOCK = "setblock"
+    FILL = "fill"
     SUMMON = "summon"
     GIVE = "give"
     PLAYSOUND = "playsound"

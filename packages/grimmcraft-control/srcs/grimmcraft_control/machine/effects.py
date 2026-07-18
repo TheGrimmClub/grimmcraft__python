@@ -32,6 +32,22 @@ def setblock(pos: Any, block: Any, **state: Any) -> Command:
     return Command(CommandName.SETBLOCK, payload)
 
 
+def fill(start: Any, end: Any, block: Any, *, mode: str | None = None, **state: Any) -> Command:
+    """Fill the box between two corners with ``block`` (Minecraft ``fill``).
+
+    This is the right tool for a run of blocks — a column, a slab, a wall — instead
+    of one ``setblock`` per cell. ``mode`` is an optional ``fill`` mode such as
+    ``"keep"`` (only replace air) or ``"destroy"``; block-state props are keyword
+    args, as with :func:`setblock`.
+    """
+    payload: dict[str, Any] = {"from": start, "to": end, "block": block}
+    if state:
+        payload["state"] = {key: str(value) for key, value in state.items()}
+    if mode is not None:
+        payload["mode"] = mode
+    return Command(CommandName.FILL, payload)
+
+
 def say(text: str) -> Command:
     """Broadcast ``text`` to chat (the ``say`` command)."""
     return Command(CommandName.SAY, {"text": text})

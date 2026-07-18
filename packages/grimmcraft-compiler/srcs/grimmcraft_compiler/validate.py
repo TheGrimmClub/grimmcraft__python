@@ -27,6 +27,7 @@ from grimmcraft_control.machine import Command, Machine
 # command name -> (payload key, registry kind) for id-bearing commands.
 _ID_FIELDS: dict[str, tuple[str, str]] = {
     "setblock": ("block", "block"),
+    "fill": ("block", "block"),
     "summon": ("entity", "entity"),
     "give": ("item", "item"),
 }
