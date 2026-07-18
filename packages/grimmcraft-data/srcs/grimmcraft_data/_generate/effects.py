@@ -4,7 +4,8 @@
 Source of truth: PrismarineJS/minecraft-data `effects.json` (one file per version).
 This downloads the authoritative list and writes `effect.py` into the package
 directory (one level up from this script), containing a `Effect(Enum)` whose
-members' .value is the integer registry id, with the .display_name, .type attributes attached as attributes.
+members' .value is the integer registry id, with .string_id, .display_name and
+.type attached as attributes.
 
 Usage:
     python _generate/effects.py               # latest available version
@@ -14,6 +15,7 @@ Usage:
 
 import json
 import keyword
+import re
 import sys
 import urllib.request
 from pathlib import Path
@@ -39,6 +41,20 @@ def data_url(version):
     paths = fetch_json(PATHS_URL)["pc"]
     rel = paths[version][TYPE_KEY]  # directory, e.g. "pc/1.21.11"
     return f"{BASE}/{rel}/{TYPE_KEY}.json"
+
+
+def resource_id(name):
+    """Namespaced registry id from an upstream ``name``.
+
+    Unlike blocks.json/items.json, effects.json spells names in CamelCase
+    ("MiningFatigue") while the game's registry id is snake_case
+    ("minecraft:mining_fatigue"). Normalising here fixes the id *and* the
+    generated member name, which is derived from it.
+    """
+    if ":" in name:
+        return name
+    snake = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).lower()
+    return f"minecraft:{snake}"
 
 
 def member_name(full_id):
@@ -88,7 +104,7 @@ def build_enum(entries, version):
         "",
     ]
     for e in entries:
-        full_id = e["name"] if ":" in e["name"] else f"minecraft:{e['name']}"
+        full_id = resource_id(e["name"])
         name = member_name(full_id)
         while name in seen:            # guard against collisions
             name += "_"
