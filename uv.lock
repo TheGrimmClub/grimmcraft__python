@@ -14,6 +14,7 @@ members = [
     "grimmcraft-control",
     "grimmcraft-core",
     "grimmcraft-data",
+    "grimmcraft-decompiler",
     "grimmcraft-redstone",
 ]
 
@@ -108,6 +109,7 @@ version = "0.1.0"
 source = { editable = "packages/grimmcraft-compiler" }
 dependencies = [
     { name = "click" },
+    { name = "grimmclub" },
     { name = "grimmcraft-control" },
     { name = "grimmcraft-core" },
     { name = "grimmcraft-data" },
@@ -117,6 +119,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
+    { name = "grimmclub", editable = "packages/grimmclub" },
     { name = "grimmcraft-control", editable = "packages/grimmcraft-control" },
     { name = "grimmcraft-core", editable = "packages/grimmcraft-core" },
     { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
@@ -153,6 +156,31 @@ requires-dist = [{ name = "grimmcraft-data", editable = "packages/grimmcraft-dat
 name = "grimmcraft-data"
 version = "0.1.0"
 source = { editable = "packages/grimmcraft-data" }
+
+[[package]]
+name = "grimmcraft-decompiler"
+version = "0.1.0"
+source = { editable = "packages/grimmcraft-decompiler" }
+dependencies = [
+    { name = "click" },
+    { name = "grimmclub" },
+    { name = "grimmcraft-compiler" },
+    { name = "grimmcraft-control" },
+    { name = "grimmcraft-core" },
+    { name = "grimmcraft-data" },
+    { name = "rich" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "click", specifier = ">=8.1" },
+    { name = "grimmclub", editable = "packages/grimmclub" },
+    { name = "grimmcraft-compiler", editable = "packages/grimmcraft-compiler" },
+    { name = "grimmcraft-control", editable = "packages/grimmcraft-control" },
+    { name = "grimmcraft-core", editable = "packages/grimmcraft-core" },
+    { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
+    { name = "rich", specifier = ">=13.0" },
+]
 
 [[package]]
 name = "grimmcraft-redstone"

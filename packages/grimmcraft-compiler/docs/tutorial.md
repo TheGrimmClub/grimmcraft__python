@@ -80,7 +80,7 @@ Key ideas:
 ```python
 from grimmcraft_compiler import Target, compile_machines
 
-target = Target.resolve("1.21.1", "vanilla")
+target = Target.resolve("1.21.11", "vanilla")
 result = compile_machines([lamp], target, namespace="tutorial",
                           output="dist/tutorial-lamp")
 assert result.ok

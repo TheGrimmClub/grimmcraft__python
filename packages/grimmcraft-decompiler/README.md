@@ -1,27 +1,23 @@
-# grimmcraft-compiler
+# grimmcraft-decompiler
 
-Lower grimmcraft **state machines** (from `grimmcraft-control`) into a complete,
-installable **Minecraft datapack** — validated against `grimmcraft-data` for a
-chosen version and flavor.
+Create a lower grimmcraft **state machines** (from `grimmcraft-control`) into a complete,
+from a **Minecraft datapack** — validated against `grimmcraft-data` for a chosen version and flavor.
 
-```
-collect machines → build IR → validate → render (dialect) → emit tree → verify
-```
 
 ## Quickstart
 
 ```bash
 # compile the demo door + furnace for 1.21.11 vanilla into dist/grimmcraft
-uv run grimmcraft-compile --version 1.21.11 --flavor vanilla
+uv run grimmcraft-decompile --version 1.21.11 --flavor vanilla
 
 # validate only, promote warnings to errors, no output written
-uv run grimmcraft-compile --version 1.20.4 --strict --dry-run
+uv run grimmcraft-decompile --version 1.20.4 --strict --dry-run
 
 # list supported versions
-uv run grimmcraft-compile --list-versions
+uv run grimmcraft-decompile --list-versions
 ```
 
-Also runnable as `python -m grimmcraft_compiler`.
+Also runnable as `python -m grimmcraft_decompiler`.
 
 ## What it does
 
@@ -30,7 +26,7 @@ Also runnable as `python -m grimmcraft_compiler`.
   dialect (item/block **components** on 1.20.5+ vs **NBT** before; text as SNBT
   vs JSON) are all resolved from a data-driven table — see
   [`docs/support-matrix.md`](docs/support-matrix.md).
-- **Machines become functions.** States → a `grimmcraft_state` scoreboard value;
+- **Machines from functions.** States → a `grimmcraft_state` scoreboard value;
   events → `on_<event>` trigger functions; transitions → guarded `do_…`
   sequences; a state's per-tick **cycle** commands and automatic `tick`
   transitions → the machine's `tick` function.
@@ -40,7 +36,7 @@ Also runnable as `python -m grimmcraft_compiler`.
   [`docs/diagnostics.md`](docs/diagnostics.md).
 
 ## Docs
-
+TODO: add / remove as needed
 - [Tutorial](docs/tutorial.md) — build a machine from scratch and see how it lowers.
 - [Architecture](docs/architecture.md) — IR → dialect → emit.
 - [Support matrix](docs/support-matrix.md) — versions, pack formats, flavors.
@@ -48,9 +44,9 @@ Also runnable as `python -m grimmcraft_compiler`.
 - [Quickstart](docs/quickstart.md).
 
 ## Develop
-
+TODO: add / remove as needed
 ```bash
-task compiler:test      # pytest (hermetic)
-task compiler:example   # compile the demos for 1.20.4 and 1.21.11
-task compiler:typecheck # mypy
+task decompiler:test      # pytest (hermetic)
+task decompiler:example   # compile the demos for 1.20.4 and 1.21.11
+task decompiler:typecheck # mypy
 ```

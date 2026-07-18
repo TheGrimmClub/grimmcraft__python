@@ -9,8 +9,8 @@ uv sync --all-packages
 ## Compile from the CLI
 
 ```bash
-# Door + Furnace demos, 1.21.1 vanilla, into dist/grimmcraft/
-uv run grimmcraft-compile --version 1.21.1 --flavor vanilla
+# Door + Furnace demos, 1.21.11 vanilla, into dist/grimmcraft/
+uv run grimmcraft-compile --version 1.21.11 --flavor vanilla
 
 # Pick one machine, a namespace and an output dir; also zip it
 uv run grimmcraft-compile --machine furnace --namespace mypack \
@@ -33,7 +33,7 @@ from pathlib import Path
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control.demos import door_machine, furnace_machine
 
-target = Target.resolve("1.21.1", "vanilla")
+target = Target.resolve("1.21.11", "vanilla")
 result = compile_machines(
     [door_machine(), furnace_machine()],
     target,

@@ -1,7 +1,7 @@
 [project]
-name = "grimmcraft-compiler"
+name = "grimmcraft-decompiler"
 version = "0.1.0"
-description = "Compile grimmcraft state machines into installable Minecraft datapacks"
+description = "Decompile grimmcraft state machines into installable Minecraft datapacks"
 readme = "README.md"
 authors = [
     { name = "Andreas **Felix** Häberle", email = "felix@42sol.eu" }
@@ -11,13 +11,14 @@ dependencies = [
     "grimmcraft-core",
     "grimmcraft-data",
     "grimmcraft-control",
+    "grimmcraft-compiler",
+    "grimmclub",
     "click>=8.1",
     "rich>=13.0",
-    "grimmclub",
 ]
 
 [project.scripts]
-compile = "grimmcraft_compiler.cli:main"
+compile = "grimmcraft_decompiler.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.11.28,<0.12.0"]
@@ -32,4 +33,5 @@ module-root = "srcs"
 grimmcraft-core = { workspace = true }
 grimmcraft-data = { workspace = true }
 grimmcraft-control = { workspace = true }
+grimmcraft-compiler = { workspace = true }
 grimmclub = { workspace = true }

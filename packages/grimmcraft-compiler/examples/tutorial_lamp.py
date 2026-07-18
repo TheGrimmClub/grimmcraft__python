@@ -19,18 +19,20 @@ Run it (from the package dir, or via ``task compiler:tutorial``)::
     uv run --package grimmcraft-compiler python examples/tutorial_lamp.py
 """
 
-from grimmclub import StrEnum, banner
+# Imports
+from grimmclub import StrEnum, banner, no
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
+# Constants
 LAMP_POS = BlockPos(0, 64, 0)
 TIMER = "lamp_timer"
 # Committed reference copy lives next to the examples (run via `task`, whose cwd
 # is the package dir). See examples/generated/README.md.
 OUTPUT = "examples/generated/tutorial-lamp"
 
-
+# Types
 class Event(StrEnum):
     """This machine's events. Using an enum means the repeated ``pull`` below is
     written once and can't be mistyped (states are referenced by variable, so
@@ -38,7 +40,7 @@ class Event(StrEnum):
 
     PULL = "pull"
 
-
+# Code
 def build_lamp() -> MachineDefault:
     """Assemble the lamp machine one step at a time."""
     builder = new_machine("lamp")
@@ -74,18 +76,13 @@ def build_lamp() -> MachineDefault:
     builder.initial(off)
     return builder.build()
 
-
+# Main function
 def main() -> None:
     lamp = build_lamp()
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
 
     # Compile: collect → IR → validate → render → emit → verify, all in one call.
-    result = compile_machines([lamp], target, namespace="tutorial", output=OUTPUT)
-
-    print(f"target      : {target}")
-    print(f"ok          : {result.ok}")
-    print(f"functions   : {len(result.pack.functions)}")
-    print(f"output      : {result.output_path}\n")
+    result = compile_machines([lamp], target, namespace="tutorial", output=OUTPUT, DEBUG=no)
 
     # Show input → output: every generated function's rendered mcfunction text.
     banner("generated mcfunction")  # a grimmclub teaching helper
@@ -94,6 +91,6 @@ def main() -> None:
         print(text.rstrip())
         print()
 
-
+# Call main when script is executed
 if __name__ == "__main__":
     main()

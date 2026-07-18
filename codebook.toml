@@ -70,6 +70,7 @@ words = [
     "SHULKER",
     "SLOWFALLING",
     "SMITHING",
+    "SNBT",
     "STAL",
     "STRAD",
     "Slimeball",
@@ -97,5 +98,6 @@ words = [
     "pth",
     "rcon",
     "repo's",
+    "setblock",
     "xyz",
 ]

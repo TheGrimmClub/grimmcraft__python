@@ -26,6 +26,8 @@ def test_parse_version_rejects_bad(bad: str) -> None:
         ("1.20.5", 41, False, True),    # plural folders, components
         ("1.21", 48, True, True),       # singular folders, components
         ("1.21.1", 48, True, True),
+        ("1.21.9", 88, True, True),     # first format with a minor version
+        ("1.21.11", 94, True, True),
     ],
 )
 def test_version_info(
@@ -37,6 +39,24 @@ def test_version_info(
     assert info.uses_components is components
     lo, hi = info.supported_formats
     assert lo <= pack_format <= hi
+
+
+@pytest.mark.parametrize(
+    "version,minor,ranged,label",
+    [
+        ("1.21.1", 0, False, "48"),    # legacy: pack_format, no minor
+        ("1.21.5", 0, False, "71"),    # last legacy format
+        ("1.21.9", 0, True, "88.0"),   # first ranged format
+        ("1.21.11", 1, True, "94.1"),  # ranged, non-zero minor
+    ],
+)
+def test_format_minor_and_shape(
+    version: str, minor: int, ranged: bool, label: str
+) -> None:
+    info = resolve_version(version)
+    assert info.pack_format_minor == minor
+    assert info.uses_format_range is ranged
+    assert info.format_label == label
 
 
 def test_unsupported_version_fails_fast() -> None:

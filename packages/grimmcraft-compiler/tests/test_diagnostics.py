@@ -28,9 +28,10 @@ def _codes(bag: DiagnosticBag) -> set[str]:
 
 
 def test_unknown_id_gets_code_and_suggestion() -> None:
+    # Deliberately misspelled — the point is the suggestion. Do not "fix" it.
     m = _machine_with(Command("setblock", {"pos": (0, 0, 0), "block": "minecraft:stoen"}))
     bag = DiagnosticBag()
-    validate_machines([m], Target.resolve("1.21.1", "vanilla"), bag)
+    validate_machines([m], Target.resolve("1.21.11", "vanilla"), bag)
     errors = [d for d in bag if d.code is Codes.UNKNOWN_ID]
     assert len(errors) == 1
     assert "minecraft:stone" in errors[0].message
@@ -40,7 +41,7 @@ def test_unknown_id_gets_code_and_suggestion() -> None:
 def test_rename_detection_grass() -> None:
     m = _machine_with(Command("setblock", {"pos": (0, 0, 0), "block": "minecraft:grass"}))
     bag = DiagnosticBag()
-    validate_machines([m], Target.resolve("1.21.1", "vanilla"), bag)
+    validate_machines([m], Target.resolve("1.21.11", "vanilla"), bag)
     msg = next(d.message for d in bag if d.code is Codes.UNKNOWN_ID)
     assert "renamed to 'minecraft:short_grass'" in msg
     assert "1.20.3" in msg
@@ -49,7 +50,7 @@ def test_rename_detection_grass() -> None:
 def test_flavor_mismatch_warns() -> None:
     m = _machine_with(Command("say", {"text": "hi", "requires_flavor": "paper"}))
     bag = DiagnosticBag()
-    validate_machines([m], Target.resolve("1.21.1", "vanilla"), bag)
+    validate_machines([m], Target.resolve("1.21.11", "vanilla"), bag)
     assert Codes.FLAVOR_MISMATCH.id in _codes(bag)
 
 
@@ -84,7 +85,7 @@ def test_unresolved_tag_member() -> None:
 def test_invalid_namespace_is_error() -> None:
     result = compile_machines(
         [_machine_with(Command("say", {"text": "hi"}))],
-        Target.resolve("1.21.1", "vanilla"),
+        Target.resolve("1.21.11", "vanilla"),
         namespace="Bad NS",
         dry_run=True,
     )
@@ -94,7 +95,7 @@ def test_invalid_namespace_is_error() -> None:
 
 def test_strict_promotes_warnings_to_errors() -> None:
     m = _machine_with(Command("say", {"text": "hi", "requires_flavor": "paper"}))
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
     lenient = compile_machines([m], target, dry_run=True)
     assert lenient.ok  # a warning, but not an error
     strict = compile_machines([m], target, dry_run=True, strict=True)
@@ -112,5 +113,5 @@ def test_non_compilable_guard_warns() -> None:
         .build()
     )
     bag = DiagnosticBag()
-    validate_machines([m], Target.resolve("1.21.1", "vanilla"), bag)
+    validate_machines([m], Target.resolve("1.21.11", "vanilla"), bag)
     assert Codes.NON_COMPILABLE_GUARD.id in _codes(bag)

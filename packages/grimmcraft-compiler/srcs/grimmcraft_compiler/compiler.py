@@ -1,11 +1,10 @@
 """The compiler pipeline: collect → build IR → validate → render → emit → verify."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from grimmclub import yes
 from grimmcraft_compiler.diagnostics import Codes, DiagnosticBag, Severity
 from grimmcraft_compiler.emit import emit
 from grimmcraft_compiler.ir import Datapack, ResourceLocation
@@ -55,6 +54,7 @@ def compile_machines(
     force: bool = False,
     dry_run: bool = False,
     description: str | None = None,
+    DEBUG: bool = yes,
 ) -> CompileResult:
     """Compile ``machines`` for ``target`` into a datapack.
 
@@ -62,6 +62,8 @@ def compile_machines(
     ``dry_run`` is set, or when errors exist and ``force`` is not; ``strict``
     promotes warnings to errors.  The returned :class:`CompileResult` always
     carries the IR and diagnostics, plus the output path when a pack was written.
+
+    DEBUG: activates debug mode, printing target info and diagnostics on failure.
     """
     bag = DiagnosticBag()
     description = description or f"{namespace} — grimmcraft datapack for {target}"
@@ -111,4 +113,30 @@ def compile_machines(
     verify_root = out if zip_output else path
     verify_output(verify_root, target, bag)
 
+    if DEBUG:
+        print(f"target    : {target}")
+        print(f"ok        : {result.ok}")
+        if result.ok:
+            print(f"functions : {len(result.pack.functions)}")
+            print(f"output    : {result.output_path}")
+        else:
+            print(f"error:    : {result.diagnostics}")
+
     return result
+
+
+def show_info(
+    target: Target,
+    DEBUG: bool = yes,
+) -> None:
+    """Outputs the information for the target to the console.
+
+    DEBUG: activates debug mode, printing target info and diagnostics on failure.
+    """
+    info = target.info
+    folder = "function" if info.singular_folders else "functions"
+    data_model = "components" if info.uses_components else "NBT tags"
+    print(f"\n=== {target} ===")
+    print(f"  pack format : {info.format_label}")
+    print(f"  folders     : data/<ns>/{folder}/…")
+    print(f"  item data   : {data_model}")

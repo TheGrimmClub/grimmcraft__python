@@ -17,6 +17,7 @@ def _dialect(version: str) -> Dialect:
     "version,expected",
     [
         ("1.20.4", 'give @p minecraft:iron_ingot{display:{Name:\'{"text":"Named"}\'}} 1'),
+        # Pre-1.21.5, so components with a JSON text component.
         ("1.21.1", 'give @p minecraft:iron_ingot[minecraft:custom_name={"text":"Named"}] 1'),
     ],
 )
@@ -37,7 +38,7 @@ def test_setblock_with_state_is_version_stable() -> None:
                                "state": {"lit": "true"}})
     line = "setblock 0 64 0 minecraft:furnace[lit=true]"
     assert _dialect("1.20.4").render(cmd) == line
-    assert _dialect("1.21.1").render(cmd) == line
+    assert _dialect("1.21.11").render(cmd) == line
 
 
 def test_fill_render_with_and_without_mode() -> None:
@@ -45,10 +46,10 @@ def test_fill_render_with_and_without_mode() -> None:
     from grimmcraft_data import Block
 
     trunk = fill((0, 64, 0), (0, 68, 0), Block.OAK_LOG)
-    assert _dialect("1.21.1").render(trunk) == "fill 0 64 0 0 68 0 minecraft:oak_log"
+    assert _dialect("1.21.11").render(trunk) == "fill 0 64 0 0 68 0 minecraft:oak_log"
 
     leaves = fill((-2, 67, -2), (2, 67, 2), "minecraft:oak_leaves", mode="keep")
-    assert _dialect("1.21.1").render(leaves) == (
+    assert _dialect("1.21.11").render(leaves) == (
         "fill -2 67 -2 2 67 2 minecraft:oak_leaves keep"
     )
 
@@ -57,7 +58,7 @@ def test_enum_member_id_is_accepted() -> None:
     from grimmcraft_data import Block
 
     cmd = Command("setblock", {"pos": (1, 2, 3), "block": Block.STONE})
-    assert _dialect("1.21.1").render(cmd) == "setblock 1 2 3 minecraft:stone"
+    assert _dialect("1.21.11").render(cmd) == "setblock 1 2 3 minecraft:stone"
 
 
 def test_position_formats() -> None:
@@ -71,7 +72,7 @@ def test_execute_if_score_nesting() -> None:
     cmd = Command("execute_if_score",
                   {"objective": "grimmcraft_state", "entry": "door",
                    "value": 0, "run": inner})
-    assert _dialect("1.21.1").render(cmd) == (
+    assert _dialect("1.21.11").render(cmd) == (
         "execute if score door grimmcraft_state matches 0 run "
         "function grimmcraft:door/do_x"
     )
@@ -79,4 +80,4 @@ def test_execute_if_score_nesting() -> None:
 
 def test_unknown_command_raises() -> None:
     with pytest.raises(ValueError, match="cannot render command"):
-        _dialect("1.21.1").render(Command("teleport_all", {}))
+        _dialect("1.21.11").render(Command("teleport_all", {}))

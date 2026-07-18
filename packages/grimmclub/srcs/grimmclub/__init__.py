@@ -40,6 +40,8 @@ from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
 from typing import Any, Optional, Protocol
 
+from grimmclub._core import *   # yes/no, true/false
+
 # json is the logging wrapper (drop-in for the stdlib module), not stdlib json.
 from grimmclub import _json as json
 
@@ -87,4 +89,11 @@ __all__ = [
     "debug_enabled",
     "set_debug",
     "banner",
+    # constans,
+    "yes",
+    "no",
+    "true",
+    "false",
+    "on",
+    "off",
 ]

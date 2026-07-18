@@ -23,7 +23,7 @@ A single `Target` drives everything:
 ```python
 @dataclass(frozen=True)
 class Target:
-    version: str            # e.g. "1.21.1"
+    version: str            # e.g. "1.21.11"
     flavor: Flavor          # VANILLA | PAPER | FABRIC
 ```
 
@@ -88,7 +88,7 @@ tells the developer *what* is wrong, *why*, *where*, and *how to fix it*.
 ## CLI
 
 ```
-grimmcraft-compile --version 1.21.1 --flavor vanilla --namespace grimm \
+grimmcraft-compile --version 1.21.11 --flavor vanilla --namespace grimm \
                    --output build/ [--zip] [--strict] [--force] [--dry-run]
 ```
 

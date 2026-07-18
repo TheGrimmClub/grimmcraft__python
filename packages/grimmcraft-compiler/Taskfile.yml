@@ -15,7 +15,7 @@ vars:
 tasks:
   default:
     cmds:
-      - task: test
+      - task --list
 
   test:
     desc: Run this package's tests
@@ -38,7 +38,7 @@ tasks:
       - uv build --package {{.PKG}}
 
   example:
-    desc: Compile the demo machines for 1.20.4 and 1.21.1 into dist/examples/
+    desc: Compile the demo machines for 1.20.4 and 1.21.11 into dist/examples/
     cmds:
       - uv run --package {{.PKG}} python examples/compile_demos.py
 
@@ -63,9 +63,9 @@ tasks:
       - uv run --package {{.PKG}} python examples/tree_growing.py
 
   run:
-    desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.1 --dry-run)'
+    desc: 'Run the CLI (usage: task compiler:run -- --version 1.21.11 --dry-run)'
     cmds:
-      - uv run --package {{.PKG}} grimmcraft-compile {{.CLI_ARGS}}
+      - uv run --package {{.PKG}} compile {{.CLI_ARGS}}
 
   docs:
     desc: Render the docs to dist/docs/ (Markdown copy; renders anywhere)

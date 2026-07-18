@@ -56,14 +56,38 @@ def verify_output(pack_path: Path, target: Target, bag: DiagnosticBag) -> None:
     except json.JSONDecodeError as exc:
         fail(f"pack.mcmeta is not valid JSON: {exc}", source=str(meta_path))
         return
-    got = meta.get("pack", {}).get("pack_format")
-    if got != info.pack_format:
-        fail(
-            f"pack.mcmeta pack_format is {got}, expected {info.pack_format} for "
-            f"{target.version}",
-            hint="recompile for the intended version",
-            source=str(meta_path),
+    pack_meta = meta.get("pack", {})
+    if info.uses_format_range:
+        # Modern packs declare a range; a stray pack_format is rejected by the game.
+        expected_min: int | list[int] = (
+            [info.supported_formats[0], info.pack_format_minor]
+            if info.pack_format_minor
+            else info.supported_formats[0]
         )
+        got_min = pack_meta.get("min_format")
+        if got_min != expected_min:
+            fail(
+                f"pack.mcmeta min_format is {got_min}, expected {expected_min} for "
+                f"{target.version}",
+                hint="recompile for the intended version",
+                source=str(meta_path),
+            )
+        if "pack_format" in pack_meta:
+            fail(
+                f"pack.mcmeta carries a legacy pack_format, which {target.version} "
+                "rejects (format >= 82 uses min_format/max_format only)",
+                hint="recompile for the intended version",
+                source=str(meta_path),
+            )
+    else:
+        got = pack_meta.get("pack_format")
+        if got != info.pack_format:
+            fail(
+                f"pack.mcmeta pack_format is {got}, expected {info.pack_format} for "
+                f"{target.version}",
+                hint="recompile for the intended version",
+                source=str(meta_path),
+            )
 
     # 2. Folder scheme matches the target.
     fdir = "function" if info.singular_folders else "functions"

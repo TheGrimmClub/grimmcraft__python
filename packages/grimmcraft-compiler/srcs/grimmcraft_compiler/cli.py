@@ -28,8 +28,8 @@ def _load_machines(selection: str) -> list[Any]:
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("--version", "mc_version", default="1.21.1", show_default=True,
-              help="Target Minecraft version (e.g. 1.21.1).")
+@click.option("--version", "mc_version", default="1.21.11", show_default=True,
+              help="Target Minecraft version (e.g. 1.21.11).")
 @click.option("--flavor", type=click.Choice([f.value for f in Flavor]),
               default=Flavor.VANILLA.value, show_default=True,
               help="Server/loader flavor.")

@@ -31,7 +31,7 @@ A `Target` config drives everything:
 ```python
 @dataclass(frozen=True)
 class Target:
-    version: str            # e.g. "1.21.1"
+    version: str            # e.g. "1.21.11"
     flavor: Flavor          # VANILLA | PAPER | FABRIC
 ```
 
@@ -123,7 +123,7 @@ the output path plus install/test instructions.
   references resolve. Parametrize across at least two versions and all flavors.
 - **examples/**: compile a real grimmcraft example (e.g. the Door or Furnace
   state machine from grimmcraft-control) into a datapack, for two different
-  targets (e.g. `1.20.4 vanilla` and `1.21.1 vanilla`) to show the differences.
+  targets (e.g. `1.20.4 vanilla` and `1.21.11 vanilla`) to show the differences.
 - **docs/**: architecture overview (IR → dialect → emit), the version/flavor
   support matrix, the diagnostics code index (each `GC{id}` with meaning and
   example), and a quickstart. Match the repositories docs tooling.

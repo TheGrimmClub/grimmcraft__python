@@ -10,23 +10,25 @@ Run it (from the package dir, or via ``task compiler:chess``)::
     uv run --package grimmcraft-compiler python examples/chessboard.py
 """
 
-from grimmclub import StrEnum
+# Imports
+from grimmclub import StrEnum, yes, no
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
+# Constants
 ORIGIN = BlockPos(0, 64, 0)  # north-west corner of the board (col = +x, row = +z)
 SIZE = 8
 OUTPUT = "examples/generated/chessboard"
 
-
+# Types
 class Event(StrEnum):
     """The board's events (named once here, referenced by member below)."""
 
     BUILD = "build"
     CLEAR = "clear"
 
-
+# Code
 def build_chessboard() -> MachineDefault:
     """A ``chessboard`` machine: ``build`` lays the board, ``clear`` removes it."""
     builder = new_machine("chessboard")
@@ -54,16 +56,11 @@ def build_chessboard() -> MachineDefault:
     builder.initial(empty)
     return builder.build()
 
-
+# Main function
 def main() -> None:
     board = build_chessboard()
-    target = Target.resolve("1.21.1", "vanilla")
-    result = compile_machines([board], target, namespace="chess", output=OUTPUT)
-
-    print(f"target    : {target}")
-    print(f"ok        : {result.ok}")
-    print(f"functions : {len(result.pack.functions)}")
-    print(f"output    : {result.output_path}")
+    target = Target.resolve("1.21.11", "vanilla")
+    result = compile_machines([board], target, namespace="chess", output=OUTPUT, DEBUG=yes)
 
     build_id, build_text = next(
         (fid, text) for fid, text in result.rendered().items()
@@ -74,6 +71,6 @@ def main() -> None:
     print("\n".join(lines[:6]))
     print(f"Trigger in-game with: /function chess:{board.name}/on_{Event.BUILD}")
 
-
+# Call main function on execution
 if __name__ == "__main__":
     main()

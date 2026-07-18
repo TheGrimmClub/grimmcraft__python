@@ -11,7 +11,7 @@ task compiler:tutorial   # -> tutorial-lamp/         (the from-scratch lamp)
 task compiler:chess      # -> chessboard/            (8x8 wool board via a loop)
 task compiler:tree       # -> spruce/                (procedural conifer via fill)
 task compiler:grow       # -> growing-spruce/        (grows one ring per tick)
-task compiler:example    # -> demo-1.20.4-vanilla/ + demo-1.21.1-vanilla/
+task compiler:example    # -> demo-1.20.4-vanilla/ + demo-1.21.11-vanilla/
 ```
 
 Each subfolder is a complete, installable datapack — drop it into
@@ -19,13 +19,13 @@ Each subfolder is a complete, installable datapack — drop it into
 
 | Folder | Source | Target |
 |--------|--------|--------|
-| `tutorial-lamp/` | `../tutorial_lamp.py` | 1.21.1 vanilla |
-| `chessboard/` | `../chessboard.py` | 1.21.1 vanilla (64-block `build`, `clear` to air) |
-| `spruce/` | `../tree.py` | 1.21.1 vanilla (conifer via `fill`: `grow`, `chop`) |
-| `growing-spruce/` | `../tree_growing.py` | 1.21.1 vanilla (grows one ring per tick) |
+| `tutorial-lamp/` | `../tutorial_lamp.py` | 1.21.11 vanilla |
+| `chessboard/` | `../chessboard.py` | 1.21.11 vanilla (64-block `build`, `clear` to air) |
+| `spruce/` | `../tree.py` | 1.21.11 vanilla (conifer via `fill`: `grow`, `chop`) |
+| `growing-spruce/` | `../tree_growing.py` | 1.21.11 vanilla (grows one ring per tick) |
 | `demo-1.20.4-vanilla/` | `../compile_demos.py` | 1.20.4 vanilla (plural folders, NBT) |
-| `demo-1.21.1-vanilla/` | `../compile_demos.py` | 1.21.1 vanilla (singular folders, components) |
+| `demo-1.21.11-vanilla/` | `../compile_demos.py` | 1.21.11 vanilla (singular folders, components) |
 
-Compare `demo-1.20.4-vanilla` vs `demo-1.21.1-vanilla` to see how the target
+Compare `demo-1.20.4-vanilla` vs `demo-1.21.11-vanilla` to see how the target
 changes the folder scheme (`functions/` vs `function/`) and item data
 (NBT `{display:{Name:…}}` vs component `[minecraft:custom_name=…]`).

@@ -18,26 +18,28 @@ Run it (from the package dir, or via ``task compiler:tree``)::
     uv run --package grimmcraft-compiler python examples/tree.py
 """
 
-from grimmclub import StrEnum
+# Imports
+from grimmclub import StrEnum, yes
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
+# Constants
 BASE = BlockPos(0, 64, 0)  # the block the trunk grows from
-TRUNK_HEIGHT = 6
+TRUNK_HEIGHT = 20
 # Foliage rings, bottom to top, as (y offset, radius): widest at the base,
 # shrinking to a single-block tip — the classic conifer silhouette.
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
 OUTPUT = "examples/generated/spruce"
 
-
+# Types
 class Event(StrEnum):
     """The spruce's events (named once here, referenced by member below)."""
 
     GROW = "grow"
     CHOP = "chop"
 
-
+# Function
 def build_spruce() -> MachineDefault:
     """A ``spruce`` machine: ``grow`` plants it, ``chop`` clears it to air."""
     builder = new_machine("spruce")
@@ -73,10 +75,10 @@ def build_spruce() -> MachineDefault:
     builder.initial(bare)
     return builder.build()
 
-
+# Main function
 def main() -> None:
     spruce = build_spruce()
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
     result = compile_machines([spruce], target, namespace="grove", output=OUTPUT)
 
     print(f"target    : {target}")
@@ -92,6 +94,6 @@ def main() -> None:
     print(grow_text.rstrip())
     print(f"\nTrigger in-game with: /function grove:{spruce.name}/on_{Event.GROW}")
 
-
+# Call main when script is executed
 if __name__ == "__main__":
     main()

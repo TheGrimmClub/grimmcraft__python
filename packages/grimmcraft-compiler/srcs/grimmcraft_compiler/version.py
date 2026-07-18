@@ -15,7 +15,7 @@ VersionTuple = tuple[int, int, int]
 
 
 def parse_version(version: str) -> VersionTuple:
-    """Parse ``"1.21.1"`` → ``(1, 21, 1)`` (a missing patch defaults to 0).
+    """Parse ``"1.21.11"`` → ``(1, 21, 11)`` (a missing patch defaults to 0).
 
     Raises :class:`ValueError` on anything that is not two or three dotted
     integers.
@@ -43,6 +43,11 @@ SINGULAR_FOLDERS_SINCE: VersionTuple = (1, 21, 0)
 #: First version where item/block data is written as components, not NBT tags.
 COMPONENTS_SINCE: VersionTuple = (1, 20, 5)
 
+#: First *pack format* that describes itself with ``min_format``/``max_format``
+#: instead of the legacy ``pack_format`` field (Mojang snapshot 25w31a).  Below
+#: this, ``pack_format`` is required; at or above it, it must be absent.
+FORMAT_RANGE_SINCE: int = 82
+
 
 @dataclass(frozen=True, slots=True)
 class VersionInfo:
@@ -50,8 +55,12 @@ class VersionInfo:
 
     version: str
     version_tuple: VersionTuple
+    #: Major pack format (the ``94`` of ``94.1``).
     pack_format: int
-    #: Inclusive ``(min, max)`` pack-format band written to ``pack.mcmeta``.
+    #: Minor pack format (the ``1`` of ``94.1``) — 0 before 1.21.9, when Mojang
+    #: started bumping a minor for non-breaking data changes.
+    pack_format_minor: int
+    #: Inclusive ``(min, max)`` major pack-format band written to ``pack.mcmeta``.
     supported_formats: tuple[int, int]
 
     @property
@@ -64,26 +73,47 @@ class VersionInfo:
         """True on 1.20.5+, where item/block data uses components not NBT."""
         return self.version_tuple >= COMPONENTS_SINCE
 
+    @property
+    def uses_format_range(self) -> bool:
+        """True when ``pack.mcmeta`` uses ``min_format``/``max_format``.
+
+        At or above :data:`FORMAT_RANGE_SINCE` the legacy ``pack_format`` field
+        must be *absent*, so this picks the document shape — it is not merely a
+        preference.
+        """
+        return self.pack_format >= FORMAT_RANGE_SINCE
+
+    @property
+    def format_label(self) -> str:
+        """The format as people write it: ``"94.1"`` on 1.21.9+, else ``"48"``."""
+        if self.uses_format_range:
+            return f"{self.pack_format}.{self.pack_format_minor}"
+        return str(self.pack_format)
+
 
 # --- the support table -------------------------------------------------------
-# version -> (pack_format, supported_formats band). Ordered oldest to newest.
+# version -> (major, minor, supported_formats band). Ordered oldest to newest.
 # Sources: the datapack `pack_format` history (Mojang wiki / version.json).
-_ROWS: dict[str, tuple[int, tuple[int, int]]] = {
-    "1.20.1": (15, (15, 15)),
-    "1.20.2": (18, (18, 18)),
-    "1.20.4": (26, (26, 26)),
-    "1.20.5": (41, (41, 41)),
-    "1.20.6": (41, (41, 41)),
-    "1.21": (48, (48, 48)),
-    "1.21.1": (48, (48, 48)),
-    "1.21.3": (57, (57, 57)),
-    "1.21.4": (61, (61, 61)),
-    "1.21.5": (71, (71, 71)),
+_ROWS: dict[str, tuple[int, int, tuple[int, int]]] = {
+    "1.20.1": (15, 0, (15, 15)),
+    "1.20.2": (18, 0, (18, 18)),
+    "1.20.4": (26, 0, (26, 26)),
+    "1.20.5": (41, 0, (41, 41)),
+    "1.20.6": (41, 0, (41, 41)),
+    "1.21": (48, 0, (48, 48)),
+    "1.21.1": (48, 0, (48, 48)),
+    "1.21.3": (57, 0, (57, 57)),
+    "1.21.4": (61, 0, (61, 61)),
+    "1.21.5": (71, 0, (71, 71)),
+    # 1.21.9+ carry a minor format and use min_format/max_format.
+    "1.21.9": (88, 0, (88, 88)),
+    "1.21.10": (88, 0, (88, 88)),
+    "1.21.11": (94, 1, (94, 94)),
 }
 
 SUPPORT_TABLE: dict[str, VersionInfo] = {
-    version: VersionInfo(version, parse_version(version), pack_format, band)
-    for version, (pack_format, band) in _ROWS.items()
+    version: VersionInfo(version, parse_version(version), major, minor, band)
+    for version, (major, minor, band) in _ROWS.items()
 }
 
 

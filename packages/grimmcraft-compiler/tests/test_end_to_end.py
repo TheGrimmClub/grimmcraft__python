@@ -11,7 +11,7 @@ import pytest
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control.demos import door_machine, furnace_machine
 
-VERSIONS = ["1.20.4", "1.21.1"]
+VERSIONS = ["1.20.4", "1.21.11"]
 FLAVORS = ["vanilla", "paper", "fabric"]
 
 
@@ -30,9 +30,16 @@ def test_compile_demos_end_to_end(version: str, flavor: str, tmp_path: Path) -> 
     assert result.emitted
     assert result.output_path == out
 
-    # pack.mcmeta has the right pack_format and is valid JSON.
+    # pack.mcmeta is valid JSON and declares the format the way this version wants.
     meta = json.loads((out / "pack.mcmeta").read_text())
-    assert meta["pack"]["pack_format"] == target.info.pack_format
+    info = target.info
+    if info.uses_format_range:
+        assert meta["pack"]["min_format"] == [info.pack_format, info.pack_format_minor]
+        assert meta["pack"]["max_format"] == info.pack_format
+        # Format >= 82 rejects the legacy field outright.
+        assert "pack_format" not in meta["pack"]
+    else:
+        assert meta["pack"]["pack_format"] == info.pack_format
 
     # Folder scheme matches the version.
     fdir = "function" if target.info.singular_folders else "functions"
@@ -71,7 +78,7 @@ def test_all_function_calls_resolve(version: str, tmp_path: Path) -> None:
 
 
 def test_zip_output(tmp_path: Path) -> None:
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
     out = tmp_path / "pack"
     result = compile_machines([door_machine()], target, output=out, zip_output=True)
     assert result.output_path is not None
@@ -94,7 +101,7 @@ def test_errors_block_emission_unless_forced(tmp_path: Path) -> None:
                                       {"pos": (0, 0, 0), "block": "minecraft:nope"}),))
         .initial("A").build()
     )
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
 
     blocked = compile_machines([bad], target, output=tmp_path / "a")
     assert not blocked.emitted and not blocked.ok

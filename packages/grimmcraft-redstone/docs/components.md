@@ -3,7 +3,17 @@
 Every component, its family, its block, and its behaviour. Delays are in game
 ticks (gt); a redstone tick (rt) is 2 gt.
 
-## inputs — sources
+> It is important to understand that redstone is not a circuit wiring.
+> a redstone signal needs no closed loop to travel from the input to the output.
+> It works with a signal and signal strength component.
+> It is good to build logic circuits using redstone torches and dust.
+
+More details on [restone build](https://redstone.build/introduction)
+
+> WARNING: 
+> Running water and lava destroys redstone dust!
+
+## Inputs — sources
 
 | Component | Block | Behaviour | Delay |
 | --- | --- | --- | --- |
@@ -16,14 +26,14 @@ ticks (gt); a redstone tick (rt) is 2 gt.
 | `DaylightSensor` | `daylight_detector` | analog from sky light (± inverted) | 0 |
 | `AnalogSource` | (target / lectern / tripwire / detector rail) | settable analog level | 0 |
 
-## connectors — transmission
+## Connectors — transmission
 
 | Component | Block | Behaviour | Delay |
 | --- | --- | --- | --- |
 | `RedstoneDust` | `redstone_wire` | carries power, −1 per block, 15-block range | 0 |
 | `SolidBlock` | `stone` | conducts strong power; re-emits; holds torches | 0 |
 
-## outputs — loads
+## Outputs — loads
 
 | Component | Block | Behaviour | Trigger |
 | --- | --- | --- | --- |
@@ -37,7 +47,7 @@ ticks (gt); a redstone tick (rt) is 2 gt.
 | `Tnt` | `tnt` | primed while powered | level |
 | `PoweredRail` / `ActivatorRail` | `powered_rail` / `activator_rail` | active while powered | level |
 
-## functions — logic
+## Functions — logic
 
 | Component | Block | Behaviour | Delay |
 | --- | --- | --- | --- |
@@ -45,16 +55,20 @@ ticks (gt); a redstone tick (rt) is 2 gt.
 | `Repeater` | `repeater` | one-way diode; re-emits 15; side-lock | 1–4 rt |
 | `Comparator` | `comparator` | compare / subtract; reads container fullness | 1 rt |
 | `Container` | `chest` | provides a 0–15 comparator reading | — |
-| `NotGate` | `redstone_torch` | ¬a | 0¹ |
-| `AndGate` / `OrGate` | `redstone_torch` | a∧b / a∨b | 0¹ |
-| `NandGate` / `XorGate` | `redstone_torch` | ¬(a∧b) / a⊕b | 0¹ |
+| `NotGate` | `redstone_torch` | ¬a | 0[^1] |
+| `AndGate` / `OrGate` | `redstone_torch` | a∧b / a∨b | 0[^1]|
+| `NandGate` / `XorGate` | `redstone_torch` | ¬(a∧b) / a⊕b | 0[^1] |
 | `Clock` | `repeater` | oscillator; toggles every `period` gt | — |
 
-¹ The gate components model the boolean function directly (evaluated through the
+[^1]: The gate components model the boolean function directly (evaluated through the
 simulator) — the faithful abstraction of the primitive torch-and-dust builds. In
 real redstone every gate carries the delay of the torches it is built from; the
 NOT gate **is** a `RedstoneTorch`. See the [gallery](./gallery.md) for the
 primitive layouts.
+
+## Non conductive
+
+Some materials are non-conductive blocks, for example glass.
 
 ## Accuracy notes
 

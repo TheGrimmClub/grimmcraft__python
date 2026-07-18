@@ -19,11 +19,13 @@ Run it (from the package dir, or via ``task compiler:grow``)::
     uv run --package grimmcraft-compiler python examples/tree_growing.py
 """
 
+# Imports
 from grimmclub import StrEnum
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
+# Constants
 BASE = BlockPos(0, 64, 0)
 TRUNK_HEIGHT = 6
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
@@ -31,11 +33,11 @@ STAGE = "spruce_stage"  # scoreboard objective tracking how far grown
 ENTRY = "spruce"  # the score holder
 OUTPUT = "examples/generated/growing-spruce"
 
-
+# Types
 class Event(StrEnum):
     PLANT = "plant"
 
-
+# Code
 def build_growing_spruce() -> MachineDefault:
     """A spruce that builds itself one step per tick while in ``GROWING``."""
     builder = new_machine("growing_spruce")
@@ -67,10 +69,10 @@ def build_growing_spruce() -> MachineDefault:
     builder.initial(seed)
     return builder.build()
 
-
+# Main function
 def main() -> None:
     spruce = build_growing_spruce()
-    target = Target.resolve("1.21.1", "vanilla")
+    target = Target.resolve("1.21.11", "vanilla")
     result = compile_machines([spruce], target, namespace="grove", output=OUTPUT)
 
     print(f"target    : {target}")
@@ -86,6 +88,6 @@ def main() -> None:
     print(tick_text.rstrip())
     print(f"\nTrigger in-game with: /function grove:{spruce.name}/on_{Event.PLANT}")
 
-
+# Call main when script is executed
 if __name__ == "__main__":
     main()
