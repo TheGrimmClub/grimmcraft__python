@@ -16,16 +16,17 @@ Two shapes are re-exported:
   ``itertools``, ``textwrap``) — because their members (``json.dumps``,
   ``os.getcwd``) collide if flattened, and ``module.member`` reads clearest.
 
-A flat facade can't expose *all* of the stdlib without name clashes; this is the
-curated set students actually reach for. Add more here as needed — one edit, and
-every script gets it.
+Some names are genuinely **wrapped** so the facade earns its keep: ``Path`` and
+``json`` are drop-in replacements that debug-log their I/O (see :mod:`._path` /
+:mod:`._json`). The rest are plain re-exports — wrap more the same way when a
+lesson calls for it. A flat facade can't expose *all* of the stdlib without name
+clashes; this is the curated set students actually reach for.
 """
 
 from __future__ import annotations
 
-# --- whole modules (use as `json.dumps(...)`, `os.getcwd()`, …) --------------
+# --- whole modules (use as `os.getcwd()`, `math.pi`, …) ----------------------
 import itertools
-import json
 import math
 import os
 import random
@@ -37,8 +38,13 @@ from collections import Counter, defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
-from pathlib import Path
 from typing import Any, Optional, Protocol
+
+# json is the logging wrapper (drop-in for the stdlib module), not stdlib json.
+from grimmclub import _json as json
+
+# Path is the logging subclass of pathlib.Path (still an instance of it).
+from grimmclub._path import Path
 
 # --- teaching helpers --------------------------------------------------------
 from grimmclub.log import banner, debug, debug_enabled, log, set_debug

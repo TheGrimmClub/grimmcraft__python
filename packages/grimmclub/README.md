@@ -28,11 +28,26 @@ help, logging or debug output for a class — change it here, every script benef
 - **Leaf names** are re-exported directly (`Path`, `dataclass`, `StrEnum`, `Any`,
   `datetime`, `Counter`, …) because that's how they're normally imported.
 - **Whole modules** are re-exported for things whose members would collide if
-  flattened (`json`, `os`, `math`, `random`, `itertools`, `textwrap`, `sys`) —
-  use them as `json.dumps(...)`, `os.getcwd()`.
+  flattened (`os`, `math`, `random`, `itertools`, `textwrap`, `sys`) — use them as
+  `os.getcwd()`, `math.pi`.
+- **Wrapped**: `Path` and `json` are genuine drop-in replacements that *do* extra
+  work — they debug-log their filesystem / (de)serialisation operations. `Path`
+  is a subclass of `pathlib.Path` (so `isinstance(p, pathlib.Path)` holds and
+  `p / "sub"` stays a logging `Path`); `json` delegates every call to stdlib
+  `json` and forwards `JSONDecodeError` etc. unchanged.
 
-A flat facade can't expose *all* of the stdlib without name clashes, so this is a
-curated set. Add more in `srcs/grimmclub/__init__.py` as your students need it.
+```python
+from grimmclub import Path, json, set_debug
+
+set_debug(True)
+Path("note.txt").write_text("hi")     # [grimmclub:debug] write_text note.txt (2 chars)
+json.dumps({"ok": True})              # [grimmclub:debug] json.dumps -> 12 chars
+```
+
+That's the point of the facade: a single seam where you add help/logging for a
+class. Wrap more names the same way (see `_path.py` / `_json.py`) as lessons need
+it. A flat facade can't expose *all* of the stdlib without name clashes, so this
+is a curated set — extend it in `srcs/grimmclub/`.
 
 ## Helpers
 
