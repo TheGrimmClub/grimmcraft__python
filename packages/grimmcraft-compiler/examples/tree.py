@@ -13,28 +13,23 @@ produce, so a conifer is the natural fit (a rounded oak would need carved corner
 ``grow`` places the spruce, ``chop`` removes it. Edit ``TRUNK_HEIGHT`` / ``FOLIAGE``
 to reshape it.
 
-Run it::
+Run it (from the package dir, or via ``task compiler:tree``)::
 
     uv run --package grimmcraft-compiler python examples/tree.py
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
-from pathlib import Path
-from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_control import Machine, new_machine
-from grimmcraft_core import BlockPos
-from grimmcraft_data import Block
+from grimmcraft_control import MachineDefault, new_machine
+from grimmcraft_core import BlockPos, BlockType
 
 BASE = BlockPos(0, 64, 0)  # the block the trunk grows from
 TRUNK_HEIGHT = 6
 # Foliage rings, bottom to top, as (y offset, radius): widest at the base,
 # shrinking to a single-block tip — the classic conifer silhouette.
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
-GENERATED = Path(__file__).resolve().parent / "generated"
+OUTPUT = "examples/generated/spruce"
 
 
 class Event(StrEnum):
@@ -44,7 +39,7 @@ class Event(StrEnum):
     CHOP = "chop"
 
 
-def build_spruce() -> Machine[dict[str, Any]]:
+def build_spruce() -> MachineDefault:
     """A ``spruce`` machine: ``grow`` plants it, ``chop`` clears it to air."""
     builder = new_machine("spruce")
 
@@ -56,14 +51,14 @@ def build_spruce() -> Machine[dict[str, Any]]:
     grown.enter.say("A spruce grows.")
 
     # Trunk: one vertical fill from the base up.
-    grown.enter.fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG)
+    grown.enter.fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), BlockType.SPRUCE_LOG)
 
     # Foliage: one fill per ring, widest at the bottom and tapering to the tip.
     # mode="keep" fills only air, so the leaves never overwrite the trunk.
     for y, r in FOLIAGE:
         grown.enter.fill(
             BASE.offset(-r, y, -r), BASE.offset(r, y, r),
-            Block.SPRUCE_LEAVES, mode="keep",
+            BlockType.SPRUCE_LEAVES, mode="keep",
         )
 
     builder.transition(bare, Event.GROW, to=grown)
@@ -73,7 +68,7 @@ def build_spruce() -> Machine[dict[str, Any]]:
     top_y = FOLIAGE[-1][0]
     chop = builder.add_transition(grown, Event.CHOP, to=bare)
     chop.do.fill(
-        BASE.offset(-max_r, 0, -max_r), BASE.offset(max_r, top_y, max_r), Block.AIR
+        BASE.offset(-max_r, 0, -max_r), BASE.offset(max_r, top_y, max_r), BlockType.AIR
     )
 
     builder.initial(bare)
@@ -83,9 +78,7 @@ def build_spruce() -> Machine[dict[str, Any]]:
 def main() -> None:
     spruce = build_spruce()
     target = Target.resolve("1.21.1", "vanilla")
-    result = compile_machines(
-        [spruce], target, namespace="grove", output=GENERATED / "spruce"
-    )
+    result = compile_machines([spruce], target, namespace="grove", output=OUTPUT)
 
     print(f"target    : {target}")
     print(f"ok        : {result.ok}")

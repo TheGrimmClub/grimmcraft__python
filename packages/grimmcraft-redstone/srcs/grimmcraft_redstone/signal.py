@@ -15,7 +15,7 @@ and :func:`redstone_ticks` / :func:`game_ticks` to convert so the engine's clock
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 
 #: The maximum signal strength a redstone source emits.
 MAX_POWER = 15
@@ -56,7 +56,7 @@ def game_ticks(n: int) -> int:
     return n
 
 
-class PowerKind(Enum):
+class PowerKind(IntEnum):
     """How a signal powers the block it flows into.
 
     Minecraft distinguishes *strong* and *weak* power.  A component (redstone
@@ -65,11 +65,19 @@ class PowerKind(Enum):
     and most passive sources only **weakly** power a block, which powers directly
     wired components but is not re-emitted through the block.  :attr:`NONE` is the
     absence of power.
+
+    Ordered ``NONE < WEAK < STRONG`` so that the strongest of several signals
+    wins a tie in :func:`max` on equal power levels.
     """
 
-    NONE = "none"
-    WEAK = "weak"
-    STRONG = "strong"
+    NONE = 0
+    WEAK = 1
+    STRONG = 2
+
+    @property
+    def label(self) -> str:
+        """The lower-case name (``"none"`` / ``"weak"`` / ``"strong"``)."""
+        return self.name.lower()
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -139,7 +147,7 @@ class Signal:
         return self.is_on
 
     def __str__(self) -> str:
-        return f"{self.level}({self.kind.value})"
+        return f"{self.level}({self.kind.label})"
 
 
 #: A shared, interned "off" signal for the common no-power case.

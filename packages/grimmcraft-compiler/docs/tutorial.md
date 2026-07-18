@@ -26,8 +26,7 @@ The builder is designed to stay readable and typo-proof:
 from enum import StrEnum
 
 from grimmcraft_control import new_machine, TICK_EVENT
-from grimmcraft_data import Block
-from grimmcraft_core import BlockPos
+from grimmcraft_core import BlockPos, BlockType
 
 LAMP_POS, TIMER = BlockPos(0, 64, 0), "lamp_timer"
 
@@ -38,12 +37,12 @@ builder = new_machine("lamp")
 
 # OFF: remove the light (set it to air) on entry.
 off = builder.add_state("OFF")
-off.enter.setblock(LAMP_POS, Block.AIR)
+off.enter.setblock(LAMP_POS, BlockType.AIR)
 
 # ON: place a full-bright invisible light, click, arm a timer — one line each —
 # and count the timer down every tick. light[level=15] stays lit with no power.
 on = builder.add_state("ON")
-on.enter.setblock(LAMP_POS, Block.LIGHT, level=15)
+on.enter.setblock(LAMP_POS, BlockType.LIGHT, level=15)
 on.enter.playsound("minecraft:block.lever.click")
 on.enter.say("The lamp glows.")
 on.enter.set_score(TIMER, "lamp", 100)

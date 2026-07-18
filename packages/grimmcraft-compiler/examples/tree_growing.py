@@ -14,35 +14,30 @@ So the machine iterates over ticks instead of unrolling the whole build into one
 function. (One step per tick is quick; real "slow growth" would count a longer
 timer down between steps.)
 
-Run it::
+Run it (from the package dir, or via ``task compiler:grow``)::
 
     uv run --package grimmcraft-compiler python examples/tree_growing.py
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
-from pathlib import Path
-from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_control import TICK_EVENT, Machine, new_machine
-from grimmcraft_core import BlockPos
-from grimmcraft_data import Block
+from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
+from grimmcraft_core import BlockPos, BlockType
 
 BASE = BlockPos(0, 64, 0)
 TRUNK_HEIGHT = 6
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
 STAGE = "spruce_stage"  # scoreboard objective tracking how far grown
 ENTRY = "spruce"  # the score holder
-GENERATED = Path(__file__).resolve().parent / "generated"
+OUTPUT = "examples/generated/growing-spruce"
 
 
 class Event(StrEnum):
     PLANT = "plant"
 
 
-def build_growing_spruce() -> Machine[dict[str, Any]]:
+def build_growing_spruce() -> MachineDefault:
     """A spruce that builds itself one step per tick while in ``GROWING``."""
     builder = new_machine("growing_spruce")
 
@@ -56,13 +51,13 @@ def build_growing_spruce() -> Machine[dict[str, Any]]:
     growing.cycle.add_score(STAGE, ENTRY, 1)
     stage = 1
     growing.cycle.if_score(STAGE, ENTRY, stage).fill(
-        BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG
+        BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), BlockType.SPRUCE_LOG
     )
     for y, r in FOLIAGE:
         stage += 1
         growing.cycle.if_score(STAGE, ENTRY, stage).fill(
             BASE.offset(-r, y, -r), BASE.offset(r, y, r),
-            Block.SPRUCE_LEAVES, mode="keep",
+            BlockType.SPRUCE_LEAVES, mode="keep",
         )
 
     # plant (re)starts growth from stage 0.
@@ -77,9 +72,7 @@ def build_growing_spruce() -> Machine[dict[str, Any]]:
 def main() -> None:
     spruce = build_growing_spruce()
     target = Target.resolve("1.21.1", "vanilla")
-    result = compile_machines(
-        [spruce], target, namespace="grove", output=GENERATED / "growing-spruce"
-    )
+    result = compile_machines([spruce], target, namespace="grove", output=OUTPUT)
 
     print(f"target    : {target}")
     print(f"ok        : {result.ok}")

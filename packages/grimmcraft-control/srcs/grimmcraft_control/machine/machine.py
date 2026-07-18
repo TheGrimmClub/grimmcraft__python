@@ -387,3 +387,9 @@ def new_machine(name: str = "machine") -> MachineBuilder[dict[str, Any]]:
     directly.)
     """
     return MachineBuilder[dict[str, Any]]({}, name=name)
+
+
+#: The machine type :func:`new_machine` produces — ``Machine`` with the default
+#: (untyped ``dict``) context. Annotate example/builder functions with this to
+#: avoid spelling out ``Machine[dict[str, Any]]``.
+MachineDefault = Machine[dict[str, Any]]

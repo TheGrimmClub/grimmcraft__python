@@ -152,6 +152,16 @@ source = { editable = "packages/grimmcraft-data" }
 name = "grimmcraft-redstone"
 version = "0.1.0"
 source = { editable = "packages/grimmcraft-redstone" }
+dependencies = [
+    { name = "grimmcraft-core" },
+    { name = "grimmcraft-data" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "grimmcraft-core", editable = "packages/grimmcraft-core" },
+    { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
+]
 
 [[package]]
 name = "iniconfig"

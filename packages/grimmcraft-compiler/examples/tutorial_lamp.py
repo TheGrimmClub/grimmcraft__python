@@ -11,33 +11,25 @@ The API avoids ceremony and magic strings:
 * ``builder.add_state("OFF")`` returns a state; refer to it by that variable in
   transitions, so a state name is written exactly once.
 * effects are **methods on the state** — ``on.enter.setblock(...)`` /
-  ``on.cycle.add_score(...)`` — so there are no effect imports and no
-  ``Command(...)`` wrappers.
+  ``on.cycle.add_score(...)`` — so there are no effect imports.
 * the one repeated event name lives in the small ``Event`` enum.
 
-Run it::
+Run it (from the package dir, or via ``task compiler:tutorial``)::
 
     uv run --package grimmcraft-compiler python examples/tutorial_lamp.py
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
-from pathlib import Path
-from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_control import TICK_EVENT, Machine, new_machine
-from grimmcraft_core import BlockPos
-from grimmcraft_data import Block
+from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
+from grimmcraft_core import BlockPos, BlockType
 
 LAMP_POS = BlockPos(0, 64, 0)
 TIMER = "lamp_timer"
-
-# Write the datapack next to this example (a tracked, committed reference copy)
-# rather than into the gitignored dist/, so the generated output is visible in
-# the repo. Re-running this script refreshes it in place.
-GENERATED = Path(__file__).resolve().parent / "generated"
+# Committed reference copy lives next to the examples (run via `task`, whose cwd
+# is the package dir). See examples/generated/README.md.
+OUTPUT = "examples/generated/tutorial-lamp"
 
 
 class Event(StrEnum):
@@ -48,23 +40,23 @@ class Event(StrEnum):
     PULL = "pull"
 
 
-def build_lamp() -> Machine[dict[str, Any]]:
+def build_lamp() -> MachineDefault:
     """Assemble the lamp machine one step at a time."""
     builder = new_machine("lamp")
-    builder.for_entity(Block.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
+    builder.for_entity(BlockType.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
     # 1. OFF: remove the light so the area goes dark. `enter` effects run once,
     #    when the machine enters the state; "off" is just setting air. We keep the
     #    `off` object and refer to it by variable, so "OFF" is written once.
     off = builder.add_state("OFF")
-    off.enter.setblock(LAMP_POS, Block.AIR)
+    off.enter.setblock(LAMP_POS, BlockType.AIR)
 
     # 2. ON: place a full-bright invisible light, click, announce it, and arm a
-    #    100-tick timer — one method call per effect. minecraft:light[level=15]
-    #    emits light 15 with no visible block and stays lit with no redstone.
-    #    `cycle` effects run every tick while in the state.
+    #    100-tick timer — one method call per effect. light[level=15] emits light
+    #    15 with no visible block and stays lit with no redstone. `cycle` effects
+    #    run every tick while in the state.
     on = builder.add_state("ON")
-    on.enter.setblock(LAMP_POS, Block.LIGHT, level=15)
+    on.enter.setblock(LAMP_POS, BlockType.LIGHT, level=15)
     on.enter.playsound("minecraft:block.lever.click")
     on.enter.say("The lamp glows.")
     on.enter.set_score(TIMER, "lamp", 100)
@@ -89,9 +81,7 @@ def main() -> None:
     target = Target.resolve("1.21.1", "vanilla")
 
     # Compile: collect → IR → validate → render → emit → verify, all in one call.
-    result = compile_machines(
-        [lamp], target, namespace="tutorial", output=GENERATED / "tutorial-lamp"
-    )
+    result = compile_machines([lamp], target, namespace="tutorial", output=OUTPUT)
 
     print(f"target      : {target}")
     print(f"ok          : {result.ok}")

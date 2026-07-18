@@ -5,25 +5,20 @@ Shows generating many blocks with a plain Python loop — the machine API is jus
 Python. The ``BUILT`` state's ``enter`` places 64 alternating white/black wool
 blocks; a ``clear`` transition sets them all back to air.
 
-Run it::
+Run it (from the package dir, or via ``task compiler:chess``)::
 
     uv run --package grimmcraft-compiler python examples/chessboard.py
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
-from pathlib import Path
-from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_control import Machine, new_machine
-from grimmcraft_core import BlockPos
-from grimmcraft_data import Block
+from grimmcraft_control import MachineDefault, new_machine
+from grimmcraft_core import BlockPos, BlockType
 
 ORIGIN = BlockPos(0, 64, 0)  # north-west corner of the board (col = +x, row = +z)
 SIZE = 8
-GENERATED = Path(__file__).resolve().parent / "generated"
+OUTPUT = "examples/generated/chessboard"
 
 
 class Event(StrEnum):
@@ -33,7 +28,7 @@ class Event(StrEnum):
     CLEAR = "clear"
 
 
-def build_chessboard() -> Machine[dict[str, Any]]:
+def build_chessboard() -> MachineDefault:
     """A ``chessboard`` machine: ``build`` lays the board, ``clear`` removes it."""
     builder = new_machine("chessboard")
 
@@ -47,7 +42,7 @@ def build_chessboard() -> Machine[dict[str, Any]]:
     built.enter.say("Placing the chessboard.")
     for row in range(SIZE):
         for col in range(SIZE):
-            wool = Block.WHITE_WOOL if (row + col) % 2 == 0 else Block.BLACK_WOOL
+            wool = BlockType.WHITE_WOOL if (row + col) % 2 == 0 else BlockType.BLACK_WOOL
             built.enter.setblock(ORIGIN.offset(col, 0, row), wool)
 
     # `build` lays the board; `clear` wipes it back to air, square by square.
@@ -55,7 +50,7 @@ def build_chessboard() -> Machine[dict[str, Any]]:
     clear = builder.add_transition(built, Event.CLEAR, to=empty)
     for row in range(SIZE):
         for col in range(SIZE):
-            clear.do.setblock(ORIGIN.offset(col, 0, row), Block.AIR)
+            clear.do.setblock(ORIGIN.offset(col, 0, row), BlockType.AIR)
 
     builder.initial(empty)
     return builder.build()
@@ -64,9 +59,7 @@ def build_chessboard() -> Machine[dict[str, Any]]:
 def main() -> None:
     board = build_chessboard()
     target = Target.resolve("1.21.1", "vanilla")
-    result = compile_machines(
-        [board], target, namespace="chess", output=GENERATED / "chessboard"
-    )
+    result = compile_machines([board], target, namespace="chess", output=OUTPUT)
 
     print(f"target    : {target}")
     print(f"ok        : {result.ok}")

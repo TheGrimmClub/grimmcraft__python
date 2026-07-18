@@ -3,6 +3,12 @@
 # standalone: run `task` from inside this directory.
 version: '3'
 
+env:
+  # `uv run` auto-syncs, which under iCloud re-hides the editable .pth files
+  # (see the root Taskfile's fix-venv). Skip the implicit sync here; run
+  # `task install` at the root when dependencies change.
+  UV_NO_SYNC: "1"
+
 vars:
   PKG: grimmcraft-compiler
 

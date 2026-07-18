@@ -31,7 +31,18 @@ from grimmcraft_core.workstation import (
     Furnace,
 )
 
+# Registry enum *types* come from grimmcraft-data; re-export them under clearer
+# "…Type" names so domain code imports them from here alongside the other core
+# world types (``BlockType.STONE`` reads better than ``Block.STONE``).
+from grimmcraft_data import Block as BlockType
+from grimmcraft_data import Entity as EntityType
+from grimmcraft_data import Item as ItemType
+
 __all__ = [
+    # registry enum types (re-exported from grimmcraft-data)
+    "BlockType",
+    "ItemType",
+    "EntityType",
     # world primitives
     "Coordinates",
     "BlockPos",
