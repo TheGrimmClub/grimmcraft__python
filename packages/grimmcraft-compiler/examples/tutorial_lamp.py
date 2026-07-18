@@ -44,22 +44,22 @@ def build_lamp() -> MachineDefault:
     builder = new_machine("lamp")
     builder.for_entity(BlockType.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
-    # 1. OFF: remove the light so the area goes dark. `enter` effects run once,
-    #    when the machine enters the state; "off" is just setting air. We keep the
-    #    `off` object and refer to it by variable, so "OFF" is written once.
-    off = builder.add_state("OFF")
-    off.enter.setblock(LAMP_POS, BlockType.AIR)
+    # 1. OFF: remove the light so the area goes dark. A `with` block groups the
+    #    state's definition; `off` stays usable afterwards (in the transitions).
+    #    `enter` effects run once, when the machine enters the state.
+    with builder.add_state("OFF") as off:
+        off.enter.setblock(LAMP_POS, BlockType.AIR)
 
     # 2. ON: place a full-bright invisible light, click, announce it, and arm a
     #    100-tick timer — one method call per effect. light[level=15] emits light
     #    15 with no visible block and stays lit with no redstone. `cycle` effects
     #    run every tick while in the state.
-    on = builder.add_state("ON")
-    on.enter.setblock(LAMP_POS, BlockType.LIGHT, level=15)
-    on.enter.playsound("minecraft:block.lever.click")
-    on.enter.say("The lamp glows.")
-    on.enter.set_score(TIMER, "lamp", 100)
-    on.cycle.add_score(TIMER, "lamp", -1)
+    with builder.add_state("ON") as on:
+        on.enter.setblock(LAMP_POS, BlockType.LIGHT, level=15)
+        on.enter.playsound("minecraft:block.lever.click")
+        on.enter.say("The lamp glows.")
+        on.enter.set_score(TIMER, "lamp", 100)
+        on.cycle.add_score(TIMER, "lamp", -1)
 
     # 3. Pulling the lever toggles the two states — pass the state objects.
     builder.transition(off, Event.PULL, to=on)

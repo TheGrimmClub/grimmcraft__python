@@ -117,6 +117,22 @@ def test_if_score_gates_a_command_in_a_cycle() -> None:
     assert guarded.payload["run"].name == CommandName.FILL
 
 
+def test_with_block_groups_a_state_definition() -> None:
+    builder = new_machine("lamp")
+    with builder.add_state("OFF") as off:
+        off.enter.say("dark")
+    with builder.add_state("ON") as on:  # `on`/`off` stay usable after the block
+        on.enter.say("lit")
+        on.cycle.add_score("t", "e", -1)
+    builder.transition(off, "pull", to=on)
+    machine = builder.initial(off).build()
+
+    assert set(machine.states) == {"OFF", "ON"}
+    assert machine.states["ON"].enter[0].payload == {"text": "lit"}
+    assert machine.states["ON"].cycle[0].name == CommandName.SCOREBOARD_ADD
+    assert machine.dispatch(Event("pull")).to_state == "ON"
+
+
 def test_effect_methods_on_state_need_no_imports() -> None:
     # Effects as methods on the phase writer — no setblock/fill/say imports.
     builder = new_machine("m")

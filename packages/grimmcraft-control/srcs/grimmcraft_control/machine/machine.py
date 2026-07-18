@@ -143,6 +143,13 @@ class StateDraft:
         on.enter.say("lit!")
         on.cycle.add_score("timer", "lamp", -1)
 
+    It is also a context manager, so a ``with`` block can group a state's
+    definition (the variable stays usable afterwards, e.g. in transitions)::
+
+        with builder.add_state("ON") as on:
+            on.enter.setblock(pos, Block.LIGHT, level=15)
+            on.enter.say("lit!")
+
     ``enter``/``exit`` run once on state change; ``cycle`` runs every tick while
     in the state.
     """
@@ -153,6 +160,12 @@ class StateDraft:
         self._enter: list[Command] = []
         self._exit: list[Command] = []
         self._cycle: list[Command] = []
+
+    def __enter__(self) -> StateDraft:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
 
     @property
     def enter(self) -> EffectWriter:
@@ -198,6 +211,12 @@ class TransitionDraft:
         self._guard: Guard | None = None
         self._condition: Condition | None = None
         self._commands: list[Command] = []
+
+    def __enter__(self) -> TransitionDraft:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
 
     @property
     def do(self) -> EffectWriter:
