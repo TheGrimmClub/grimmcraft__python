@@ -13,21 +13,19 @@ A lamp has two states, `OFF` and `ON`, toggled by a `pull` event. Turning `ON`
 lights the block, clicks, and arms a 100-tick timer; a per-tick **cycle** counts
 that timer down, and an automatic transition switches back `OFF` at zero.
 
-The builder avoids magic strings you have to keep in sync:
+The builder is designed to stay readable and typo-proof:
 
 - `new_machine("lamp")` starts a builder — no generics, no context object.
 - `add_state("OFF")` returns the state; refer to it by that **variable** in
   transitions, so a state name is written exactly once.
-- effects come from typed **constructors** (`setblock`, `say`, …) — no payload
-  dicts or `Command(...)`; `Block.LIGHT` is a data enum, valid by construction.
+- effects are **methods on the state** (`on.enter.setblock(...)`,
+  `on.cycle.add_score(...)`) — no effect imports, no `Command(...)` wrappers.
 - the one repeated event name lives in a tiny `Event` enum.
 
 ```python
 from enum import StrEnum
-from grimmcraft_control.machine import (
-    new_machine, TICK_EVENT,
-    setblock, playsound, say, set_score, add_score,   # typed command constructors
-)
+
+from grimmcraft_control import new_machine, TICK_EVENT
 from grimmcraft_data import Block
 from grimmcraft_core import BlockPos
 
@@ -40,16 +38,16 @@ builder = new_machine("lamp")
 
 # OFF: remove the light (set it to air) on entry.
 off = builder.add_state("OFF")
-off.on_enter(setblock(LAMP_POS, Block.AIR))
+off.enter.setblock(LAMP_POS, Block.AIR)
 
 # ON: place a full-bright invisible light, click, arm a timer — one line each —
 # and count the timer down every tick. light[level=15] stays lit with no power.
 on = builder.add_state("ON")
-on.on_enter(setblock(LAMP_POS, Block.LIGHT, level=15))
-on.on_enter(playsound("minecraft:block.lever.click"))
-on.on_enter(say("The lamp glows."))
-on.on_enter(set_score(TIMER, "lamp", 100))
-on.on_cycle(add_score(TIMER, "lamp", -1))
+on.enter.setblock(LAMP_POS, Block.LIGHT, level=15)
+on.enter.playsound("minecraft:block.lever.click")
+on.enter.say("The lamp glows.")
+on.enter.set_score(TIMER, "lamp", 100)
+on.cycle.add_score(TIMER, "lamp", -1)
 
 # Pass the state objects (off / on) — no repeated name strings.
 builder.transition(off, Event.PULL, to=on)
@@ -65,18 +63,18 @@ lamp = builder.build()
 
 Key ideas:
 
-- **One step per line.** Keep a `builder` and call methods as separate statements
-  instead of chaining — each line does one thing, so beginners can read it
-  top-to-bottom and edit a single step without touching the rest.
-- **Enums over strings.** `CommandName.SETBLOCK` *is* `"setblock"` (a `StrEnum`),
-  so it drops into `Command(...)` with no ceremony — but typos become import
-  errors and editors autocomplete. Same for `ConditionName` and your state/event
-  enums.
-- **`enter` / `exit` / `cycle`** are tuples of declarative `Command`s. `enter`
-  and `exit` fire on state change; `cycle` runs every tick while in the state.
-- **`TICK_EVENT`** transitions are *automatic*: the compiler checks them every
-  tick, after the state's cycle commands. Their `Condition` becomes an
-  `execute if score …` guard.
+- **Effects are methods on each phase.** `state.enter`, `state.exit`,
+  `state.cycle` and `transition.do` expose `.setblock(...)`, `.fill(...)`,
+  `.say(...)`, `.set_score(...)`, `.if_score(...)`, … — discoverable by
+  autocomplete, and you import nothing to use them.
+- **One step per line.** Each call does one thing, so you can read top-to-bottom
+  and edit a single step in isolation.
+- **`cycle`** runs every tick while in the state; **`enter`/`exit`** fire on
+  state change.
+- **`TICK_EVENT`** transitions are *automatic*: checked every tick, after the
+  state's cycle. Their `when_score` becomes an `execute if score …` guard.
+- For a conditional inside a cycle, chain it:
+  `state.cycle.if_score("stage", "tree", 1).fill(a, b, Block.OAK_LOG)`.
 
 ## 2. Compile it
 

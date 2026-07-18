@@ -2,25 +2,18 @@
 """Tutorial: build a machine from scratch and compile it to a datapack.
 
 This is the "learn the API in one file" example. It builds a **redstone lamp**
-state machine by hand (no demo helpers), compiles it for one target, and prints
-the generated ``mcfunction`` so you can see exactly how each primitive lowers.
+state machine by hand, compiles it, and prints the generated ``mcfunction`` so you
+can see how each primitive lowers.
 
-The API is built for readability, avoiding magic strings you have to keep in sync:
+The API avoids ceremony and magic strings:
 
-* ``new_machine("lamp")`` starts a builder — no generics or context to pass.
-* ``builder.add_state("OFF")`` returns a state object; refer to it by that
-  variable in transitions, so each state name is written exactly once.
-* commands come from typed constructors (``setblock``, ``say``, ``playsound``,
-  ``set_score``, ``add_score``) — no ``Command(name, payload-dict)``.
-* the one repeated event name lives in the small ``Event`` enum below.
-
-The lamp:
-
-* ``OFF`` / ``ON`` states, toggled by a ``pull`` event (a lever, a button, …).
-* Turning ``ON`` lights the block, plays a click, and arms a 100-tick timer.
-* While ``ON``, a per-tick **cycle** counts the timer down; an automatic
-  ``TICK`` transition switches it back ``OFF`` when the timer hits zero — so the
-  lamp auto-offs without anyone sending an event.
+* ``new_machine("lamp")`` starts a builder — no generics, no context object.
+* ``builder.add_state("OFF")`` returns a state; refer to it by that variable in
+  transitions, so a state name is written exactly once.
+* effects are **methods on the state** — ``on.enter.setblock(...)`` /
+  ``on.cycle.add_score(...)`` — so there are no effect imports and no
+  ``Command(...)`` wrappers.
+* the one repeated event name lives in the small ``Event`` enum.
 
 Run it::
 
@@ -33,29 +26,9 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-# grimmcraft-compiler is the backend: it turns a machine into a datapack.
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_compiler.dialect import Dialect
-from grimmcraft_compiler.emit import render_function
-
-# grimmcraft-control is where behaviour lives: the machine + its primitives, plus
-# the CommandName / ConditionName vocabularies so nothing is stringly-typed.
-from grimmcraft_control.machine import (
-    TICK_EVENT,
-    Machine,
-    add_score,
-    new_machine,
-    playsound,
-    say,
-    set_score,
-    setblock,
-)
-
-# grimmcraft-core gives us real world types to reuse (here: a block position).
+from grimmcraft_control import TICK_EVENT, Machine, new_machine
 from grimmcraft_core import BlockPos
-
-# grimmcraft-data is the id source of truth; using an enum member means the id is
-# valid by construction (the compiler won't need to guess or warn).
 from grimmcraft_data import Block
 
 LAMP_POS = BlockPos(0, 64, 0)
@@ -76,45 +49,33 @@ class Event(StrEnum):
 
 
 def build_lamp() -> Machine[dict[str, Any]]:
-    """Assemble the lamp machine one step at a time.
-
-    We keep a ``builder`` variable and add each state/transition with its own
-    method call. Commands come from the typed constructors (``setblock``,
-    ``say``, …) so there are no payload dicts or ``Command(...)`` wrappers — every
-    line reads like a sentence and can be commented out or reordered on its own.
-    """
-    # Start a machine called "lamp" (this name is its grimmcraft_state scoreboard
-    # entry and its function folder). new_machine() hides the generic/context
-    # boilerplate — you only need it if you drive the machine at runtime.
+    """Assemble the lamp machine one step at a time."""
     builder = new_machine("lamp")
     builder.for_entity(Block.REDSTONE_LAMP.string_id)  # type: ignore[attr-defined]
 
-    # 1. The OFF state: remove the light so the area goes dark. `on_enter` runs
-    #    once, when the machine enters the state; "off" is just setting air. We
-    #    keep the returned `off` object and refer to it by variable below, so the
-    #    name "OFF" is written exactly once.
+    # 1. OFF: remove the light so the area goes dark. `enter` effects run once,
+    #    when the machine enters the state; "off" is just setting air. We keep the
+    #    `off` object and refer to it by variable, so "OFF" is written once.
     off = builder.add_state("OFF")
-    off.on_enter(setblock(LAMP_POS, Block.AIR))
+    off.enter.setblock(LAMP_POS, Block.AIR)
 
-    # 2. The ON state: place a full-bright invisible light, click, announce it,
-    #    and arm a 100-tick timer — one command per line. `minecraft:light[level=15]`
+    # 2. ON: place a full-bright invisible light, click, announce it, and arm a
+    #    100-tick timer — one method call per effect. minecraft:light[level=15]
     #    emits light 15 with no visible block and stays lit with no redstone.
-    #    `on_cycle` runs every tick while the machine sits in this state.
+    #    `cycle` effects run every tick while in the state.
     on = builder.add_state("ON")
-    on.on_enter(setblock(LAMP_POS, Block.LIGHT, level=15))
-    on.on_enter(playsound("minecraft:block.lever.click"))
-    on.on_enter(say("The lamp glows."))
-    on.on_enter(set_score(TIMER, "lamp", 100))
-    on.on_cycle(add_score(TIMER, "lamp", -1))
+    on.enter.setblock(LAMP_POS, Block.LIGHT, level=15)
+    on.enter.playsound("minecraft:block.lever.click")
+    on.enter.say("The lamp glows.")
+    on.enter.set_score(TIMER, "lamp", 100)
+    on.cycle.add_score(TIMER, "lamp", -1)
 
-    # 3. Pulling the lever toggles between the two states — pass the state objects
-    #    (no repeated strings to keep in sync).
+    # 3. Pulling the lever toggles the two states — pass the state objects.
     builder.transition(off, Event.PULL, to=on)
     builder.transition(on, Event.PULL, to=off)
 
-    # 4. An automatic transition: checked every tick, *after* ON's cycle commands.
-    #    `when_score` turns the lamp off once the timer reaches 0; it becomes an
-    #    `execute if score …` guard in the datapack.
+    # 4. Automatic: checked every tick, *after* ON's cycle. Turn the lamp off once
+    #    the timer reaches 0 (becomes an `execute if score …` guard).
     auto = builder.add_transition(on, TICK_EVENT, to=off)
     auto.when_score(TIMER, "lamp", 0)
 
@@ -137,12 +98,10 @@ def main() -> None:
     print(f"functions   : {len(result.pack.functions)}")
     print(f"output      : {result.output_path}\n")
 
-    # Show input → output: render every generated function with the dialect so
-    # you can see how states/transitions/cycle became mcfunction lines.
-    dialect = Dialect(target)
-    for function in result.pack.functions:
-        print(f"# ---- {function.id} ----")
-        print(render_function(function, dialect).rstrip())
+    # Show input → output: every generated function's rendered mcfunction text.
+    for function_id, text in result.rendered().items():
+        print(f"# ---- {function_id} ----")
+        print(text.rstrip())
         print()
 
 

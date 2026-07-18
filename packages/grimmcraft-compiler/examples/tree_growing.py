@@ -6,12 +6,12 @@ state machine's per-tick **cycle** plus a ``stage`` scoreboard to build it up
 gradually — the timer/scoreboard approach:
 
 * ``plant`` resets ``stage`` to 0 and enters ``GROWING``.
-* every tick, ``GROWING`` bumps ``stage`` by one, then ``if_score`` places just
-  the step matching the new ``stage`` (trunk first, then each foliage ring).
+* every tick, ``GROWING`` bumps ``stage`` by one, then ``cycle.if_score(...)``
+  places just the step matching the new ``stage`` (trunk first, then each ring).
 * an automatic transition finishes to ``GROWN`` once the last step is placed.
 
 So the machine iterates over ticks instead of unrolling the whole build into one
-function. (One step per tick is quick; a real "slow growth" would count a longer
+function. (One step per tick is quick; real "slow growth" would count a longer
 timer down between steps.)
 
 Run it::
@@ -26,19 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_compiler.dialect import Dialect
-from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import (
-    TICK_EVENT,
-    Command,
-    Machine,
-    add_score,
-    fill,
-    if_score,
-    new_machine,
-    say,
-    set_score,
-)
+from grimmcraft_control import TICK_EVENT, Machine, new_machine
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
@@ -54,43 +42,33 @@ class Event(StrEnum):
     PLANT = "plant"
 
 
-def _steps() -> list[Command]:
-    """The fill for each growth step, in order: trunk, then each foliage ring."""
-    steps = [fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG)]
-    for y, r in FOLIAGE:
-        steps.append(
-            fill(BASE.offset(-r, y, -r), BASE.offset(r, y, r),
-                 Block.SPRUCE_LEAVES, mode="keep")
-        )
-    return steps
-
-
 def build_growing_spruce() -> Machine[dict[str, Any]]:
-    """A spruce that builds itself up one step per tick while in ``GROWING``."""
-    steps = _steps()
-
+    """A spruce that builds itself one step per tick while in ``GROWING``."""
     builder = new_machine("growing_spruce")
 
     seed = builder.add_state("SEED")
+    growing = builder.add_state("GROWING")
+    grown = builder.add_state("GROWN")
+    grown.enter.say("The spruce is fully grown.")
 
     # The processing loop: each tick advance the stage, then place only the step
-    # whose number now matches — if_score gates each fill on the stage score.
-    growing = builder.add_state("GROWING")
-    growing.on_cycle(add_score(STAGE, ENTRY, 1))
-    for number, step in enumerate(steps, start=1):
-        growing.on_cycle(if_score(STAGE, ENTRY, number, step))
-
-    grown = builder.add_state("GROWN")
-    grown.on_enter(say("The spruce is fully grown."))
+    # whose number now matches — cycle.if_score(...) gates each fill on the score.
+    growing.cycle.add_score(STAGE, ENTRY, 1)
+    stage = 1
+    growing.cycle.if_score(STAGE, ENTRY, stage).fill(
+        BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG
+    )
+    for y, r in FOLIAGE:
+        stage += 1
+        growing.cycle.if_score(STAGE, ENTRY, stage).fill(
+            BASE.offset(-r, y, -r), BASE.offset(r, y, r),
+            Block.SPRUCE_LEAVES, mode="keep",
+        )
 
     # plant (re)starts growth from stage 0.
-    builder.transition(
-        seed, Event.PLANT, to=growing, commands=(set_score(STAGE, ENTRY, 0),)
-    )
+    builder.add_transition(seed, Event.PLANT, to=growing).do.set_score(STAGE, ENTRY, 0)
     # Automatic: once the last step's stage is reached, finish growing.
-    builder.add_transition(growing, TICK_EVENT, to=grown).when_score(
-        STAGE, ENTRY, len(steps)
-    )
+    builder.add_transition(growing, TICK_EVENT, to=grown).when_score(STAGE, ENTRY, stage)
 
     builder.initial(seed)
     return builder.build()
@@ -108,10 +86,12 @@ def main() -> None:
     print(f"functions : {len(result.pack.functions)}")
     print(f"output    : {result.output_path}")
 
-    dialect = Dialect(target)
-    tick_fn = next(f for f in result.pack.functions if f.id.path.endswith("tick_growing"))
-    print(f"\n# {tick_fn.id} (the per-tick growth loop):")
-    print(render_function(tick_fn, dialect).rstrip())
+    tick_id, tick_text = next(
+        (fid, text) for fid, text in result.rendered().items()
+        if fid.endswith("tick_growing")
+    )
+    print(f"\n# {tick_id} (the per-tick growth loop):")
+    print(tick_text.rstrip())
     print(f"\nTrigger in-game with: /function grove:{spruce.name}/on_{Event.PLANT}")
 
 

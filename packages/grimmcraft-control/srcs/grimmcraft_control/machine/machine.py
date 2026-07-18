@@ -23,6 +23,7 @@ from grimmcraft_control.machine.result import Result
 from grimmcraft_control.machine.state import State
 from grimmcraft_control.machine.transition import Action, Condition, Guard, Transition
 from grimmcraft_control.machine.vocabulary import ConditionName
+from grimmcraft_control.machine.writer import EffectWriter
 
 Ctx = TypeVar("Ctx")
 
@@ -132,12 +133,18 @@ class Machine(Generic[Ctx]):
 
 
 class StateDraft:
-    """A state under construction — add its commands one method call at a time.
+    """A state under construction — add its effects as methods on each phase.
 
-    Returned by :meth:`MachineBuilder.add_state`. ``on_enter`` / ``on_exit`` /
-    ``on_cycle`` each append one or more :class:`Command`\\ s (build them with the
-    constructors in :mod:`grimmcraft_control.machine.effects`), so a beginner
-    writes one readable line per effect instead of nesting tuples of ``Command``.
+    Returned by :meth:`MachineBuilder.add_state`. Use the :attr:`enter`,
+    :attr:`exit` and :attr:`cycle` writers to add effects with no imports::
+
+        on = builder.add_state("ON")
+        on.enter.setblock(pos, Block.LIGHT, level=15)
+        on.enter.say("lit!")
+        on.cycle.add_score("timer", "lamp", -1)
+
+    ``enter``/``exit`` run once on state change; ``cycle`` runs every tick while
+    in the state.
     """
 
     def __init__(self, name: str, *, final: bool = False) -> None:
@@ -147,24 +154,24 @@ class StateDraft:
         self._exit: list[Command] = []
         self._cycle: list[Command] = []
 
+    @property
+    def enter(self) -> EffectWriter:
+        """Effects to run once when the machine enters this state."""
+        return EffectWriter(self._enter)
+
+    @property
+    def exit(self) -> EffectWriter:
+        """Effects to run once when the machine leaves this state."""
+        return EffectWriter(self._exit)
+
+    @property
+    def cycle(self) -> EffectWriter:
+        """Effects to run every tick while in this state (the processing loop)."""
+        return EffectWriter(self._cycle)
+
     def final(self) -> StateDraft:
         """Mark this state as terminal."""
         self._final = True
-        return self
-
-    def on_enter(self, *commands: Command) -> StateDraft:
-        """Add command(s) to run once when the machine enters this state."""
-        self._enter.extend(commands)
-        return self
-
-    def on_exit(self, *commands: Command) -> StateDraft:
-        """Add command(s) to run once when the machine leaves this state."""
-        self._exit.extend(commands)
-        return self
-
-    def on_cycle(self, *commands: Command) -> StateDraft:
-        """Add command(s) to run every tick while in this state."""
-        self._cycle.extend(commands)
         return self
 
     def to_state(self) -> State:
@@ -176,7 +183,13 @@ class StateDraft:
 
 
 class TransitionDraft:
-    """A transition under construction (from :meth:`MachineBuilder.add_transition`)."""
+    """A transition under construction (from :meth:`MachineBuilder.add_transition`).
+
+    Add the effects it runs via the :attr:`do` writer::
+
+        chop = builder.add_transition(grown, "chop", to=bare)
+        chop.do.fill(a, b, Block.AIR)
+    """
 
     def __init__(self, source: str, event: str, target: str) -> None:
         self.source = source
@@ -186,10 +199,10 @@ class TransitionDraft:
         self._condition: Condition | None = None
         self._commands: list[Command] = []
 
-    def do(self, *commands: Command) -> TransitionDraft:
-        """Add command(s) this transition runs when it fires."""
-        self._commands.extend(commands)
-        return self
+    @property
+    def do(self) -> EffectWriter:
+        """Effects this transition runs when it fires."""
+        return EffectWriter(self._commands)
 
     def when_score(self, objective: str, entry: str, value: int) -> TransitionDraft:
         """Fire only when ``entry``'s ``objective`` score equals ``value``
@@ -262,9 +275,9 @@ class MachineBuilder(Generic[Ctx]):
     ) -> MachineBuilder[Ctx]:
         """Declare a state and its commands in one call; returns the builder."""
         draft = StateDraft(name, final=final)
-        draft.on_enter(*enter)
-        draft.on_exit(*exit)
-        draft.on_cycle(*cycle)
+        draft.enter(*enter)
+        draft.exit(*exit)
+        draft.cycle(*cycle)
         self._states[name] = draft
         return self
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """Example: compile a machine that lays out an 8x8 chessboard of wool.
 
-This shows generating *many* blocks with a plain Python loop — the machine API is
-just Python, so you build commands however you like. The ``BUILT`` state's
-``on_enter`` places 64 alternating white/black wool blocks; a ``clear`` transition
-sets them all back to air.
+Shows generating many blocks with a plain Python loop — the machine API is just
+Python. The ``BUILT`` state's ``enter`` places 64 alternating white/black wool
+blocks; a ``clear`` transition sets them all back to air.
 
 Run it::
 
@@ -18,9 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_compiler.dialect import Dialect
-from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import Machine, new_machine, say, setblock
+from grimmcraft_control import Machine, new_machine
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
@@ -47,18 +44,18 @@ def build_chessboard() -> Machine[dict[str, Any]]:
     # The BUILT state paints the whole 8x8 grid on entry. A square is white when
     # its (row + col) is even, black when odd — the classic checkerboard.
     built = builder.add_state("BUILT")
-    built.on_enter(say("Placing the chessboard."))
+    built.enter.say("Placing the chessboard.")
     for row in range(SIZE):
         for col in range(SIZE):
             wool = Block.WHITE_WOOL if (row + col) % 2 == 0 else Block.BLACK_WOOL
-            built.on_enter(setblock(ORIGIN.offset(col, 0, row), wool))
+            built.enter.setblock(ORIGIN.offset(col, 0, row), wool)
 
     # `build` lays the board; `clear` wipes it back to air, square by square.
     builder.transition(empty, Event.BUILD, to=built)
     clear = builder.add_transition(built, Event.CLEAR, to=empty)
     for row in range(SIZE):
         for col in range(SIZE):
-            clear.do(setblock(ORIGIN.offset(col, 0, row), Block.AIR))
+            clear.do.setblock(ORIGIN.offset(col, 0, row), Block.AIR)
 
     builder.initial(empty)
     return builder.build()
@@ -76,13 +73,12 @@ def main() -> None:
     print(f"functions : {len(result.pack.functions)}")
     print(f"output    : {result.output_path}")
 
-    # Show the first few lines of the 64-block build function.
-    dialect = Dialect(target)
-    build_fn = next(
-        f for f in result.pack.functions if f.id.path.endswith("build__built")
+    build_id, build_text = next(
+        (fid, text) for fid, text in result.rendered().items()
+        if fid.endswith("build__built")
     )
-    lines = render_function(build_fn, dialect).splitlines()
-    print(f"\n# {build_fn.id}  ({len(lines)} lines) — first 6:")
+    lines = build_text.splitlines()
+    print(f"\n# {build_id}  ({len(lines)} lines) — first 6:")
     print("\n".join(lines[:6]))
     print(f"Trigger in-game with: /function chess:{board.name}/on_{Event.BUILD}")
 

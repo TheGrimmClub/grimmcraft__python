@@ -31,6 +31,18 @@ class CompileResult:
         """True when no errors were recorded."""
         return not self.diagnostics.has_errors
 
+    def rendered(self) -> dict[str, str]:
+        """Every function's ``ns:path`` id → its rendered ``mcfunction`` text.
+
+        A convenience for inspecting/printing the output (e.g. in examples)
+        without reaching for the ``Dialect`` / ``emit`` internals.
+        """
+        from grimmcraft_compiler.dialect import Dialect
+        from grimmcraft_compiler.emit import render_function
+
+        dialect = Dialect(self.target)
+        return {str(fn.id): render_function(fn, dialect) for fn in self.pack.functions}
+
 
 def compile_machines(
     machines: list[Machine[Any]],

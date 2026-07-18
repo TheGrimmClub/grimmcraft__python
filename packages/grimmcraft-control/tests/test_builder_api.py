@@ -33,12 +33,12 @@ def test_add_state_and_add_transition_fluent() -> None:
     builder = MachineBuilder[dict[str, Any]]({}).named("lamp")
 
     off = builder.add_state("OFF")
-    off.on_enter(setblock((0, 64, 0), Block.AIR))
+    off.enter(setblock((0, 64, 0), Block.AIR))
 
     on = builder.add_state("ON")
-    on.on_enter(setblock((0, 64, 0), Block.LIGHT, level=15))
-    on.on_enter(say("lit"))
-    on.on_cycle(add_score("timer", "lamp", -1))
+    on.enter(setblock((0, 64, 0), Block.LIGHT, level=15))
+    on.enter(say("lit"))
+    on.cycle(add_score("timer", "lamp", -1))
 
     builder.transition("OFF", "pull", to="ON")
     builder.transition("ON", "pull", to="OFF")
@@ -66,7 +66,7 @@ def test_add_state_and_add_transition_fluent() -> None:
 def test_compact_and_fluent_styles_mix() -> None:
     builder = MachineBuilder[dict[str, Any]]({})
     builder.state("A", enter=(say("hello"),))  # compact
-    builder.add_state("B").on_enter(say("world"))  # fluent
+    builder.add_state("B").enter(say("world"))  # fluent
     builder.transition("A", "go", to="B")
     machine = builder.initial("A").build()
     assert machine.dispatch(Event("go")).to_state == "B"
@@ -80,7 +80,7 @@ def test_new_machine_and_state_object_references() -> None:
     builder = new_machine("lamp")
     off = builder.add_state("OFF")
     on = builder.add_state("ON")
-    on.on_enter(say("on"))
+    on.enter(say("on"))
 
     builder.transition(off, "pull", to=on)  # pass state objects, not name strings
     builder.initial(off)
@@ -103,9 +103,9 @@ def test_if_score_gates_a_command_in_a_cycle() -> None:
     builder = new_machine("grow")
     seed = builder.add_state("SEED")
     growing = builder.add_state("GROWING")
-    growing.on_cycle(add_score("stage", "e", 1))
+    growing.cycle(add_score("stage", "e", 1))
     for number, step in enumerate(steps, start=1):
-        growing.on_cycle(if_score("stage", "e", number, step))
+        growing.cycle(if_score("stage", "e", number, step))
     builder.transition(seed, "plant", to=growing)
     machine = builder.initial(seed).build()
 
@@ -117,6 +117,25 @@ def test_if_score_gates_a_command_in_a_cycle() -> None:
     assert guarded.payload["run"].name == CommandName.FILL
 
 
+def test_effect_methods_on_state_need_no_imports() -> None:
+    # Effects as methods on the phase writer — no setblock/fill/say imports.
+    builder = new_machine("m")
+    on = builder.add_state("ON")
+    on.enter.setblock((0, 64, 0), Block.LIGHT, level=15)
+    on.enter.say("lit")
+    on.cycle.add_score("t", "e", -1)
+    on.cycle.if_score("t", "e", 0).fill((0, 0, 0), (0, 2, 0), Block.AIR)
+    builder.add_state("OFF")
+    builder.transition(on, "x", to="OFF")
+    machine = builder.initial(on).build()
+
+    state = machine.states["ON"]
+    assert [c.name for c in state.enter] == [CommandName.SETBLOCK, CommandName.SAY]
+    guarded = state.cycle[1]
+    assert guarded.name == "execute_if_score"
+    assert guarded.payload["run"].name == CommandName.FILL
+
+
 def test_loop_builds_a_checkerboard() -> None:
     # The API is plain Python, so a loop can emit many commands (the chessboard
     # example): an 8x8 board is 64 wool setblocks, half of each colour.
@@ -125,7 +144,7 @@ def test_loop_builds_a_checkerboard() -> None:
     for row in range(8):
         for col in range(8):
             wool = Block.WHITE_WOOL if (row + col) % 2 == 0 else Block.BLACK_WOOL
-            built.on_enter(setblock((col, 64, row), wool))
+            built.enter(setblock((col, 64, row), wool))
     builder.add_state("EMPTY")
     builder.transition("EMPTY", "build", to="BUILT")
     machine = builder.initial("EMPTY").build()

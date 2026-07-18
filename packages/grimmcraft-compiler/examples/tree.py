@@ -25,9 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from grimmcraft_compiler import Target, compile_machines
-from grimmcraft_compiler.dialect import Dialect
-from grimmcraft_compiler.emit import render_function
-from grimmcraft_control.machine import Machine, fill, new_machine, say
+from grimmcraft_control import Machine, new_machine
 from grimmcraft_core import BlockPos
 from grimmcraft_data import Block
 
@@ -55,17 +53,17 @@ def build_spruce() -> Machine[dict[str, Any]]:
     bare = builder.add_state("BARE")
 
     grown = builder.add_state("GROWN")
-    grown.on_enter(say("A spruce grows."))
+    grown.enter.say("A spruce grows.")
 
     # Trunk: one vertical fill from the base up.
-    grown.on_enter(fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG))
+    grown.enter.fill(BASE, BASE.offset(0, TRUNK_HEIGHT - 1, 0), Block.SPRUCE_LOG)
 
     # Foliage: one fill per ring, widest at the bottom and tapering to the tip.
     # mode="keep" fills only air, so the leaves never overwrite the trunk.
     for y, r in FOLIAGE:
-        grown.on_enter(
-            fill(BASE.offset(-r, y, -r), BASE.offset(r, y, r),
-                 Block.SPRUCE_LEAVES, mode="keep")
+        grown.enter.fill(
+            BASE.offset(-r, y, -r), BASE.offset(r, y, r),
+            Block.SPRUCE_LEAVES, mode="keep",
         )
 
     builder.transition(bare, Event.GROW, to=grown)
@@ -74,9 +72,8 @@ def build_spruce() -> Machine[dict[str, Any]]:
     max_r = max(r for _y, r in FOLIAGE)
     top_y = FOLIAGE[-1][0]
     chop = builder.add_transition(grown, Event.CHOP, to=bare)
-    chop.do(
-        fill(BASE.offset(-max_r, 0, -max_r),
-             BASE.offset(max_r, top_y, max_r), Block.AIR)
+    chop.do.fill(
+        BASE.offset(-max_r, 0, -max_r), BASE.offset(max_r, top_y, max_r), Block.AIR
     )
 
     builder.initial(bare)
@@ -95,10 +92,12 @@ def main() -> None:
     print(f"functions : {len(result.pack.functions)}")
     print(f"output    : {result.output_path}")
 
-    dialect = Dialect(target)
-    grow_fn = next(f for f in result.pack.functions if f.id.path.endswith("grow__grown"))
-    print(f"\n# {grow_fn.id}:")
-    print(render_function(grow_fn, dialect).rstrip())
+    grow_id, grow_text = next(
+        (fid, text) for fid, text in result.rendered().items()
+        if fid.endswith("grow__grown")
+    )
+    print(f"\n# {grow_id}:")
+    print(grow_text.rstrip())
     print(f"\nTrigger in-game with: /function grove:{spruce.name}/on_{Event.GROW}")
 
 

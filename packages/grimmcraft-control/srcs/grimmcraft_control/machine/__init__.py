@@ -49,6 +49,7 @@ from grimmcraft_control.machine.transition import (
     Transition,
 )
 from grimmcraft_control.machine.vocabulary import CommandName, ConditionName
+from grimmcraft_control.machine.writer import EffectWriter
 
 __all__ = [
     "State",
@@ -68,6 +69,7 @@ __all__ = [
     "new_machine",
     "StateDraft",
     "TransitionDraft",
+    "EffectWriter",
     "STATE_OBJECTIVE",
     "TICK_EVENT",
     "StateMachineError",
