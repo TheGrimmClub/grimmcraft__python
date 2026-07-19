@@ -48,3 +48,8 @@ tasks:
     cmds:
       - uv build --package {{.PKG}}
 
+  run:
+    desc: 'Run the CLI (usage: task migrate:run -- classify commands.json)'
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_migrate.cli {{.CLI_ARGS}}

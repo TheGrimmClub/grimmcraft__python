@@ -48,3 +48,16 @@ tasks:
     cmds:
       - uv build --package {{.PKG}}
 
+  run:
+    desc: 'Run the CLI (usage: task structures:run -- show <file.nbt>)'
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} grimmcraft-structure {{.CLI_ARGS}}
+
+  docs:
+    desc: Render the docs to dist/docs/ (Markdown copy; renders anywhere)
+    cmds:
+      - mkdir -p dist/docs
+      - cp -f docs/*.md dist/docs/
+      - cmd: echo "Docs are Markdown in docs/ (copied to dist/docs/)."
+        silent: true
