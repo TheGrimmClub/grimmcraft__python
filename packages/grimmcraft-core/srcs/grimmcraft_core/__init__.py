@@ -33,7 +33,15 @@ from grimmcraft_core.item import (
     StorageBlock,
     ender_storage,
 )
-from grimmcraft_core.occupiable import Bed, Occupiable, Seat, Sleepable
+from grimmcraft_core.occupiable import (
+    Bed,
+    Boat,
+    Minecart,
+    Occupiable,
+    Seat,
+    Sleepable,
+    Vehicle,
+)
 from grimmcraft_core.protocols import Container, Interactable, Positioned
 from grimmcraft_core.scoreboard import ScoreBoard
 from grimmcraft_core.workstation import (
@@ -59,6 +67,9 @@ __all__ = [
     "Sleepable",
     "Seat",
     "Bed",
+    "Vehicle",
+    "Boat",
+    "Minecart",
     # session
     "Game",
     "GameModeType",

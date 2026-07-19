@@ -1,5 +1,36 @@
 # Changelog — grimmcraft-core
 
+## feat(vehicle): boats and minecarts — 2026-07-19
+
+`Vehicle` is an entity that owns seats; `Boat` has two, `Minecart` one, and that
+is the whole of the difference between them.
+
+**Moving is the event.** A seat can compute where its occupant belongs but not
+*when* to put them there, and nothing in this codebase ticks. A vehicle is the
+one thing that knows the moment its own position changes — it is the host — so
+`move_to` and `teleport` settle its seats. Passengers are carried without any
+scheduler existing. The honest boundary: a vehicle carries people when *it* is
+asked to move; nothing makes a minecart roll down a rail on its own.
+
+**The seating plan belongs to the kind, not the instance.** No boat holds three,
+so `seat_offsets` is a `ClassVar` rather than a constructor argument, and it
+declares the offsets rather than the count — one declaration instead of two,
+where the length *is* the seat count. `Minecart` restates nothing: one seat at no
+offset is already the default. A new vehicle is a subclass and a tuple.
+
+**`board` refuses anyone already aboard.** A seat cannot catch that on its own —
+it only knows whether *it* is taken, so a passenger in the front seat would
+otherwise be accepted into the back one as well. There is a test for exactly
+that, because it was a real bug in the first draft.
+
+Being a vehicle is checked against `Entity.category == "Vehicles"` from the
+generated registry, the way `Mob` checks `Entity.type`, so a vehicle cannot
+disagree with the data about what it is.
+
+**One thing nobody wrote:** carrying nests. A boat can ride in a minecart,
+because a vehicle is an ordinary occupant; moving the cart settles its seat,
+which teleports the boat, which settles its own seats in turn. A test pins it.
+
 ## feat(seat): the other half of the trait — 2026-07-19
 
 `Seat` carries its occupant as its host moves, which is the whole of what makes
