@@ -1,0 +1,2 @@
+
+summon firework_rocket ~5 ~20 ~ {CustomNameVisible:1b,Life:10,LifeTime:10,Passengers:[{id:"minecraft:shulker_bullet"}],CustomName:{"bold":true,"color":"black","italic":true,"shadow_color":1680550699,"text":"Böller","underlined":true},FireworksItem:{id:"minecraft:firework_rocket",count:1,components:{"minecraft:fireworks":{explosions:[{shape:"star",has_twinkle:true,has_trail:true,colors:[I;4051711,3387606,3254476,2258575,1926522,1727086,1594470],fade_colors:[I;8070399,7414251,6758102,6430156,6430156,6298823,5511341]}]}}}}
