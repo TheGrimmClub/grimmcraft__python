@@ -1,5 +1,27 @@
 # Changelog — grimmcraft-core
 
+## feat(occupancy): the Occupiable trait — 2026-07-19
+
+`Occupiable` holds one occupant with `enter` / `exit`, and `Sleepable` puts them
+at a fixed place. Players and villagers work identically; nothing here asks
+which it is.
+
+Orthogonal on purpose. A bed is a block, a point of interest *and* occupiable; a
+boat is an entity and occupiable; a minecart is neither block nor POI. Merging
+occupancy into any of those hierarchies forces the other two to inherit what
+they are not — so this is a mixin that knows nothing about blocks, villagers or
+claiming, and a test asserts it imports none of them.
+
+The bed/seat difference is **where the occupant is**, and nothing else. That
+lives in one overridable property. A test builds a seat whose position follows a
+moving host, without changing `Occupiable` — because "the seat variant drops in
+without refactoring" is only worth claiming if it can be shown.
+
+A refusal returns `False` rather than raising: something already being in the
+bed is an ordinary answer. `refusal_reason` gives the why, and distinguishes
+"occupied" from "already inside".
+
+
 ## fix(game): three real bugs, and one enum instead of two — 2026-07-19
 
 `game.py` had a rule enum with one member, spelled wrongly, that nothing used:

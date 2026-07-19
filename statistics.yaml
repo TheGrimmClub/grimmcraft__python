@@ -21,7 +21,10 @@ groups:
 
   - name: grimmcraft · base
     description: The registry data and the domain model everything else builds on.
-    match: ["grimmcraft-data", "grimmcraft-core"]
+    match:
+      - "grimmcraft-data"
+      - "grimmcraft-core"
+      - "grimmcraft-control"
 
   - name: grimmcraft · tools
     description: >
