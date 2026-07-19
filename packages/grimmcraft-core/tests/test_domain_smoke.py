@@ -12,7 +12,7 @@ from grimmcraft_core import (
     Coordinates,
     CraftingTable,
     Direction,
-    GameMode,
+    GameModeType,
     MinecraftClock,
     Player,
     TimeOfDay,
@@ -23,7 +23,7 @@ from grimmcraft_data.item import Item
 
 def test_player_moves_and_carries_a_book() -> None:
     start = Coordinates(0.0, 64.0, 0.0)
-    player = Player(position=start, name="Grimm", gamemode=GameMode.SURVIVAL)
+    player = Player(position=start, name="Grimm", gamemode=GameModeType.SURVIVAL)
 
     assert player.entity_type.name == "PLAYER"
     assert player.is_alive

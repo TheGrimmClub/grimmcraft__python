@@ -12,13 +12,13 @@ from grimmcraft_core.clock import ClockEvent, ClockFire, MinecraftClock, TimeOfD
 from grimmcraft_core.coordinates import BlockPos, Coordinates, Direction
 from grimmcraft_core.entity import (
     CoreEntity,
-    GameMode,
     Mob,
     Npc,
     Player,
     Trade,
     VillagerProfession,
 )
+from grimmcraft_core.game import Game, GameModeType
 from grimmcraft_core.hud import Bearing, Compass, Hud, Waypoint
 from grimmcraft_core.item import (
     Barrel,
@@ -53,6 +53,9 @@ from grimmcraft_data import Entity as EntityType
 from grimmcraft_data import Item as ItemType
 
 __all__ = [
+    # session
+    "Game",
+    "GameModeType",
     # displays
     "Hud",
     "Compass",
@@ -81,7 +84,6 @@ __all__ = [
     # entities
     "CoreEntity",
     "Player",
-    "GameMode",
     "Mob",
     "Npc",
     "Trade",

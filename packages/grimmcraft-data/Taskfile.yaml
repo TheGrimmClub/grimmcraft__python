@@ -36,6 +36,11 @@ tasks:
         # `dir: ./packages/grimmcraft-data`, and it also runs standalone.
         - uv run pytest tests -q
 
+    generate-game-rules:
+      desc: Generate the game rule registry from the shipped language.json
+      cmds:
+        - uv run srcs/grimmcraft_data/_generate/advanced_game_rule.py
+
     generate-villager-data:
       desc: Generate the villager profession + job-site registries (verified, not downloaded)
       cmds:

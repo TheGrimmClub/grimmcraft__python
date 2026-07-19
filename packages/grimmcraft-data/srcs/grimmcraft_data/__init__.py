@@ -40,6 +40,7 @@ from .effect import Effect
 from .enchantment import Enchantment
 from .entity import Entity
 from .food import Food
+from .game_rule import GameRule, game_rule
 from .instrument import Instrument
 from .item import Item
 from .language import all_keys, translate
@@ -58,6 +59,8 @@ __all__ = [
     "Biome",
     "Block",
     "Effect",
+    "GameRule",
+    "game_rule",
     "VillagerProfession",
     "VillagerWorkstation",
     "profession_for_workstation",

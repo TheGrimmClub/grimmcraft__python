@@ -1,22 +1,19 @@
-"""The :class:`Player` entity and its :class:`GameMode`."""
+"""The :class:`Player` entity.
+
+The game mode comes from :mod:`grimmcraft_core.game` — this module used to
+define a second, identical ``GameMode`` enum beside it, so the workspace had two
+spellings of the same four values.
+"""
 
 # Includes
 from __future__ import annotations
 
-from grimmclub_standardlib import Enum, dataclass, field
+from grimmclub_standardlib import dataclass, field
 from grimmcraft_core.entity.core_entity import CoreEntity
+from grimmcraft_core.game import GameModeType
 from grimmcraft_core.item.core_item import Inventory
 from grimmcraft_data.entity import Entity
 
-
-# Types
-class GameMode(Enum):
-    """How a player interacts with the world."""
-
-    SURVIVAL = "survival"
-    CREATIVE = "creative"
-    ADVENTURE = "adventure"
-    SPECTATOR = "spectator"
 
 # Classes
 @dataclass(kw_only=True)
@@ -25,7 +22,7 @@ class Player(CoreEntity):
 
     entity_type: Entity = Entity.PLAYER
     inventory: Inventory = field(default_factory=Inventory)
-    gamemode: GameMode = GameMode.SURVIVAL
+    gamemode: GameModeType = GameModeType.SURVIVAL
     xp_level: int = 0
     hunger: int = 20
 

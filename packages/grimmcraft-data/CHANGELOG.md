@@ -1,5 +1,22 @@
 # Changelog — grimmcraft-data
 
+## feat(game-rule): generate the game rule registry — 2026-07-19
+
+63 rules from the shipped `language.json`, each with the vanilla options-screen
+label and, for 33 of them, the help text. The translation key *is* the rule's
+identifier — the same string `/gamerule` takes — so these names are Mojang's.
+
+That matters more than usual here: `grimmcraft-core` carried a hand-written
+`do_daylight_cycle` whose own TODO admitted the author had guessed at
+snake_case. **None of the 63 real rules contain an underscore**, and Minecraft
+*ignores* an unknown rule rather than rejecting it, so the wrong spelling
+produced a command that did nothing and said nothing.
+
+Types and defaults are deliberately absent — neither is in any file this package
+ships, and curating 63 unverifiable values would be worse than admitting there
+are none.
+
+
 ## refactor(imports): go through grimmclub-standardlib — 2026-07-19
 
 Every module now imports through the house facade rather than reaching into
