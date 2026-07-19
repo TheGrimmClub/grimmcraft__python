@@ -29,18 +29,16 @@ There is no verified public mirror of this file, so `--version` is only honoured
 if `MIRROR_URL` below is set to one you trust; otherwise pass `--input`.
 """
 
-import json
 import keyword
-import re
-import sys
 import urllib.request
-from pathlib import Path
+
+from grimmclub_standardlib import SystemPath, json, re, sys
 
 # No trustworthy public mirror is hardcoded; set this to a URL template you trust
 # (must contain "{version}") to enable `--version` downloads.
 MIRROR_URL = None
 
-PKG_DIR = Path(__file__).parent.parent
+PKG_DIR = SystemPath(__file__).parent.parent
 
 # Registries that PrismarineJS/minecraft-data does not ship; a sensible default.
 DEFAULT_REGISTRIES = [
@@ -91,7 +89,7 @@ def short_name(registry):
 def load_report(args):
     """Return the parsed registries object, or exit with instructions."""
     if "--input" in args:
-        path = Path(args[args.index("--input") + 1])
+        path = SystemPath(args[args.index("--input") + 1])
         return json.loads(path.read_text(encoding="utf-8"))
     if "--version" in args:
         version = args[args.index("--version") + 1]

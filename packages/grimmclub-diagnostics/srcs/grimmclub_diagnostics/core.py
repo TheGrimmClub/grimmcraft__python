@@ -21,12 +21,16 @@ Two fields describe *where*, because domains differ in what they can say:
 
 from __future__ import annotations
 
+# Includes standard
 from collections.abc import Iterator
-from dataclasses import dataclass
 from enum import IntEnum
 
+# Includes external
 from rich.console import Console
 from rich.text import Text
+
+# Includes internal
+from grimmclub_standardlib import dataclass
 
 
 class Severity(IntEnum):
@@ -38,13 +42,11 @@ class Severity(IntEnum):
 
     @property
     def label(self) -> str:
-        return {Severity.INFO: "info", Severity.WARNING: "warning",
-                Severity.ERROR: "error"}[self]
+        return {Severity.INFO: "info", Severity.WARNING: "warning", Severity.ERROR: "error"}[self]
 
     @property
     def style(self) -> str:
-        return {Severity.INFO: "cyan", Severity.WARNING: "yellow",
-                Severity.ERROR: "bold red"}[self]
+        return {Severity.INFO: "cyan", Severity.WARNING: "yellow", Severity.ERROR: "bold red"}[self]
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,9 +117,7 @@ class DiagnosticBag:
     ) -> None:
         """Build and append a diagnostic, defaulting severity from ``code``."""
         self.add(
-            Diagnostic(
-                severity or code.default_severity, code, message, hint, source, location
-            )
+            Diagnostic(severity or code.default_severity, code, message, hint, source, location)
         )
 
     def extend(self, other: DiagnosticBag) -> None:
@@ -151,11 +151,7 @@ class DiagnosticBag:
         bag = DiagnosticBag()
         for d in self._items:
             if d.severity is Severity.WARNING:
-                bag.add(
-                    Diagnostic(
-                        Severity.ERROR, d.code, d.message, d.hint, d.source, d.location
-                    )
-                )
+                bag.add(Diagnostic(Severity.ERROR, d.code, d.message, d.hint, d.source, d.location))
             else:
                 bag.add(d)
         return bag
@@ -179,10 +175,7 @@ class DiagnosticBag:
             for diagnostic in self.of(severity):
                 lines.append(diagnostic.render().plain)
         counts = self.counts()
-        summary = (
-            f"{counts[Severity.ERROR]} error(s), "
-            f"{counts[Severity.WARNING]} warning(s)"
-        )
+        summary = f"{counts[Severity.ERROR]} error(s), {counts[Severity.WARNING]} warning(s)"
         if counts[Severity.INFO]:
             summary += f", {counts[Severity.INFO]} info"
         lines.append(summary)
@@ -206,9 +199,7 @@ class DiagnosticBag:
         summary = Text()
         summary.append(f"{counts[Severity.ERROR]} error(s)", style=Severity.ERROR.style)
         summary.append(", ")
-        summary.append(
-            f"{counts[Severity.WARNING]} warning(s)", style=Severity.WARNING.style
-        )
+        summary.append(f"{counts[Severity.WARNING]} warning(s)", style=Severity.WARNING.style)
         if counts[Severity.INFO]:
             summary.append(", ")
             summary.append(f"{counts[Severity.INFO]} info", style=Severity.INFO.style)

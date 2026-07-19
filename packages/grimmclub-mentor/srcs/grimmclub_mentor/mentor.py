@@ -10,6 +10,7 @@ learn about it*, without changing the diagnostic itself::
                 → Blocks and ids: python/beginners/06-blocks-and-ids.md
 
 Nothing here knows what any code means; the explanations are registered, either
+# Includes standard
 from code or from the teaching material.
 """
 
@@ -141,8 +142,7 @@ class Mentor:
         explained, total = self.coverage(bag)
         if total:
             console.print(
-                f"\n{explained}/{total} explained "
-                f"({len(self.library)} code(s) covered)",
+                f"\n{explained}/{total} explained ({len(self.library)} code(s) covered)",
                 style="dim",
             )
         return bag.render()

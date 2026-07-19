@@ -13,15 +13,14 @@ Usage:
     python _generate/advanced_language.py --list     # available versions
 """
 
-import json
-import sys
 import urllib.request
-from pathlib import Path
+
+from grimmclub_standardlib import SystemPath, json, sys
 
 BASE = "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data"
 PATHS_URL = f"{BASE}/dataPaths.json"
 TYPE_KEY = "language"
-PKG_DIR = Path(__file__).parent.parent
+PKG_DIR = SystemPath(__file__).parent.parent
 OUTPUT_PATH = PKG_DIR / "language.py"
 DATA_DIR = PKG_DIR / "data"
 
@@ -60,10 +59,10 @@ Do not edit by hand; regenerate with _generate/advanced_language.py."""
 
 from __future__ import annotations
 
-import json
-from functools import lru_cache
-from importlib.resources import files
-from pathlib import Path
+from grimmclub_standardlib import json
+from grimmclub_standardlib import lru_cache
+from grimmclub_standardlib import files
+from grimmclub_standardlib import SystemPath
 
 _DATA = {json.dumps(data_rel)}
 _HERE = SystemPath(__file__).parent

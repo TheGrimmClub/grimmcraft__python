@@ -8,7 +8,8 @@ emits coded diagnostics.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+# Includes internal
+from grimmclub_standardlib import dataclass, field
 
 #: How a mentor note is introduced in a report.
 NOTE_HEADING = "mentor"

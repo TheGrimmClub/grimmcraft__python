@@ -162,9 +162,7 @@ def test_resolved_lessons_are_not_flagged(tmp_path: Path):
     (tmp_path / "there.md").write_text("# here", encoding="utf-8")
     mentor = Mentor(lesson_root=tmp_path)
     mentor.register(
-        Explanation(
-            codes=("XX1001",), summary="x", lessons=(Reference("There", "there.md"),)
-        )
+        Explanation(codes=("XX1001",), summary="x", lessons=(Reference("There", "there.md"),))
     )
     assert not mentor.note(next(iter(a_bag()))).unresolved
 
@@ -190,9 +188,7 @@ def test_report_includes_the_teaching():
 def test_detail_is_withheld_unless_asked():
     """Someone hitting the same error a fifth time does not want the essay."""
     mentor = Mentor()
-    mentor.register(
-        Explanation(codes=("XX1001",), summary="short", detail="the long version")
-    )
+    mentor.register(Explanation(codes=("XX1001",), summary="short", detail="the long version"))
     console = Console(width=100, record=True)
     mentor.report(a_bag(), console)
     assert "the long version" not in console.export_text()

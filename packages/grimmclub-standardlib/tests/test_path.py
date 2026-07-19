@@ -87,9 +87,7 @@ def test_every_operation_logs_under_either_name(
     assert "remove directory" in logged
 
 
-def test_normal_runs_are_silent(
-    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_normal_runs_are_silent(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
     """Logging is a teaching aid, not a default -- debug off means nothing printed."""
     Path(tmp_path / "quiet.txt").write_text("x")
     assert "open file" not in "".join(capsys.readouterr())

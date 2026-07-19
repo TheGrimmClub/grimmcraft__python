@@ -34,8 +34,10 @@ for the *libraries* underneath, which stay dependency-free.
 
 from __future__ import annotations
 
+# Includes standard
 from typing import Any
 
+# Includes internal
 from grimmclub_standardlib.log import debug
 
 _MISSING = (

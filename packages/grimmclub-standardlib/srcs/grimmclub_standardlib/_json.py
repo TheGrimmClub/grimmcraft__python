@@ -8,9 +8,11 @@ delegate to it and add a :func:`~grimmclub.log.debug` line — and everything el
 
 from __future__ import annotations
 
+# Includes standard
 import json as _json
 from typing import Any
 
+# Includes internal
 from grimmclub_standardlib.log import debug
 
 

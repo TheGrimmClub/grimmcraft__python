@@ -9,10 +9,8 @@ A diagnostic tells someone *what* is wrong. A mentor adds *why it happens* and
 
 Generic on purpose. Nothing here knows what any diagnostic code means — codes
 are opaque strings, and explanations are *registered* into the model, either
+# Includes standard
 from code::
-
-    mentor.register(Explanation(codes=("GC1001",), summary="…"))
-
 or from Markdown in the teaching material, which is how a teacher contributes
 without touching Python. Domain packages extend the mentor; the mentor never
 reaches into them. That is what will let this package move out to a repository

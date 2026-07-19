@@ -6,6 +6,7 @@ package, so every other module may import from here freely without risking a
 circular import.
 """
 
+# Includes
 from __future__ import annotations
 
 import math
@@ -13,6 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+# Types
 class Direction(Enum):
     """One of the six block faces, in Minecraft's axis convention.
 
@@ -57,7 +59,7 @@ _DIRECTION_OPPOSITES: dict[Direction, Direction] = {
     Direction.DOWN: Direction.UP,
 }
 
-
+# Classes
 @dataclass(frozen=True, slots=True)
 class Coordinates:
     """A continuous world position in block units (floats), hashable and immutable.

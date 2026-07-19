@@ -16,9 +16,11 @@ standard library calls them internally, and the explicit house names
 
 from __future__ import annotations
 
+# Includes standard
 import pathlib
 from typing import IO, Any
 
+# Includes internal
 from grimmclub_standardlib.log import debug
 
 

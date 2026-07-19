@@ -13,16 +13,14 @@ Usage:
     python _generate/effects.py --list        # print available versions
 """
 
-import json
 import keyword
-import re
-import sys
 import urllib.request
-from pathlib import Path
+
+from grimmclub_standardlib import SystemPath, json, re, sys
 
 BASE = "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data"
 PATHS_URL = f"{BASE}/dataPaths.json"
-OUTPUT_PATH = Path(__file__).parent.parent / "effect.py"
+OUTPUT_PATH = SystemPath(__file__).parent.parent / "effect.py"
 TYPE_KEY = "effects"
 
 

@@ -10,6 +10,7 @@ machine hooks into (it consumes the returned :class:`ClockFire`\\s or supplies a
 callback), so this module never imports the control package.
 """
 
+# Includes
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -18,13 +19,14 @@ from enum import Enum
 
 from grimmcraft_core.scoreboard import ScoreBoard
 
+# Constants
 TICKS_PER_DAY = 24000
 MINUTES_PER_DAY = 1440
 #: Minecraft tick 0 corresponds to 06:00, i.e. a +6h (360 min) display offset.
 DAWN_OFFSET_MINUTES = 360
 _TIME_COUNTER = "ticks"
 
-
+# Types
 class TimeOfDay(Enum):
     """Named moments of the day, each mapped to a wall-clock ``(hour, minute)``."""
 
@@ -57,7 +59,7 @@ _TIME_OF_DAY: dict[TimeOfDay, tuple[int, int]] = {
     TimeOfDay.BREAKFAST: (8, 0),
     TimeOfDay.NOON: (12, 0),
     TimeOfDay.LUNCH: (13, 0),
-    TimeOfDay.TEATIME: (16, 0),
+    TimeOfDay.TEATIME: (17, 0),
     TimeOfDay.SUNSET: (18, 0),
     TimeOfDay.DINNER: (19, 0),
 }
@@ -65,7 +67,7 @@ _TIME_OF_DAY: dict[TimeOfDay, tuple[int, int]] = {
 #: A trigger tests a ``(hour, minute)`` and returns whether it should fire.
 Trigger = Callable[[int, int], bool]
 
-
+# Classes
 @dataclass(frozen=True, slots=True)
 class ClockFire:
     """The record of one event firing at a specific moment."""

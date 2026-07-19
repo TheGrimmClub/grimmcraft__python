@@ -1,7 +1,6 @@
-
 # Extend boolean for better readability
 yes = True
-no  = False
+no = False
 
 true = True
 false = False

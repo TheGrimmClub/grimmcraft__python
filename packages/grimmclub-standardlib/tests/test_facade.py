@@ -103,6 +103,6 @@ def test_this_package_has_no_grimmclub_dependencies():
             elif isinstance(node, ast.Import):
                 imported = node.names[0].name
             top = imported.split(".")[0]
-            assert not (
-                top.startswith("grimmclub") and top != "grimmclub_standardlib"
-            ), f"{module.name} imports {imported}"
+            assert not (top.startswith("grimmclub") and top != "grimmclub_standardlib"), (
+                f"{module.name} imports {imported}"
+            )

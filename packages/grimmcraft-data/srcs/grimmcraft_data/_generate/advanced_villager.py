@@ -42,11 +42,10 @@ PROMPT__VILLAGER_REGISTRIES.md.
 from __future__ import annotations
 
 import argparse
-import json
-import sys
-from pathlib import Path
 
-PACKAGE_DIRECTORY = Path(__file__).parent.parent
+from grimmclub_standardlib import SystemPath, json, sys
+
+PACKAGE_DIRECTORY = SystemPath(__file__).parent.parent
 DEFAULT_VERSION = "1.21.11"
 
 # Profession -> the block that creates it. Curated; see the module docstring for

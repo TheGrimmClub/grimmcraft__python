@@ -12,15 +12,14 @@ Usage:
     python _generate/items.py --list        # print available versions
 """
 
-import json
 import keyword
-import sys
 import urllib.request
-from pathlib import Path
+
+from grimmclub_standardlib import SystemPath, json, sys
 
 BASE = "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data"
 PATHS_URL = f"{BASE}/dataPaths.json"
-OUTPUT_PATH = Path(__file__).parent.parent / "item.py"
+OUTPUT_PATH = SystemPath(__file__).parent.parent / "item.py"
 TYPE_KEY = "items"
 
 

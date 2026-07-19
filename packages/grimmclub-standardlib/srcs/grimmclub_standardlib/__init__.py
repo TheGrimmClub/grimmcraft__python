@@ -32,12 +32,13 @@ import itertools
 import math
 import os
 import random
+import re
 import sys
 import textwrap
 
 # --- common leaf names (imported directly in normal code) --------------------
 from collections import Counter, defaultdict, deque
-from collections.abc import Iterator, KeysView, Sequence
+from collections.abc import Callable, Iterator, KeysView, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
@@ -64,6 +65,7 @@ __all__ = [
     "yaml",
     "math",
     "random",
+    "re",
     "itertools",
     "textwrap",
     # pathlib
@@ -73,6 +75,7 @@ __all__ = [
     "cache",
     "lru_cache",
     "KeysView",
+    "Callable",
     "Iterator",
     "Sequence",
     # dataclasses

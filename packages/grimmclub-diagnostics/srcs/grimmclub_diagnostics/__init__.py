@@ -15,6 +15,7 @@ it came from.
 
 Each domain declares its own catalogue and prefix; nothing here knows what any
 code means. That is what lets one explanation layer — `grimmclub-mentor` — teach
+# Includes standard
 from all of them without special-casing each producer.
 """
 

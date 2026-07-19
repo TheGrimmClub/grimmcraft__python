@@ -14,15 +14,14 @@ Usage:
     python _generate/advanced_attribute.py --list     # available versions
 """
 
-import json
-import sys
 import urllib.request
-from pathlib import Path
+
+from grimmclub_standardlib import SystemPath, json, sys
 
 BASE = "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data"
 PATHS_URL = f"{BASE}/dataPaths.json"
 TYPE_KEY = "attributes"
-PKG_DIR = Path(__file__).parent.parent
+PKG_DIR = SystemPath(__file__).parent.parent
 OUTPUT_PATH = PKG_DIR / "attribute.py"
 
 

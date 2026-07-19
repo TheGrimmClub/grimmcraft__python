@@ -23,11 +23,14 @@ richer one, which is what lets lessons improve without a release.
 
 from __future__ import annotations
 
+# Includes standard
 from dataclasses import replace
 from pathlib import Path
 
+# Includes external
 import yaml
 
+# Includes internal
 from grimmclub_mentor.model import Explanation, Reference
 
 #: Delimiter for the front-matter block at the top of a Markdown file.
@@ -66,8 +69,7 @@ def _references(raw: object, kind: str, origin: str) -> tuple[Reference, ...]:
             )
         else:
             raise ExplanationError(
-                f"{origin}: each '{kind}' entry must be a path or a "
-                "{{title, target}} mapping"
+                f"{origin}: each '{kind}' entry must be a path or a {{{{title, target}}}} mapping"
             )
     return tuple(found)
 
