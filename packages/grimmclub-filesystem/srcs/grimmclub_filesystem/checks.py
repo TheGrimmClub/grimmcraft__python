@@ -62,7 +62,7 @@ import os
 from enum import Enum
 from typing import Any
 
-import yaml
+from grimmclub_standardlib import yaml
 
 # Includes internal
 from grimmclub_filesystem.core import SystemPath, is_zipfile, path_like
@@ -367,7 +367,7 @@ def expect_yaml_document(path: path_like, *, what: str = "YAML file") -> Any:
     target = expect_file(path, what=what, allow_empty=False, file_type=FileType.YAML)
     text = target.read_text(encoding="utf-8")
     try:
-        return yaml.safe_load(text)
+        return yaml.loads(text)
     except yaml.YAMLError as error:
         mark = getattr(error, "problem_mark", None)
         where = f" (line {mark.line + 1}, column {mark.column + 1})" if mark else ""

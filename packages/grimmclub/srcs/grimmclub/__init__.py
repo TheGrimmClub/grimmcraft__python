@@ -101,6 +101,7 @@ from grimmclub_standardlib import (
     time,
     timedelta,
     true,
+    yaml,
     yes,
 )
 
@@ -109,6 +110,7 @@ __all__ = [
     "os",
     "sys",
     "json",
+    "yaml",
     "math",
     "random",
     "itertools",

@@ -29,7 +29,7 @@ registers its own::
 """
 
 # Includes external
-import yaml
+from grimmclub_standardlib import yaml
 
 # Includes internal
 from grimmclub_filesystem.core import (
@@ -169,7 +169,7 @@ class Config:
             self._data = self._defaults_copy()
             return self._data
 
-        document = yaml.safe_load(self._path.read_text(encoding="utf-8")) or {}
+        document = yaml.loads(self._path.read_text(encoding="utf-8")) or {}
         if not isinstance(document, dict):
             raise ValueError(
                 f"{self._path} must contain a YAML mapping at the top level, "
@@ -191,7 +191,7 @@ class Config:
             self.backup_path.write_bytes(destination.read_bytes())
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(
-            yaml.safe_dump(self.data, sort_keys=False, allow_unicode=True),
+            yaml.dumps(self.data, allow_unicode=True),
             encoding="utf-8",
         )
         return destination

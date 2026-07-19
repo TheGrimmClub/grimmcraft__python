@@ -133,7 +133,7 @@ def test_locate_directory_finds_the_marker(tmp_path: Path):
     world = tmp_path / "saves" / "MyWorld"
     world.mkdir(parents=True)
     (world / "level.dat").write_bytes(b"x")
-    assert locate_directory(tmp_path) == world
+    assert locate_directory(tmp_path, "level.dat") == world
 
 
 def test_locate_directory_skips_junk_copies(tmp_path: Path):
@@ -141,8 +141,8 @@ def test_locate_directory_skips_junk_copies(tmp_path: Path):
     junk = tmp_path / "__MACOSX" / "MyWorld"
     junk.mkdir(parents=True)
     (junk / "level.dat").write_bytes(b"x")
-    assert locate_directory(tmp_path) is None
+    assert locate_directory(tmp_path, "level.dat") is None
 
 
 def test_locate_directory_returns_none_when_absent(tmp_path: Path):
-    assert locate_directory(tmp_path) is None
+    assert locate_directory(tmp_path, "level.dat") is None

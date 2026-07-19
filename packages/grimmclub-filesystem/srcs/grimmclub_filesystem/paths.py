@@ -6,8 +6,8 @@
 # Functions:
 - `as_path(str|path_like)`
 - `create_full_path(path_like)`
-- `locate_directory(path_like)`
 - `is_junk_directory(path_like)`
+- `locate_directory(path_like)`
 """
 
 # Includes standard
@@ -116,7 +116,7 @@ def is_junk_path(path: path_like) -> bool:
 is_junk_directory = is_junk_path
 
 
-def locate_directory(root: path_like, marker: str = "level.dat") -> SystemPathOptional:
+def locate_directory(root: path_like, marker: str) -> SystemPathOptional:
     """Find a directory under ``root`` that contains ``marker``.
 
     Returns the folder holding ``marker``, or ``None`` if none is found. If

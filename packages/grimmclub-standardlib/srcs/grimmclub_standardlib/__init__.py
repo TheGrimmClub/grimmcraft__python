@@ -43,6 +43,7 @@ from enum import Enum, IntEnum, StrEnum, auto
 from typing import Any, Optional, Protocol
 
 from grimmclub_standardlib import _json as json
+from grimmclub_standardlib import _yaml as yaml
 
 # json is the logging wrapper (a drop-in for the stdlib module), not stdlib json.
 from grimmclub_standardlib._core import false, no, off, on, true, yes
@@ -56,6 +57,7 @@ __all__ = [
     "os",
     "sys",
     "json",
+    "yaml",
     "math",
     "random",
     "itertools",

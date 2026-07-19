@@ -12,7 +12,7 @@ Quick tour::
     ```python
     from grimmclub_filesystem import paths, archive, transfer, config
 
-    world = paths.locate_directory("./_input")   # find a folder with level.dat
+    world = paths.locate_directory("./_input", "level.dat")   # the folder holding it
     archive.create_archive(world, "out.zip")     # zip it (skips macOS junk)
     ```
 """

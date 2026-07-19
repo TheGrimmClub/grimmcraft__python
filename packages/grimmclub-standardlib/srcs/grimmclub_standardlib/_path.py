@@ -5,6 +5,13 @@ emits a :func:`~grimmclub.log.debug` line when debug is enabled, so students can
 see what their program reads and writes. Normal runs are silent. Path arithmetic
 (``p / "sub"``) returns the same logging ``Path``, so the behaviour follows the
 whole chain.
+
+# Classes:
+- Path: for directories, files and links
+
+Methods carry both spellings: pathlib's (``open``, ``mkdir``) because the
+standard library calls them internally, and the explicit house names
+(``open_file``, ``create_directory``) as aliases onto the same logging code.
 """
 
 from __future__ import annotations
@@ -35,14 +42,31 @@ class Path(pathlib.Path):
         return super().write_bytes(data)
 
     def open(self, *args: Any, **kwargs: Any) -> IO[Any]:  # type: ignore[override]
-        debug("open", self, args[0] if args else kwargs.get("mode", "r"))
+        debug("open file", self, args[0] if args else kwargs.get("mode", "r"))
         handle: IO[Any] = super().open(*args, **kwargs)
         return handle
 
     def mkdir(self, *args: Any, **kwargs: Any) -> None:
-        debug("mkdir", self)
+        debug("make directory", self)
         return super().mkdir(*args, **kwargs)
 
+    # The house style prefers explicit names, and ``create_directory`` /
+    # ``open_file`` are the ones to teach. They must be *aliases* rather than
+    # replacements: ``pathlib`` calls ``self.open()`` and ``self.mkdir()``
+    # internally (``write_text`` goes through ``open``, ``mkdir(parents=True)``
+    # recurses through ``mkdir``), so dropping those names does not rename the
+    # operation -- it silently stops logging the two things students do most,
+    # while both names keep working. Same reasoning for remove_file/rmdir.
+    open_file = open
+    create_directory = mkdir
+
     def unlink(self, *args: Any, **kwargs: Any) -> None:
-        debug("unlink", self)
+        debug("remove file", self)
         return super().unlink(*args, **kwargs)
+
+    def rmdir(self) -> None:
+        debug("remove directory", self)
+        return super().rmdir()
+
+    remove_file = unlink
+    remove_directory = rmdir
