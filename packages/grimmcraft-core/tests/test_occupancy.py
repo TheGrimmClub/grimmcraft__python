@@ -7,7 +7,7 @@ import pytest
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_core.entity.npc import Npc
 from grimmcraft_core.entity.player import Player
-from grimmcraft_core.occupancy import Occupiable, Sleepable
+from grimmcraft_core.occupiable.occupancy import Occupiable, Sleepable
 
 HERE = Coordinates(0.0, 64.0, 0.0)
 BED = Coordinates(10.0, 64.0, 10.0)
@@ -151,7 +151,7 @@ def test_a_moving_host_can_drag_its_occupant_along(alice: Player) -> None:
 
 def test_occupancy_knows_nothing_about_blocks_or_villagers() -> None:
     """The orthogonality claim, asserted rather than promised."""
-    import grimmcraft_core.occupancy as occupancy
+    import grimmcraft_core.occupiable.occupancy as occupancy
 
     source = occupancy.__doc__ or ""
     assert "profession" not in dir(occupancy)

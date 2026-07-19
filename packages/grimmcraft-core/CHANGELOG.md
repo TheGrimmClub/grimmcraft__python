@@ -1,5 +1,35 @@
 # Changelog — grimmcraft-core
 
+## feat(bed): the bed, as a block that is also occupiable — 2026-07-19
+
+`Bed` is a `PlaceableBlock` and a `Sleepable`, and this module is the only place
+that knows it is both — which is the arrangement the occupancy trait was shaped
+to allow, now with something actually using it.
+
+**One position, not two.** `Sleepable` carries a `rest_position`, but a block
+already knows where it is. Keeping both would let a bed placed here put its
+sleeper there, so `occupant_position` reads the placement and `rest_position`
+goes unused for a bed.
+
+**Sleeping is refused, not raised** — the trait's rule, extended with the two a
+bed owns: "not placed" (a bed in your pocket is not somewhere to sleep) and "it
+is daytime". `refusal_reason` defers upwards first, so "occupied" and "already
+inside" keep their wording in one place.
+
+Night is read from the clock's own table of named moments, sunset to sunrise, so
+the two cannot drift apart. It wraps midnight, which is why the test that pins
+that is parametrized on both sides of it. A bed with no clock does not refuse on
+time at all: not knowing the hour is not grounds for claiming it is the wrong
+one.
+
+Breaking the bed turfs the sleeper out, or the broken bed would go on refusing
+everyone as still occupied.
+
+**Still not here, deliberately:** beds are also points of interest — village
+population, home claiming, respawn, night-skip. None exist, and none are needed
+to hold a sleeper. They attach from outside when they arrive, the same way
+occupancy does.
+
 ## feat(occupancy): the Occupiable trait — 2026-07-19
 
 `Occupiable` holds one occupant with `enter` / `exit`, and `Sleepable` puts them
