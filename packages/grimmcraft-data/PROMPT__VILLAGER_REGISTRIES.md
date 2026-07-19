@@ -16,9 +16,29 @@ that `grimmcraft-core` currently carries.
 
 Nothing maps a profession to the block that creates it — `farmer` ↔ `composter`,
 `librarian` ↔ `lectern`, `toolsmith` ↔ `smithing_table`. A villager NPC needs
-exactly that mapping, and neither package has it. `grimmcraft-core/workstation/`
-models six workstations as *behaviour* (a furnace smelts); this is the missing
-*data*.
+exactly that mapping, and neither package has it.
+
+**A villager workstation is not a subset of the workstations already modelled.**
+`grimmcraft-core/workstation/` covers `ANVIL`, `CRAFTING_TABLE`,
+`ENCHANTING_TABLE`, `FURNACE` and `BREWING_STAND` — *player* utility blocks.
+Only `brewing_stand` is also a villager job site. The twelve blocks that make a
+villager take a profession are absent entirely:
+
+| Profession | Job site block | Profession | Job site block |
+|---|---|---|---|
+| `armorer` | `blast_furnace` | `librarian` | `lectern` |
+| `butcher` | `smoker` | `mason` | `stonecutter` |
+| `cartographer` | `cartography_table` | `shepherd` | `loom` |
+| `cleric` | `brewing_stand` | `toolsmith` | `smithing_table` |
+| `farmer` | `composter` | `weaponsmith` | `grindstone` |
+| `fisherman` | `barrel` | `nitwit` | *(none)* |
+| `fletcher` | `fletching_table` | `none` | *(none)* |
+| `leatherworker` | `cauldron` | | |
+
+So this needs its own registry — `villager_workstation` — rather than being
+inferred from what `grimmcraft-core` happens to model, or buried inside
+`point_of_interest`. The two ideas share blocks but answer different questions:
+*"what can a player use here?"* versus *"what job does this give a villager?"*
 
 ## Why it needs a different pipeline
 
@@ -62,9 +82,30 @@ class VillagerProfession(Enum):
 `string_id` matters: it is the accessor `grimmcraft-compiler`'s validation and
 `dialect.id_string()` already rely on for every other data enum. Match it.
 
+**`villager_workstation.py`** — the job-site blocks, as their own enum, with the
+profession each one creates:
+
+```python
+class VillagerWorkstation(Enum):
+    COMPOSTER = ("minecraft:composter", "minecraft:farmer")
+    LECTERN = ("minecraft:lectern", "minecraft:librarian")
+    ...
+    @property
+    def string_id(self) -> str: ...
+    @property
+    def profession(self) -> str: ...
+```
+
+Its own module, not a table inside `villager_profession.py`, because the
+question runs both ways: a villager NPC asks "which block do I need?", and a
+world scanner asks "what will this block turn a villager into?". Neither is the
+derived direction.
+
 **`point_of_interest.py`** — the POI types and the blocks that provide them.
-This is the authoritative source for the workstation mapping above, and is
-useful on its own (beds, bells, and the nether portal are POIs too).
+Every job site is a POI, but so are beds, bells and the nether portal, so this
+is the wider registry rather than a synonym for the one above. Generate it from
+the same report; it is what makes the workstation mapping verifiable rather than
+hand-copied.
 
 **Accessors**, in the style of `loot.py` / `recipe.py`:
 
@@ -78,8 +119,11 @@ def workstation_for_profession(profession) -> Block | None
 - Delete the stopgap enum in `grimmcraft-core/entity/npc.py` and import from
   `grimmcraft_data`, removing the docstring note that describes it as temporary.
   `Npc.profession` keeps its type; only its source changes.
-- `grimmcraft-core/workstation/` gains nothing automatically, but
-  `core_workstation.py` can then state which profession each models.
+- `grimmcraft-core/workstation/` models *player* workstations and should keep
+  doing so — but `core_workstation.py` can then say which of them is also a job
+  site, and the twelve missing job-site blocks become answerable: model them
+  only where they have behaviour worth modelling, and let the data carry the
+  rest. Do not widen `CoreWorkstation` to mean both things.
 - `grimmcraft-npc` (Taterzens presets) writes `Professions` entries with a
   `ProfessionType` id — feed it from this enum rather than a string literal.
 
@@ -89,7 +133,11 @@ def workstation_for_profession(profession) -> Block | None
   convention — the compiler's validation depends on it.
 - The workstation mapping is complete and symmetric: every profession with a
   workstation resolves back to itself through
-  `profession_for_workstation(workstation_for_profession(p))`.
+  `profession_for_workstation(workstation_for_profession(p))`, and every
+  `VillagerWorkstation` resolves back through the reverse.
+- The two enums agree: the set of professions naming a workstation equals the
+  set of professions named by a workstation. A mapping that disagrees with
+  itself is the bug this pair of tests exists to catch.
 - `NONE` and `NITWIT` have **no** workstation, and the accessors return `None`
   rather than raising — they are real professions with no block.
 - Every workstation block id exists in `Block` for the generated version. A
