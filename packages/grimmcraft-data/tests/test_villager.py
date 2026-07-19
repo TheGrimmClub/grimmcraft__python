@@ -8,6 +8,7 @@ honest — they check it against data that *is* Mojang's.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,27 @@ from grimmcraft_data.block import Block
 VERSION = "1.21.11"
 PACKAGE_DIRECTORY = Path(__file__).resolve().parents[1] / "srcs" / "grimmcraft_data"
 GENERATOR = PACKAGE_DIRECTORY / "_generate" / "advanced_villager.py"
+WORKSPACE = Path(__file__).resolve().parents[3]
+
+
+def _generator_environment() -> dict[str, str]:
+    """Put the workspace sources on the subprocess path explicitly.
+
+    Editable installs rely on ``.pth`` files, which this workspace cannot depend
+    on: on iCloud Drive macOS sets UF_HIDDEN on them and ``site.py`` then skips
+    them, so a subprocess loses its sibling packages part-way through a run.
+    Naming the paths outright makes the test independent of that.
+    """
+    sources = [
+        str(WORKSPACE / "packages" / name / "srcs")
+        for name in ("grimmcraft-data", "grimmclub-standardlib")
+    ]
+    environment = dict(os.environ)
+    existing = environment.get("PYTHONPATH", "")
+    if existing:
+        sources.append(existing)
+    environment["PYTHONPATH"] = os.pathsep.join(sources)
+    return environment
 
 WITHOUT_A_JOB = {VillagerProfession.NONE, VillagerProfession.NITWIT}
 EMPLOYED = [p for p in VillagerProfession if p not in WITHOUT_A_JOB]
@@ -118,7 +140,13 @@ def test_the_generator_is_deterministic() -> None:
         name: (PACKAGE_DIRECTORY / name).read_text(encoding="utf-8")
         for name in ("villager_profession.py", "villager_workstation.py")
     }
-    subprocess.run([sys.executable, str(GENERATOR)], check=True, capture_output=True)
+    finished = subprocess.run(
+        [sys.executable, str(GENERATOR)],
+        capture_output=True,
+        text=True,
+        env=_generator_environment(),
+    )
+    assert finished.returncode == 0, finished.stdout + finished.stderr
     for name, text in before.items():
         assert (PACKAGE_DIRECTORY / name).read_text(encoding="utf-8") == text
 
@@ -126,6 +154,9 @@ def test_the_generator_is_deterministic() -> None:
 def test_the_curated_table_verifies_against_the_real_data() -> None:
     """``--check`` is what CI should call; it must pass on a clean tree."""
     finished = subprocess.run(
-        [sys.executable, str(GENERATOR), "--check"], capture_output=True, text=True
+        [sys.executable, str(GENERATOR), "--check"],
+        capture_output=True,
+        text=True,
+        env=_generator_environment(),
     )
     assert finished.returncode == 0, finished.stdout + finished.stderr

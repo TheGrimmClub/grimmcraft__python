@@ -105,12 +105,14 @@ source = { editable = "packages/grimmclub" }
 dependencies = [
     { name = "grimmclub-filesystem" },
     { name = "grimmclub-standardlib" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "grimmclub-filesystem", editable = "packages/grimmclub-filesystem" },
     { name = "grimmclub-standardlib", editable = "packages/grimmclub-standardlib" },
+    { name = "pyyaml", specifier = ">=6.0" },
 ]
 
 [[package]]
@@ -227,6 +229,12 @@ requires-dist = [{ name = "grimmcraft-data", editable = "packages/grimmcraft-dat
 name = "grimmcraft-data"
 version = "0.1.0"
 source = { editable = "packages/grimmcraft-data" }
+dependencies = [
+    { name = "grimmclub-standardlib" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "grimmclub-standardlib", editable = "packages/grimmclub-standardlib" }]
 
 [[package]]
 name = "grimmcraft-decompiler"

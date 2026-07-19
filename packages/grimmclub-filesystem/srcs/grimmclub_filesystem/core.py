@@ -17,11 +17,10 @@ for a backup tool that copies thousands of files.
 from __future__ import annotations
 
 from datetime import datetime as DateTime
-from pathlib import Path as SystemPath
 from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile, is_zipfile
 
 # The shared vocabulary, defined once at the bottom of the stack.
-from grimmclub_standardlib import Any, false, no, true, yes
+from grimmclub_standardlib import Any, SystemPath, false, no, true, yes
 
 # Re-exported on purpose (see above) — naming them here tells both ruff and
 # mypy that these are part of this module's public surface.

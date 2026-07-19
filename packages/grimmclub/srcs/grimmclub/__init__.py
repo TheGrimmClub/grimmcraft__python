@@ -67,7 +67,9 @@ from grimmclub_filesystem.core import SystemPath
 
 # --- the standard library, the teaching helpers, the house vocabulary --------
 from grimmclub_standardlib import (
+    IO,
     Any,
+    BinaryIO,
     Counter,
     Enum,
     IntEnum,
@@ -75,6 +77,7 @@ from grimmclub_standardlib import (
     Path,
     Protocol,
     StrEnum,
+    TextIO,
     auto,
     banner,
     dataclass,
@@ -126,6 +129,9 @@ __all__ = [
     "Any",
     "Optional",
     "Protocol",
+    "IO",
+    "TextIO",
+    "BinaryIO",
     "date",
     "datetime",
     "time",

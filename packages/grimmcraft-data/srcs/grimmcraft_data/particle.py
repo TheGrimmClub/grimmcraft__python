@@ -11,7 +11,7 @@ from enum import Enum
 
 
 class Particle(Enum):
-    def __new__(cls, num_id, string_id):
+    def __new__(cls, num_id: int, string_id: str):
         obj = object.__new__(cls)
         obj._value_ = num_id
         obj.string_id = string_id

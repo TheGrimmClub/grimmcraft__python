@@ -16,7 +16,11 @@ from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
 
-from grimmclub import SystemPath, json
+from grimmclub_standardlib import TYPE_CHECKING, Any, SystemPath, TextIO, json
+
+if TYPE_CHECKING:
+    from .block import Block
+    from .entity import Entity
 
 _BLOCK_DATA = "data/1.21.11/blockLoot.json"
 _ENTITY_DATA = "data/1.21.11/entityLoot.json"
@@ -50,7 +54,7 @@ class LootTable:
     drops: tuple[Drop, ...]
 
 
-def _name(x) -> str:
+def _name(x: object) -> str:
     """Normalize an Item/enum member or id string to a bare (un-namespaced) name."""
     s = getattr(x, "string_id", x)
     return str(s).split(":", 1)[-1]
@@ -63,7 +67,7 @@ def _item_by_name() -> dict[str,str]:
     return {m.string_id.split(":", 1)[-1]: m for m in Item}
 
 
-def _resolve_item(name: str)->str:
+def _resolve_item(name: str) -> str:
     return _item_by_name().get(name, name)
 
 
@@ -74,7 +78,7 @@ def _open(rel: str) -> TextIO:
         return (_HERE / rel).open("r", encoding="utf-8")
 
 
-def _parse_drop(d) -> Drop:
+def _parse_drop(d: dict[str, Any]) -> Drop:
     rng = d.get("stackSizeRange") or [None, None]
     lo = rng[0] if len(rng) > 0 else None
     hi = rng[1] if len(rng) > 1 else lo
@@ -91,21 +95,21 @@ def _parse_drop(d) -> Drop:
 
 
 @lru_cache(maxsize=1)
-def _tables(rel, source_field) -> dict:
+def _tables(rel: str, source_field: str) -> dict[str, LootTable]:
     with _open(rel) as fh:
-        rows = json.load(fh)
-    out = {}
+        rows: list[dict[str, Any]] = json.load(fh)
+    out: dict[str, LootTable] = {}
     for row in rows:
-        src = row[source_field]
+        src: str = row[source_field]
         out[src] = LootTable(src, tuple(_parse_drop(d) for d in row.get("drops", [])))
     return out
 
 
-def block_loot(block) -> LootTable | None:
+def block_loot(block: Block | str) -> LootTable | None:
     """Loot table for a block (an `Item`/`Block` member or bare/namespaced id)."""
     return _tables(_BLOCK_DATA, "block").get(_name(block))
 
 
-def entity_loot(entity) -> LootTable | None:
+def entity_loot(entity: Entity | str) -> LootTable | None:
     """Loot table for an entity (an `Entity` member or bare/namespaced id)."""
     return _tables(_ENTITY_DATA, "entity").get(_name(entity))

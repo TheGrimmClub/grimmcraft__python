@@ -40,7 +40,8 @@ from collections import Counter, defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
-from typing import Any, Optional, Protocol
+from pathlib import Path as SystemPath
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, Optional, Protocol, TextIO
 
 from grimmclub_standardlib import _json as json
 from grimmclub_standardlib import _yaml as yaml
@@ -64,6 +65,7 @@ __all__ = [
     "textwrap",
     # pathlib
     "Path",
+    "SystemPath",
     # dataclasses
     "dataclass",
     "field",
@@ -76,6 +78,10 @@ __all__ = [
     "Any",
     "Optional",
     "Protocol",
+    "TYPE_CHECKING",
+    "IO",
+    "TextIO",
+    "BinaryIO",
     # datetime
     "date",
     "datetime",
