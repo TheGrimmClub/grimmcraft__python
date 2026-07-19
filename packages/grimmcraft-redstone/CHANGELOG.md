@@ -1,5 +1,25 @@
 # Changelog — grimmcraft-redstone
 
+## fix(redstone): Circuit.place is generic over the component type
+
+`place()` hands back exactly the component it was given, but was annotated as
+returning `RedstoneComponent`. That threw the concrete type away, so
+`circuit.place(Lever(...))` came back as the base class and every specific
+method (`lever.flip()`, `button.press()`) was lost to the type checker.
+
+It is now generic (`AnyComponent`, bound to `RedstoneComponent`), which is both
+more accurate and what callers already assumed at runtime.
+
+Surfaced by moving the examples into `grimmcraft-examples/srcs/`, where mypy
+sees them for the first time.
+
+## chore(redstone): examples moved to grimmcraft-examples
+
+`examples/clock.py` and friends now live in `grimmcraft-examples` as
+`redstone_clock` etc.; run them with `task examples:redstone -- clock`. See that
+package's CHANGELOG for why.
+
+
 ## feat(redstone): model Minecraft redstone as a simulatable component graph
 
 New package (depends on `grimmcraft-core` + `grimmcraft-data`), under `srcs/grimmcraft_redstone/`.

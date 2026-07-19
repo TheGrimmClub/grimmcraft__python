@@ -2,6 +2,19 @@
 
 Workspace-level summary. Per-package detail lives in each package's `CHANGELOG.md`.
 
+## refactor(examples): collect every example into grimmcraft-examples — 2026-07-19
+
+The 12 example scripts from four packages, plus the `generated/` datapacks they produce, now live in one package. The motivation is dependency honesty: `dungeon_room.py` imported `grimmcraft_decompiler` while sitting in a package that declared no such dependency, and only ran because the workspace venv had everything. Fixed three latent bugs on the way (two Taskfile tasks pointing at files that do not exist, two stale `grimmclub` dependency declarations), and — because examples moved into `srcs/` and are now type-checked — an imprecise `Circuit.place()` signature in grimmcraft-redstone. Task names change: `compiler:tutorial` → `examples:tutorial`. See `packages/grimmcraft-examples/CHANGELOG.md`.
+
+## chore(grimmoire): add the teaching materials as a submodule — 2026-07-19
+
+`TheGrimmClub/grimmoire` at `grimmoire/`, excluded from ruff and pytest — it is another repo's content, and its snippets are lesson material that is deliberately imperfect. Clone with `--recurse-submodules`.
+
+## style(lint): take ruff to zero — 2026-07-19
+
+286 errors → 0, split three ways rather than blanket-silenced. Exempted 257 `E501` in grimmcraft-data's *generated* registry modules (a registry row does not fit in 100 columns, and wrapping 1505 of them would be undone by the next regeneration) and the `F403`/`F405` in grimmclub's facade `__init__` (a star re-export is the entire point of that module). Fixed the rest properly — including the 15 `Optional[X]` annotations, which are *emitted by generator templates*, so the generators were fixed too or the next regeneration would have undone it.
+
+
 ## feat(decompiler): implement grimmcraft-decompiler — 2026-07-19
 
 Datapack → IR → machines → Python, the inverse of the compiler, in three levels that degrade into each other. The reader is self-verifying: each parse is rendered back through the real `Dialect` and accepted only if it reproduces the line byte-for-byte, so a parser cannot silently normalise a pack. `compile(decompile(pack)) == pack` byte-for-byte over every committed example, at both levels, across two versions — which doubles as a regression guard on the forward compiler. See `packages/grimmcraft-decompiler/CHANGELOG.md`.
