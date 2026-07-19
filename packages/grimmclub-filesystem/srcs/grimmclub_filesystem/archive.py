@@ -31,7 +31,7 @@ from grimmclub_filesystem.core import (
     path_like_optional,
     yes,
 )
-from grimmclub_filesystem.paths import as_path, create_full_path, is_junk
+from grimmclub_filesystem.paths import as_path, create_full_path, is_junk_directory
 
 # Constants
 
@@ -198,7 +198,7 @@ class Archive:
         """The (non-junk) entry names inside the archive."""
         target = self.full_path if zip_path is None else as_path(zip_path)
         with ZipFile(target) as zf:
-            return [name for name in zf.namelist() if not is_junk(name)]
+            return [name for name in zf.namelist() if not is_junk_directory(name)]
 
     def create(
         self,
@@ -227,7 +227,7 @@ class Archive:
         full_path = destination_path / archive_name
         with ZipFile(full_path, "w", ZIP_DEFLATED) as zf:
             for item in sorted(source_path.rglob("*")):
-                if is_junk(item):
+                if is_junk_directory(item):
                     continue
                 rel = SystemPath(filter_name) / item.relative_to(source_path)
                 if item.is_dir():
@@ -261,7 +261,7 @@ class Archive:
         destination_path = create_full_path(to_path)
         with ZipFile(source_path) as zf:
             for member in zf.namelist():
-                if is_junk(member):
+                if is_junk_directory(member):
                     continue
                 if do_overwrite == no and (destination_path / member).exists():
                     continue

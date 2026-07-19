@@ -1,5 +1,35 @@
 # Changelog — grimmclub-filesystem
 
+## feat(paths): cross-platform junk detection, with reasons
+
+`is_junk_directory` knew five names, four of them macOS. It now covers macOS,
+Windows and Linux, plus the editors and sync tools that litter a working tree —
+discharging the two TODOs on the function.
+
+Several kinds of junk cannot be expressed as fixed names, which the old set
+could not represent at all: `._notes.txt` (AppleDouble sidecars) is named after
+the file it shadows, `.Trash-1000` after a user id, `~$report.docx` after the
+document it locks, `.nfs0000001a` after an inode. Those now match by pattern.
+
+`junk_reason()` returns *why* a path is junk rather than a bare boolean, so a
+tool can report "3 files skipped: macOS Finder folder settings" instead of
+"3 files skipped". Keeping the reason beside the name also stops the table
+becoming a list of magic strings nobody dares delete.
+
+`is_junk_path` is the accurate name — the check applies to files as much as
+folders (`.DS_Store` and `Thumbs.db` are files) and is called on zip members.
+`is_junk_directory` remains as an alias, since callers already use it.
+
+Fixed while testing: the check used `as_path`, which expands `~`. A file
+genuinely named `~$report.docx` — precisely the Office lock file we want to
+catch — was therefore treated as a home-directory reference and raised. Junk
+detection reads a name; it has no business resolving a path.
+
+`.git`, `.gitignore` and `.github` are deliberately *not* junk: dropping version
+control from an archive loses history. The "must not be junk" test list is the
+one that matters most, since a false positive silently discards someone's data.
+
+
 ## feat(checks): a guard per FileType, and `task new-filetype`
 
 `checks.py` is now split into the layers its guards actually fall into — layer
@@ -120,7 +150,7 @@ is discharged.
 Moved out of `TheGrimmClub/grimmcraft__town` (where it was `filesystem`) and renamed to fit this workspace's naming. The single interface to `os`, `pathlib`, `zipfile`, `ftplib` and `urllib`, under `srcs/grimmclub_filesystem/`.
 
 - `core.py` — shared aliases (`SystemPath`, `path_like`) and the `yes`/`no` constants. Deliberately re-exports the standard-library names the sibling modules use, so the package is their only point of contact with it; `__all__` now states that intent to both ruff and mypy.
-- `paths.py` — `as_path`, `create_full_path`, `is_junk` (macOS/editor clutter), `locate_directory` (find a folder by marker file).
+- `paths.py` — `as_path`, `create_full_path`, `is_junk_directory` (macOS/editor clutter), `locate_directory` (find a folder by marker file).
 - `archive.py` — `Archive` class plus `create_archive` / `extract_archive` / `list_archive`, skipping `__MACOSX` and friends.
 - `transfer.py` — `http_download`, `ftp_download`, `download`, and a YAML-describable `fetch`.
 - `config.py` — load/save the shared `config.yaml`, with a `.bak` safety net.
