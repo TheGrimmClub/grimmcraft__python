@@ -27,6 +27,14 @@ _PLURALS = {
     "advancement": "advancements",
     "predicate": "predicates",
     "item_modifier": "item_modifiers",
+    # These registries were never plural, so they map to themselves: pluralising
+    # them would write data/<ns>/dimensions/, which the game does not read. The
+    # world-generation ones arrived in 1.16 already singular and were untouched
+    # by the 1.21 rename; `dialog` is newer than the rename entirely (1.21.6).
+    "dialog": "dialog",
+    "dimension": "dimension",
+    "dimension_type": "dimension_type",
+    "worldgen": "worldgen",
 }
 
 
