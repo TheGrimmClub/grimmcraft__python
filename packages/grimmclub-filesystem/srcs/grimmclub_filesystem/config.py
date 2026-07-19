@@ -5,10 +5,10 @@ read it for their defaults. Keeping it in one place means "the data" lives in
 exactly one obvious spot.
 """
 
-# [ ] Includes external
+# Includes external
 import yaml
 
-# [ ] Includes internal
+# Includes internal
 from grimmclub_filesystem.core import (
     Any,
     SystemPath,

@@ -1,5 +1,5 @@
 
-# [ ] Includes standard
+# Includes standard
 # This module is the package's single point of contact with the standard
 # library: the sibling modules import these names *from here* rather than
 # reaching for `zipfile` or `pathlib` themselves, which is the whole premise of
@@ -32,13 +32,13 @@ __all__ = [
     "yes",
 ]
 
-# [ ] Types
+# Types
 path_like = str | SystemPath
 path_like_optional = path_like | None
 SystemPathOptional = SystemPath | None
 AnyOptional = Any | None
 
-# [ ] Constants
+# Constants
 # - Boolean
 yes = True
 true = True
@@ -46,7 +46,7 @@ true = True
 no = False
 false = False
 
-# [ ] Classes
+# Classes
 #
 class StringChecker:
     """A simple string checker for archive names.
@@ -59,7 +59,7 @@ class StringChecker:
         return str(name.replace(" ", "__").replace('-', '_'))
 
 
-# [ ] Functions
+# Functions
 #
 def get_iso_time() -> str:
     """wrapper to get the ISO time string (YYYYMMDD_HHMMSS)

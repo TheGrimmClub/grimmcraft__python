@@ -1,18 +1,18 @@
 """Read the interesting facts out of a Minecraft world folder."""
 
-# [ ] Includes internal
-# [ ] Includes standard
+# Includes internal
+# Includes standard
 import json
 from dataclasses import dataclass, field
 from typing import Any
 
-# [ ] Includes external
+# Includes external
 from grimmclub_filesystem.core import SystemPath, SystemPathOptional, path_like
 from grimmclub_filesystem.paths import as_path, locate_directory
 from grimmcraft_world import nbt
 
 
-# [ ] Classes
+# Classes
 @dataclass
 class Datapack:
     """One datapack found inside ``world/datapacks``."""
@@ -33,8 +33,7 @@ class WorldInfo:
     datapacks: list[Datapack] = field(default_factory=list)
 
 
-# [ ] Functions
-#
+# Functions
 def locate_world(root: path_like) -> SystemPathOptional:
     """Find a Minecraft world (a folder containing ``level.dat``) under ``root``.
 

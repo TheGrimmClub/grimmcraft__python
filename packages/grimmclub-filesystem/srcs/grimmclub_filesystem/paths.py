@@ -1,14 +1,13 @@
 """Path helpers — find things and make folders without ceremony."""
 
-# [ ] Includes internal
+# Includes internal
 from grimmclub_filesystem.core import SystemPath, SystemPathOptional, path_like
 
-# [ ] Constants
+# Constants
 # Names that macOS / editors sprinkle around and that we never want in a backup.
 JUNK_NAMES = {".DS_Store", "__MACOSX", "Thumbs.db", ".Spotlight-V100", ".Trashes"}
 
-
-# [ ] Functions
+# Functions
 def as_path(value: path_like) -> SystemPath:
     """Turn a string or Path into an expanded Path."""
     return SystemPath(value).expanduser()

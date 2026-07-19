@@ -5,8 +5,8 @@ a single :func:`fetch` that reads a small dict so a beginner can describe a
 source in YAML instead of remembering library APIs.
 """
 
-# [ ] Includes internal
-# [ ] Includes standard
+# Includes internal
+# Includes standard
 import ftplib
 import shutil
 import urllib.request

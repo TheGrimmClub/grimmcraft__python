@@ -32,12 +32,12 @@ for problems a *user's* pack can have.
 
 """
 
-# [ ] Includes standard
+# Includes standard
 import difflib
 import json
 from typing import Any
 
-# [ ] Includes internal
+# Includes internal
 from grimmclub_filesystem.core import SystemPath, path_like
 from grimmclub_filesystem.paths import as_path
 
