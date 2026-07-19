@@ -1,5 +1,81 @@
 # Changelog — grimmclub-filesystem
 
+## feat(checks): a guard per FileType, and `task new-filetype`
+
+`checks.py` is now split into the layers its guards actually fall into — layer
+one structural (`expect_directory`, `expect_file`, `expect_link`), layer two
+content (`expect_text`, `expect_markdown`, `expect_script`, `expect_yaml`,
+`expect_binary`, `expect_archive`, `expect_executable`), layer three structured
+documents (`expect_json`, `expect_json_object`, `expect_yaml_document`,
+`expect_yaml_mapping`) — and `expect()` dispatches to each rather than falling
+through to the generic guard, so the error names the kind that was wanted.
+
+All of them raise and return the path rather than returning `bool`. Two
+functions sharing the `expect_` prefix but not its contract would be a trap; the
+plain predicate already exists as `FileType.ARCHIVE.matches(path)`, which is
+where the real test lives — the guards only add the message.
+
+`FileType.matches()` answers by inspection where that is possible and by suffix
+only where it is not: an archive is an archive because its magic number says so,
+a `.md` file is Markdown because it is called that. Text is decided by
+decodability *and* the absence of a NUL byte, since plenty of binary formats
+decode as UTF-8 by accident.
+
+A file type lives in four places, and forgetting one fails differently each
+time — a missing suffix entry silently matches nothing, a missing dispatch arm
+quietly falls back to the generic guard. `task new-filetype -- YAML --value 102
+--layer text --suffixes .yaml,.yml` writes all four, refuses rather than
+half-applies, and parses the result before saving:
+
+    error: value 250 is outside the text band (100-199); the bands are what
+           is_text/is_binary read, so a value in the wrong one lies
+
+## feat(config): registerable defaults, a Config class, and a `with` block
+
+Three TODOs discharged.
+
+**The defaults were one project's.** `DEFAULT_CONFIG` hard-coded sections for
+`guard`, `scout`, `blacksmith` and `town` — four applications that live in a
+different repository. A filesystem library cannot know what a configuration
+should contain, so it no longer claims to: it ships none, and each tool calls
+`register_defaults("guard", {...})` at import. `default_config()` returns a
+fresh copy, because the previous module-level constant could be mutated in
+place by accident.
+
+**`Config` is now the interface.** It owns path, data, load, save, restore and
+backup_path, with `path` and `data` as properties — assigning a new path drops
+the stale contents rather than serving the previous file's data. Reading is
+lazy, so constructing one touches no disk. The module functions remain as thin
+wrappers for callers that want a single operation.
+
+**A `with` block does make sense here**, and it is implemented: `__enter__`
+loads, `__exit__` saves — but only on a clean exit. A body that raised may have
+left the configuration half-edited, and writing that is worse than losing it.
+`__exit__` returns `None` rather than `False`, since a `bool` return type tells
+a type checker the block might swallow the exception.
+
+The same question was asked of the `expect_` guards and answered **no** — the
+reasoning is recorded in `checks.py` in place of the TODO. A context manager
+wants an acquire and a release; those functions inspect a path and either return
+it or raise, so a `with` would add a scope with no meaning at its edges.
+
+## feat(checks): YAML validation, not just a suffix check
+
+`expect_yaml` checks the name, which is all a name can tell you.
+`expect_yaml_document` and `expect_yaml_mapping` mirror the JSON pair: they
+parse with `safe_load` — configuration is data and must never construct Python
+objects — and report the offending line, so a file *called* `.yaml` that is not
+YAML fails there rather than three frames away.
+
+## test(core): cover StringChecker and the standard-library re-exports
+
+Discharges the `TODO: create tests` on the class. The tests also pin a
+surprising consequence: `special_chars` contains `.`, so cleaning a name strips
+its extension (`backup.zip` → `backupzip`). That is now documented on the class
+rather than discovered — and is why `Archive` is built with `do_cleanup=no`
+wherever a real file name matters.
+
+
 ## refactor(archive): name and path as properties, real name validation
 
 `Archive` now knows *where* it lives, not only what it is called.

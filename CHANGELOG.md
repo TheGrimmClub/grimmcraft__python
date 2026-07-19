@@ -3,6 +3,18 @@
 > **NOTE:**
 > Workspace-level summary. Per-package detail lives in each package's `CHANGELOG.md`.
 
+## feat(filesystem): typed file guards, a Config class, and `task new-filetype` — 2026-07-19
+
+`expect_*` guards for every `FileType`, split into the structural / content /
+document layers, with `expect()` dispatching to each. `FileType.matches()`
+answers by inspection where possible (an archive by its magic number) and by
+suffix only where nothing else can. `Config` becomes a real class with a `with`
+block that saves only on a clean exit, and the module stops shipping one
+project's configuration defaults — each tool registers its own.
+`task new-filetype` writes a new type into all four places it has to appear, or
+refuses. See `packages/grimmclub-filesystem/CHANGELOG.md`.
+
+
 ## refactor(examples): collect every example into grimmcraft-examples — 2026-07-19
 
 - [New package](./packages/grimmcraft-examples/CHANGELOG.md)

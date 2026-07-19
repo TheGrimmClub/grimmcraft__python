@@ -1,9 +1,10 @@
-
-# Includes standard
-# This module is the package's single point of contact with the standard
-# library: the sibling modules import these names *from here* rather than
-# reaching for `zipfile` or `pathlib` themselves, which is the whole premise of
-# the package. They are therefore deliberate re-exports, not unused imports.
+"""
+Includes standard
+This module is the package's single point of contact with the standard
+library: the sibling modules import these names *from here* rather than
+reaching for `zipfile` or `pathlib` themselves, which is the whole premise of
+the package. They are therefore deliberate re-exports, not unused imports.
+"""
 from __future__ import annotations
 
 from datetime import datetime as DateTime
