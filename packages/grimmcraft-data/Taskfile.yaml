@@ -36,6 +36,16 @@ tasks:
         # `dir: ./packages/grimmcraft-data`, and it also runs standalone.
         - uv run pytest tests -q
 
+    generate-villager-data:
+      desc: Generate the villager profession + job-site registries (verified, not downloaded)
+      cmds:
+        - uv run srcs/grimmcraft_data/_generate/advanced_villager.py
+
+    verify-villager-data:
+      desc: Check the curated profession->workstation table without writing anything
+      cmds:
+        - uv run srcs/grimmcraft_data/_generate/advanced_villager.py --check
+
     generate-blocks-enum:
       desc: Generate the Minecraft block enum from PrismarineJS/minecraft-data
       cmds:

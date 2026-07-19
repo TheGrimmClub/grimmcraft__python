@@ -4,40 +4,19 @@ Design choice: an NPC **is-a** :class:`Mob`.  Villagers are passive living
 creatures, so they inherit health, AI and (non-)hostility from ``Mob`` and add
 only the trading/profession layer on top.
 
-`VillagerProfession` is defined locally as a stopgap: it is a Mojang *registry*
-enum that ``grimmcraft-data`` does not yet ship (it requires the server data
-report).  When ``grimmcraft_data.villager_profession`` is generated, swap this
-import to reuse it and delete the local enum.
+`VillagerProfession` comes from ``grimmcraft-data``, where it is generated along
+with the job-site block each profession needs — ``profession.workstation`` — so
+placing a villager and placing the block that employs it use one source.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
 
 from grimmcraft_core.entity.mob import Mob
+from grimmcraft_data import VillagerProfession as VillagerProfession
 from grimmcraft_data.entity import Entity
 from grimmcraft_data.item import Item
-
-
-class VillagerProfession(Enum):
-    """A villager's trade profession (placeholder for the data-package enum)."""
-
-    NONE = "none"
-    ARMORER = "armorer"
-    BUTCHER = "butcher"
-    CARTOGRAPHER = "cartographer"
-    CLERIC = "cleric"
-    FARMER = "farmer"
-    FISHERMAN = "fisherman"
-    FLETCHER = "fletcher"
-    LEATHERWORKER = "leatherworker"
-    LIBRARIAN = "librarian"
-    MASON = "mason"
-    NITWIT = "nitwit"
-    SHEPHERD = "shepherd"
-    TOOLSMITH = "toolsmith"
-    WEAPONSMITH = "weaponsmith"
 
 
 @dataclass(frozen=True, slots=True)

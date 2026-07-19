@@ -79,6 +79,25 @@ mypy_path = [
 [[tool.mypy.overrides]]
 module = ["grimmcraft_data.*"]
 follow_imports = "silent"
+# The generated Enums set their extra fields inside __new__:
+#
+#     obj.string_id = string_id
+#     obj.display_name = display_name
+#
+# which is ordinary Python that type checkers cannot follow — the attributes are
+# real, they are simply not declared in the class body. Every generated registry
+# does it, so the report is noise on ~1500 rows rather than a finding. Declaring
+# the fields instead would mean regenerating every module to carry annotations;
+# worth doing one day, not worth blocking on.
+disable_error_code = ["attr-defined"]
+
+# Pyright (what Zed runs) reports the same thing as reportAttributeAccessIssue.
+# Scoped to the package rather than switched off globally, and only that rule —
+# the hand-written generators under _generate/ keep every other check.
+[tool.pyright]
+[[tool.pyright.executionEnvironments]]
+root = "packages/grimmcraft-data/srcs/grimmcraft_data"
+reportAttributeAccessIssue = "none"
 
 [tool.pytest.ini_options]
 # importlib mode lets sibling packages share test-file basenames (e.g. several

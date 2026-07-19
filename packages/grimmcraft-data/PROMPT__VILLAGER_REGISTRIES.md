@@ -1,5 +1,43 @@
 # Task: generate the villager profession and workstation registries
-> [ ] TODO: execute PROMPT__VILLAGER_REGISTRIES.md
+> [x] DONE — executed 2026-07-19, with two deviations recorded below.
+
+## What actually happened
+
+`villager_profession` and `villager_workstation` are generated and shipped;
+`point_of_interest` is **not**, and the plan's central assumption about where the
+data comes from was wrong.
+
+**The mapping is not in any Mojang data file.** `registries.json` lists the ids
+of `villager_profession` and `point_of_interest_type` and nothing else — every
+entry is `{"protocol_id": N}`, with no blocks and no relation between the two
+registries. The profession-to-job-site mapping lives in Minecraft's Java source
+(`VillagerProfession`, `PoiTypes`), which is code, not data. No amount of running
+the server data generator produces it.
+
+So the split is:
+
+- **the profession list is generated** from the `language.json` this package
+  already ships — every profession has an `entity.minecraft.villager.<name>`
+  key, so the set is Mojang's and versioned, and no server jar is needed;
+- **the mapping is curated** in `_generate/advanced_villager.py`, and checked
+  rather than trusted: every profession it names must appear in `language.json`
+  and vice versa, and every block it names must exist in this package's `Block`
+  enum. Both checks run at generation time, again under `--check`, and again in
+  the test suite. A version that adds a profession fails the build instead of
+  quietly shipping a registry with a hole in it.
+
+**`point_of_interest` is deferred, not written.** POI types have no translation
+keys, so there is nothing to generate them from without the server data report —
+and this machine has only Java 1.8, while the report needs Java 21+. Hand-writing
+it is exactly what this plan forbade, so it is absent. What remains to do is
+below; everything else here is done.
+
+### Still outstanding
+
+- `point_of_interest.py` — needs a JDK 21+ and a server jar for the chosen
+  version. Beds (`home`) and bells (`meeting`) matter as much as job sites.
+- The version question below is unresolved: this ran against **1.21.11**,
+  matching the data already shipped, not the current game.
 
 Add `villager_profession` and `point_of_interest` to `grimmcraft-data`, generated
 like every other registry rather than hand-written, and delete the stopgap enum

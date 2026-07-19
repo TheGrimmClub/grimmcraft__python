@@ -10,9 +10,11 @@ Do not edit by hand; regenerate with _generate/advanced_language.py."""
 from __future__ import annotations
 
 import json
+from collections.abc import KeysView
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
+from typing import Any
 
 _DATA = "data/1.21.11/language.json"
 _HERE = Path(__file__).parent
@@ -26,7 +28,7 @@ def _open_data():
 
 
 @lru_cache(maxsize=1)
-def _raw() -> dict:
+def _raw() -> dict[str, Any]:
     with _open_data() as fh:
         return json.load(fh)
 
@@ -36,6 +38,6 @@ def translate(key: str, default: str | None = None) -> str | None:
     return _raw().get(key, default)
 
 
-def all_keys():
+def all_keys() -> KeysView[str]:
     """A view of every available translation key."""
     return _raw().keys()

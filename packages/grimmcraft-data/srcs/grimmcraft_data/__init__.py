@@ -46,12 +46,23 @@ from .language import all_keys, translate
 from .loot import Drop, LootTable, block_loot, entity_loot
 from .particle import Particle
 from .recipe import Recipe, all_recipes, recipes_for
+from .villager_profession import (
+    VillagerProfession,
+    profession_for_workstation,
+    workstation_for_profession,
+)
+from .villager_workstation import VillagerWorkstation, workstation_for_block
 
 __all__ = [
     # enums
     "Biome",
     "Block",
     "Effect",
+    "VillagerProfession",
+    "VillagerWorkstation",
+    "profession_for_workstation",
+    "workstation_for_profession",
+    "workstation_for_block",
     "Enchantment",
     "Entity",
     "Food",

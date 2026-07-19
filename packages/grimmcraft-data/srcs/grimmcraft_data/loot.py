@@ -12,15 +12,15 @@ Do not edit by hand; regenerate with _generate/advanced_loot.py."""
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
-from pathlib import Path
+
+from grimmclub import SystemPath, json
 
 _BLOCK_DATA = "data/1.21.11/blockLoot.json"
 _ENTITY_DATA = "data/1.21.11/entityLoot.json"
-_HERE = Path(__file__).parent
+_HERE = SystemPath(__file__).parent
 
 try:
     from .item import Item
@@ -51,23 +51,23 @@ class LootTable:
 
 
 def _name(x) -> str:
-    """Normalise an Item/enum member or id string to a bare (un-namespaced) name."""
+    """Normalize an Item/enum member or id string to a bare (un-namespaced) name."""
     s = getattr(x, "string_id", x)
     return str(s).split(":", 1)[-1]
 
 
 @lru_cache(maxsize=1)
-def _item_by_name() -> dict:
+def _item_by_name() -> dict[str,str]:
     if Item is None:
         return {}
     return {m.string_id.split(":", 1)[-1]: m for m in Item}
 
 
-def _resolve_item(name):
+def _resolve_item(name: str)->str:
     return _item_by_name().get(name, name)
 
 
-def _open(rel):
+def _open(rel: str) -> TextIO:
     try:
         return files(__package__).joinpath(rel).open("r", encoding="utf-8")
     except (ModuleNotFoundError, TypeError, FileNotFoundError):
