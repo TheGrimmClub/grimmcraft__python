@@ -12,21 +12,21 @@ Do not edit by hand; regenerate with _generate/advanced_recipe.py."""
 
 from __future__ import annotations
 
-from grimmclub_standardlib import SystemPath as Path
-from grimmclub_standardlib import Union, cache, dataclass, files, json, lru_cache
+from grimmclub_standardlib import SystemPath, Union, cache, dataclass, files, json, lru_cache
 
+# Constants
 _DATA = "data/1.21.11/recipes.json"
-_HERE = Path(__file__).parent
+_HERE = SystemPath(__file__).parent
 
 try:
     from .item import Item
 except Exception:  # pragma: no cover - Item enum optional
     Item = None
 
-
+# Types
 Ingredient = Union["Item", int, None]
 
-
+# Classes
 @dataclass(frozen=True, slots=True)
 class Recipe:
     """A single crafting recipe for one result item."""
@@ -40,7 +40,7 @@ class Recipe:
     def is_shaped(self) -> bool:
         return self.shape is not None
 
-
+# Functions
 def _resolve_item(num_id: int | None):
     if Item is None or num_id is None:
         return num_id

@@ -19,7 +19,11 @@ if TYPE_CHECKING:
 
 
 class VillagerProfession(Enum):
-    def __new__(cls, string_id: str, display_name: str, workstation: str | None):
+    string_id: str
+    display_name: str
+    workstation: str | None
+
+    def __new__(cls, string_id: str, display_name: str, workstation: str | None) -> VillagerProfession:
         obj = object.__new__(cls)
         obj._value_ = string_id
         obj.string_id = string_id

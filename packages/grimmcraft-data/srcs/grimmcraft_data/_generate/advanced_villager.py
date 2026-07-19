@@ -87,7 +87,17 @@ def read_professions(version: str) -> dict[str, str]:
 
 def read_block_ids() -> set[str]:
     """The namespaced ids of this package's own ``Block`` enum."""
-    sys.path.insert(0, str(PACKAGE_DIRECTORY.parent))
+    # This script runs standalone, so it puts the workspace sources on the path
+    # itself rather than relying on editable-install .pth files: on iCloud Drive
+    # macOS sets UF_HIDDEN on those and site.py then skips them.
+    workspace = PACKAGE_DIRECTORY.parents[2]
+    for source in (
+        PACKAGE_DIRECTORY.parent,
+        workspace / "grimmclub-standardlib" / "srcs",
+    ):
+        if str(source) not in sys.path:
+            sys.path.insert(0, str(source))
+
     from grimmcraft_data.block import Block
 
     return {block.string_id for block in Block}
@@ -140,7 +150,11 @@ def render_professions(version: str, professions: dict[str, str]) -> str:
         "",
         "",
         "class VillagerProfession(Enum):",
-        "    def __new__(cls, string_id: str, display_name: str, workstation: str | None):",
+        "    string_id: str",
+        "    display_name: str",
+        "    workstation: str | None",
+        "",
+        "    def __new__(cls, string_id: str, display_name: str, workstation: str | None) -> VillagerProfession:",
         "        obj = object.__new__(cls)",
         "        obj._value_ = string_id",
         "        obj.string_id = string_id",
@@ -160,7 +174,7 @@ def render_professions(version: str, professions: dict[str, str]) -> str:
         "",
         "def profession_for_workstation(block: Block | str) -> VillagerProfession | None:",
         '    """The profession a villager takes from ``block``, or None."""',
-        "    wanted = getattr(block, \"string_id\", block)",
+        '    wanted = getattr(block, "string_id", block)',
         "    for profession in VillagerProfession:",
         "        if profession.workstation == wanted:",
         "            return profession",
@@ -169,7 +183,7 @@ def render_professions(version: str, professions: dict[str, str]) -> str:
         "",
         "def workstation_for_profession(profession: VillagerProfession | str) -> str | None:",
         '    """The namespaced block id that creates ``profession``, or None."""',
-        "    wanted = getattr(profession, \"string_id\", profession)",
+        '    wanted = getattr(profession, "string_id", profession)',
         "    for candidate in VillagerProfession:",
         "        if candidate.string_id == wanted:",
         "            return candidate.workstation",
@@ -204,7 +218,10 @@ def render_workstations(version: str, professions: dict[str, str]) -> str:
         "",
         "",
         "class VillagerWorkstation(Enum):",
-        "    def __new__(cls, string_id: str, profession: str):",
+        "    string_id: str",
+        "    profession: str",
+        "",
+        "    def __new__(cls, string_id: str, profession: str) -> VillagerWorkstation:",
         "        obj = object.__new__(cls)",
         "        obj._value_ = string_id",
         "        obj.string_id = string_id",
@@ -220,7 +237,7 @@ def render_workstations(version: str, professions: dict[str, str]) -> str:
         "",
         "def workstation_for_block(block: Block | str) -> VillagerWorkstation | None:",
         '    """The job site ``block`` is, or None if it is not one."""',
-        "    wanted = getattr(block, \"string_id\", block)",
+        '    wanted = getattr(block, "string_id", block)',
         "    for workstation in VillagerWorkstation:",
         "        if workstation.string_id == wanted:",
         "            return workstation",

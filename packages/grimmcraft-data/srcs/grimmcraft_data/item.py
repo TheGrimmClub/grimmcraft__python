@@ -9,11 +9,17 @@ NOTE: numeric ids are stable within a version but change between
 versions (Java has no permanent numeric ids since 1.13).
 Do not edit by hand; regenerate with _generate/items.py."""
 
+from __future__ import annotations
+
 from grimmclub_standardlib import Enum
 
 
 class Item(Enum):
-    def __new__(cls, num_id, string_id, display_name, stack_size):
+    string_id: str
+    display_name: str
+    stack_size: int
+
+    def __new__(cls, num_id: int, string_id: str, display_name: str, stack_size: int) -> Item:
         obj = object.__new__(cls)
         obj._value_ = num_id
         obj.string_id = string_id

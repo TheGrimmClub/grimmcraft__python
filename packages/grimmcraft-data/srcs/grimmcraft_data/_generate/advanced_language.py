@@ -66,7 +66,7 @@ from importlib.resources import files
 from pathlib import Path
 
 _DATA = {json.dumps(data_rel)}
-_HERE = Path(__file__).parent
+_HERE = SystemPath(__file__).parent
 '''
     body = r'''
 

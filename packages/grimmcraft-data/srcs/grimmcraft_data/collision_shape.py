@@ -10,11 +10,10 @@ Do not edit by hand; regenerate with _generate/advanced_collision_shape.py."""
 
 from __future__ import annotations
 
-from grimmclub_standardlib import SystemPath as Path
-from grimmclub_standardlib import dataclass, files, json, lru_cache
+from grimmclub_standardlib import SystemPath, dataclass, files, json, lru_cache
 
 _DATA = "data/1.21.11/blockCollisionShapes.json"
-_HERE = Path(__file__).parent
+_HERE = SystemPath(__file__).parent
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,7 +28,7 @@ class AABB:
     max_z: float
 
 
-def _name(x) -> str:
+def _name(x:str) -> str:
     """Normalise a Block enum member or id string to a bare (un-namespaced) name."""
     s = getattr(x, "string_id", x)
     return str(s).split(":", 1)[-1]
