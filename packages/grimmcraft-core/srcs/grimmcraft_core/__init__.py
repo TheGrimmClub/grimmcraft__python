@@ -42,6 +42,7 @@ from grimmcraft_core.workstation import (
     CraftingTable,
     EnchantingTable,
     Furnace,
+    Stonecutter,
 )
 
 # Registry enum *types* come from grimmcraft-data; re-export them under clearer
@@ -101,6 +102,7 @@ __all__ = [
     "CoreWorkstation",
     "CraftingTable",
     "Furnace",
+    "Stonecutter",
     "BrewingStand",
     "Anvil",
     "EnchantingTable",

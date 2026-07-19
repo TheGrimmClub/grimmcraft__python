@@ -8,6 +8,7 @@ from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_core.workstation.crafting_table import CraftingTable
 from grimmcraft_core.workstation.enchantment_table import EnchantingTable
 from grimmcraft_core.workstation.furnace import Furnace
+from grimmcraft_core.workstation.stonecutter import Stonecutter
 
 __all__ = [
     "CoreWorkstation",
@@ -16,4 +17,5 @@ __all__ = [
     "BrewingStand",
     "Anvil",
     "EnchantingTable",
+    "Stonecutter",
 ]

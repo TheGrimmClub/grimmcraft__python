@@ -38,6 +38,7 @@ from grimmclub_standardlib import TYPE_CHECKING, ClassVar, Iterator, dataclass, 
 # Includes internal
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_core.item.core_item import CoreItem, SlotContainer
+from grimmcraft_data import VillagerProfession, profession_for_workstation
 
 if TYPE_CHECKING:
     from grimmcraft_core.entity.core_entity import CoreEntity
@@ -98,10 +99,6 @@ class StorageBlock(PlaceableBlock):
     #: the chest, so far — override :attr:`slot_count` instead.
     slots_held: ClassVar[int] = STANDARD_SLOTS
 
-    #: Whether a villager takes a profession from this block, as a namespaced
-    #: profession id. Only the barrel does, of the storage blocks.
-    job_site_profession: ClassVar[str | None] = None
-
     # Derived from slot_count, so not a constructor argument: accepting a
     # container would let the size and the contents disagree.
     _contents: SlotContainer = field(init=False)
@@ -114,6 +111,18 @@ class StorageBlock(PlaceableBlock):
     def slot_count(self) -> int:
         """How many slots this instance has, before the container is built."""
         return self.slots_held
+
+    @property
+    def job_site_profession(self) -> VillagerProfession | None:
+        """The villager profession this block creates, or ``None``.
+
+        Read from ``grimmcraft_data``'s generated registry rather than declared
+        per subclass, so a block cannot disagree with the data about what it
+        employs. Of the storage blocks only a barrel does, making a fisherman.
+        """
+        # By id rather than by member: the lookup takes a Block, and this is an
+        # Item. They share the namespaced id, which is what the lookup reads.
+        return profession_for_workstation(self.item_type.string_id)
 
     @property
     def is_job_site(self) -> bool:

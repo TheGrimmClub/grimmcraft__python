@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from grimmclub_standardlib import ABC, TYPE_CHECKING, dataclass
 from grimmcraft_core.coordinates import Coordinates
+from grimmcraft_data import VillagerProfession, profession_for_workstation
 from grimmcraft_data.block import Block
 
 if TYPE_CHECKING:
@@ -27,6 +28,22 @@ class CoreWorkstation(ABC):
     block_type: Block
     position: Coordinates
     current_user: CoreEntity | None = None
+
+    @property
+    def job_site_profession(self) -> VillagerProfession | None:
+        """The villager profession this station creates, or ``None``.
+
+        Read from ``grimmcraft_data``'s generated registry rather than declared
+        per subclass, so a station cannot disagree with the data about what it
+        employs. Of the stations modelled here, a brewing stand makes a cleric
+        and a stonecutter a mason; the rest employ nobody.
+        """
+        return profession_for_workstation(self.block_type)
+
+    @property
+    def is_job_site(self) -> bool:
+        """Whether standing this block near a villager gives them a profession."""
+        return self.job_site_profession is not None
 
     def menu_title(self) -> str:
         """The display title shown when the station's menu opens.

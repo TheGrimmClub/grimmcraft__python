@@ -131,18 +131,24 @@ def test_the_last_viewer_can_be_set_at_construction(storage_type: type[StorageBl
 
 
 def test_a_barrel_is_a_villager_job_site() -> None:
+    from grimmcraft_data import VillagerProfession
+
     assert Barrel().is_job_site
-    assert Barrel.job_site_profession == "minecraft:fisherman"
+    assert Barrel().job_site_profession is VillagerProfession.FISHERMAN
 
 
 def test_a_chest_is_not_a_job_site() -> None:
     """Standing a chest by a villager does nothing; a barrel makes a fisherman."""
     assert not Chest().is_job_site
-    assert Chest.job_site_profession is None
+    assert Chest().job_site_profession is None
 
 
-def test_the_barrel_agrees_with_the_generated_registry() -> None:
-    """The hand-written class must not drift from the data it describes."""
-    from grimmcraft_data import VillagerWorkstation
+def test_the_profession_is_read_from_the_registry_not_declared() -> None:
+    """It used to be a hand-written string on Barrel, which could drift.
 
-    assert VillagerWorkstation.BARREL.profession == Barrel.job_site_profession
+    Deriving it means the class cannot disagree with the data — there is no
+    second copy to disagree with. This asserts the derivation, not the value.
+    """
+    from grimmcraft_data import profession_for_workstation
+
+    assert Barrel().job_site_profession is profession_for_workstation(Item.BARREL.string_id)

@@ -19,7 +19,7 @@ A barrel differs from a chest in three ways, and only one of them is storage:
 from __future__ import annotations
 
 # Includes standard
-from grimmclub_standardlib import ClassVar, dataclass
+from grimmclub_standardlib import dataclass
 
 # Includes internal
 from grimmcraft_core.item.storage import StorageBlock
@@ -32,4 +32,3 @@ class Barrel(StorageBlock):
     """A barrel: 27 slots, always, and the block that employs a fisherman."""
 
     item_type: Item = Item.BARREL
-    job_site_profession: ClassVar[str | None] = "minecraft:fisherman"

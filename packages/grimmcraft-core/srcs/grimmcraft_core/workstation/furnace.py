@@ -8,6 +8,7 @@ from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_data.block import Block
 
+
 # Classes
 @dataclass(kw_only=True)
 class Furnace(CoreWorkstation):
