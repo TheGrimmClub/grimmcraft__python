@@ -11,7 +11,7 @@ Run it (from the package dir, or via ``task compiler:chess``)::
 """
 
 # Imports
-from grimmclub import StrEnum, yes, no
+from grimmclub import StrEnum, yes
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType

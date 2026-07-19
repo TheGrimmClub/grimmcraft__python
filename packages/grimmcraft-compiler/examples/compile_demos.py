@@ -11,7 +11,6 @@ Run it (from the package dir, or via ``task compiler:example``)::
 """
 
 # Imports
-from dis import show_code
 
 from grimmcraft_compiler import Target, compile_machines, show_info
 from grimmcraft_control.demos import door_machine, furnace_machine

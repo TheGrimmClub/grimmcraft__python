@@ -25,6 +25,26 @@ extend-exclude = ["**/tests/**/datapacks/**"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# grimmcraft-data's registry modules are generated from PrismarineJS
+# minecraft-data and carry "do not edit by hand; regenerate with _generate/".
+# A row is one registry entry — a namespaced id plus a display name — which
+# simply does not fit in 100 columns:
+#
+#   EXPOSED_CHISELED_COPPER = (99, "minecraft:exposed_chiseled_copper", "Exposed Chiseled Copper", 64)
+#
+# Wrapping 1505 of those would obscure the one-row-per-entry shape and be undone
+# by the next regeneration, so the line limit is not meaningful here. The
+# hand-written generators under _generate/ are deliberately still linted.
+"packages/grimmcraft-data/srcs/grimmcraft_data/*.py" = ["E501"]
+
+# grimmclub is a *facade*: `from grimmclub._core import *` re-exporting
+# yes/no/true/false/on/off is the whole point of the module, and those names are
+# then listed in __all__. F403 ("unable to detect undefined names") and F405
+# ("may be undefined, or defined from star imports") are therefore reporting the
+# design working, not a problem — the one place a star import is deliberate.
+"packages/grimmclub/srcs/grimmclub/__init__.py" = ["F403", "F405"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

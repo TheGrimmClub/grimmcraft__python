@@ -10,7 +10,6 @@ Do not edit by hand; regenerate with _generate/advanced_attribute.py."""
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,9 +18,9 @@ class Attribute:
 
     name: str
     resource: str
-    default: Optional[float]
-    min: Optional[float]
-    max: Optional[float]
+    default: float | None
+    min: float | None
+    max: float | None
 
 
 ATTRIBUTES: dict[str, Attribute] = {
@@ -63,6 +62,6 @@ ATTRIBUTES: dict[str, Attribute] = {
 }
 
 
-def attribute(resource: str) -> Optional[Attribute]:
+def attribute(resource: str) -> Attribute | None:
     """Look up an attribute by its resource name."""
     return ATTRIBUTES.get(resource)

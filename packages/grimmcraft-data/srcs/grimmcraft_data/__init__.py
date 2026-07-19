@@ -28,23 +28,23 @@ imported on demand once generated; they are intentionally not re-exported here.
 
 from __future__ import annotations
 
+# --- Richer datasets: dataclasses + accessors --------------------------------
+from . import attribute, collision_shape, language, loot, recipe
+from .attribute import ATTRIBUTES, Attribute
+
 # --- Core enums (one member per registry entry) ------------------------------
 from .biome import Biome
 from .block import Block
+from .collision_shape import AABB, collision_boxes
 from .effect import Effect
 from .enchantment import Enchantment
 from .entity import Entity
 from .food import Food
 from .instrument import Instrument
 from .item import Item
-from .particle import Particle
-
-# --- Richer datasets: dataclasses + accessors --------------------------------
-from . import attribute, collision_shape, language, loot, recipe
-from .attribute import ATTRIBUTES, Attribute
-from .collision_shape import AABB, collision_boxes
 from .language import all_keys, translate
 from .loot import Drop, LootTable, block_loot, entity_loot
+from .particle import Particle
 from .recipe import Recipe, all_recipes, recipes_for
 
 __all__ = [

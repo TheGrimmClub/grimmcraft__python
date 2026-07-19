@@ -40,10 +40,9 @@ from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
 from typing import Any, Optional, Protocol
 
-from grimmclub._core import *   # yes/no, true/false
-
 # json is the logging wrapper (drop-in for the stdlib module), not stdlib json.
 from grimmclub import _json as json
+from grimmclub._core import *  # yes/no, true/false
 
 # Path is the logging subclass of pathlib.Path (still an instance of it).
 from grimmclub._path import Path

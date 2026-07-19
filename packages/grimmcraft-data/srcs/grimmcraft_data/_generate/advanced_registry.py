@@ -135,7 +135,7 @@ def build_module(full_key, data, version):
         "Each member's .value is the entry's `protocol_id` (int) and .string_id is",
         "the namespaced id.  NOTE: protocol_ids are stable within a version but not",
         "across versions.",
-        f'Do not edit by hand; regenerate with _generate/advanced_registry.py."""',
+        'Do not edit by hand; regenerate with _generate/advanced_registry.py."""',
         "",
         "from enum import Enum",
         "",

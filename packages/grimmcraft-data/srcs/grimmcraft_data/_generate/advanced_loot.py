@@ -72,7 +72,6 @@ from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional
 
 _BLOCK_DATA = {json.dumps(block_rel)}
 _ENTITY_DATA = {json.dumps(entity_rel)}
@@ -90,13 +89,13 @@ class Drop:
     """A single possible drop within a loot table."""
 
     item: object                  # Item member, or bare string id
-    drop_chance: Optional[float]
-    stack_min: Optional[int]
-    stack_max: Optional[int]
-    silk_touch: Optional[bool]
-    no_silk_touch: Optional[bool]
-    player_kill: Optional[bool]
-    block_age: Optional[int]
+    drop_chance: float | None
+    stack_min: int | None
+    stack_max: int | None
+    silk_touch: bool | None
+    no_silk_touch: bool | None
+    player_kill: bool | None
+    block_age: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,12 +157,12 @@ def _tables(rel, source_field) -> dict:
     return out
 
 
-def block_loot(block) -> Optional[LootTable]:
+def block_loot(block) -> LootTable | None:
     """Loot table for a block (an `Item`/`Block` member or bare/namespaced id)."""
     return _tables(_BLOCK_DATA, "block").get(_name(block))
 
 
-def entity_loot(entity) -> Optional[LootTable]:
+def entity_loot(entity) -> LootTable | None:
     """Loot table for an entity (an `Entity` member or bare/namespaced id)."""
     return _tables(_ENTITY_DATA, "entity").get(_name(entity))
 '''

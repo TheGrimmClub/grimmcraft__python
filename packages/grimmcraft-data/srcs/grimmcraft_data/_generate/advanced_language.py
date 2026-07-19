@@ -64,7 +64,6 @@ import json
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional
 
 _DATA = {json.dumps(data_rel)}
 _HERE = Path(__file__).parent
@@ -84,7 +83,7 @@ def _raw() -> dict:
         return json.load(fh)
 
 
-def translate(key: str, default: Optional[str] = None) -> Optional[str]:
+def translate(key: str, default: str | None = None) -> str | None:
     """English text for a translation key, or `default` if it is not present."""
     return _raw().get(key, default)
 
