@@ -11,11 +11,16 @@ dev = [
     "pytest>=8",
     "ruff>=0.9",
     "mypy>=1.13",
+    "types-PyYAML",       # stubs for grimmclub-filesystem's yaml config loader
+    "pyftpdlib>=1.5",     # local FTP server exercising the transfer download path
 ]
 
 [tool.ruff]
 line-length = 100
 src = ["packages/*/srcs", "packages/*/tests"]
+# Datapack fixtures are test *data*, not source: the .py files inside them are
+# the generator scripts that shipped with the pack and are linted by nobody.
+extend-exclude = ["**/tests/**/datapacks/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -27,12 +32,17 @@ strict = true
 # files, which mypy does not process). Mirrors the ruff `src` setting above.
 mypy_path = [
     "packages/grimmclub/srcs",
+    "packages/grimmclub-filesystem/srcs",
+    "packages/grimmcraft-world/srcs",
     "packages/grimmcraft-data/srcs",
     "packages/grimmcraft-core/srcs",
     "packages/grimmcraft-control/srcs",
     "packages/grimmcraft-compiler/srcs",
     "packages/grimmcraft-cli/srcs",
     "packages/grimmcraft-decompiler/srcs",
+    "packages/grimmcraft-structures/srcs",
+    "packages/grimmcraft-npc/srcs",
+    "packages/grimmcraft-migrate/srcs",
 ]
 
 # grimmcraft-data is generated (and not strict-typed); type-check *against* its

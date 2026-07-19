@@ -45,6 +45,24 @@ includes:
   redstone:
     taskfile: ./packages/grimmcraft-redstone/Taskfile.yml
     dir: ./packages/grimmcraft-redstone
+  decompiler:
+    taskfile: ./packages/grimmcraft-decompiler/Taskfile.yml
+    dir: ./packages/grimmcraft-decompiler
+  fs:
+    taskfile: ./packages/grimmclub-filesystem/Taskfile.yml
+    dir: ./packages/grimmclub-filesystem
+  world:
+    taskfile: ./packages/grimmcraft-world/Taskfile.yml
+    dir: ./packages/grimmcraft-world
+  structures:
+    taskfile: ./packages/grimmcraft-structures/Taskfile.yml
+    dir: ./packages/grimmcraft-structures
+  npc:
+    taskfile: ./packages/grimmcraft-npc/Taskfile.yml
+    dir: ./packages/grimmcraft-npc
+  migrate:
+    taskfile: ./packages/grimmcraft-migrate/Taskfile.yml
+    dir: ./packages/grimmcraft-migrate
 
 tasks:
   default:
