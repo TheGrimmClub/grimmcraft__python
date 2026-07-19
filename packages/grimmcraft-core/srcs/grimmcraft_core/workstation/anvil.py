@@ -19,8 +19,6 @@ class Anvil(CoreWorkstation):
     right: CoreItem | None = None
     rename_to: str | None = None
 
-    def menu_title(self) -> str:
-        return "Anvil"
 
     def combine(self) -> CoreItem | None:
         """Produce the combined/repaired result (not yet implemented)."""

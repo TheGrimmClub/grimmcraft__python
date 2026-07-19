@@ -1,5 +1,6 @@
 """The 3x3 :class:`CraftingTable` workstation."""
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import Callable, dataclass, field
@@ -7,6 +8,7 @@ from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_data.block import Block
 
+# Constants
 GRID_SIZE = 3
 
 # A recipe resolver maps the current 3x3 grid to a crafted result (or None).
@@ -14,11 +16,11 @@ GRID_SIZE = 3
 # wired in later without hardcoding recipes in the core model.
 RecipeResolver = Callable[[list[list[CoreItem | None]]], CoreItem | None]
 
-
+# Functions
 def _empty_grid() -> list[list[CoreItem | None]]:
     return [[None] * GRID_SIZE for _ in range(GRID_SIZE)]
 
-
+# Classes
 @dataclass(kw_only=True)
 class CraftingTable(CoreWorkstation):
     """A crafting table exposing a 3x3 grid and a pluggable crafting step."""
@@ -27,8 +29,6 @@ class CraftingTable(CoreWorkstation):
     grid: list[list[CoreItem | None]] = field(default_factory=_empty_grid)
     recipe_resolver: RecipeResolver | None = None
 
-    def menu_title(self) -> str:
-        return "Crafting Table"
 
     def place(self, item: CoreItem | None, row: int, col: int) -> None:
         """Put ``item`` (or ``None`` to clear) into grid cell ``(row, col)``."""
