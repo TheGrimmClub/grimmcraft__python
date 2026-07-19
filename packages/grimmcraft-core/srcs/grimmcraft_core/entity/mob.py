@@ -1,25 +1,26 @@
 """The :class:`Mob` entity — a non-player living creature."""
 
+# Includes
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
+from grimmclub_standardlib import dataclass, field
 from grimmcraft_core.entity.core_entity import CoreEntity
 from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_data.entity import Entity
 
+# Types
 # `Entity.type` values that denote a living creature (i.e. a mob), as opposed to
 # players, projectiles or misc "other" registry entries.
 MOB_ENTITY_TYPES: frozenset[str] = frozenset(
     {"mob", "hostile", "passive", "animal", "ambient", "living"}
 )
 
-
+# Functions
 def _entity_kind(entity_type: Entity) -> str | None:
     """The ``type`` category of a data ``Entity`` (dynamically attached attr)."""
     return getattr(entity_type, "type", None)
 
-
+# Classes
 @dataclass(kw_only=True)
 class Mob(CoreEntity):
     """A living, non-player creature that may be hostile and may drop loot."""

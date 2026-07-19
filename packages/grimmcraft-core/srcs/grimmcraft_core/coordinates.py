@@ -9,9 +9,7 @@ circular import.
 # Includes
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass
-from enum import Enum
+from grimmclub_standardlib import Enum, dataclass, math
 
 
 # Types

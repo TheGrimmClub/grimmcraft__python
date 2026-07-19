@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
+from grimmclub_standardlib import TYPE_CHECKING, Iterator, dataclass
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_core.item.core_item import CoreItem, SlotContainer
 from grimmcraft_data.item import Item

@@ -1,15 +1,14 @@
 """The :class:`CoreEntity` base for every live actor in the world."""
 
+# Includes
 from __future__ import annotations
 
-from abc import ABC
-from dataclasses import dataclass, field
-from uuid import UUID, uuid4
-
+from grimmclub_standardlib import ABC, UUID, dataclass, field, uuid4
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_data.entity import Entity
 
 
+# Classes
 @dataclass(kw_only=True)
 class CoreEntity(ABC):
     """A mutable, positioned actor with health — the shared base for players,

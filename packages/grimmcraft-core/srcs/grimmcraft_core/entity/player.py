@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum
-
+from grimmclub_standardlib import Enum, dataclass, field
 from grimmcraft_core.entity.core_entity import CoreEntity
 from grimmcraft_core.item.core_item import Inventory
 from grimmcraft_data.entity import Entity

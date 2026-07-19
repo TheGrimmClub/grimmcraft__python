@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass, field
-
+from grimmclub_standardlib import Callable, dataclass, field
 from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_data.block import Block

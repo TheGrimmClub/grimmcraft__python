@@ -219,11 +219,15 @@ name = "grimmcraft-core"
 version = "0.1.0"
 source = { editable = "packages/grimmcraft-core" }
 dependencies = [
+    { name = "grimmclub-standardlib" },
     { name = "grimmcraft-data" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "grimmcraft-data", editable = "packages/grimmcraft-data" }]
+requires-dist = [
+    { name = "grimmclub-standardlib", editable = "packages/grimmclub-standardlib" },
+    { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
+]
 
 [[package]]
 name = "grimmcraft-data"

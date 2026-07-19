@@ -10,17 +10,18 @@ A bare ``str`` remains perfectly valid everywhere a component is accepted — th
 
     Text("Buy one.", color="green", click=run_command("village:miller/buy"))
 
-Two version splits the renderer has to honour, both landing on **1.21.5**:
+Two version splits the renderer has to honor, both landing on **1.21.5**:
 
 * the document syntax — JSON before, SNBT after;
 * the event shape — ``clickEvent`` with a single ``value`` before,
   ``click_event`` with *action-specific* fields (``command``, ``url``) after.
 """
 
+# Includes
 from __future__ import annotations
 
 # Includes standard
-from dataclasses import dataclass, field, replace
+from grimmclub_standardlib import dataclass, field, replace
 
 # Constants
 #: Click actions a component may carry.
@@ -36,7 +37,7 @@ CLICK_ACTIONS = frozenset(
     }
 )
 
-#: The named colours Minecraft accepts (a ``#rrggbb`` hex string also works).
+#: The named colors Minecraft accepts (a ``#rrggbb`` hex string also works).
 COLORS = frozenset(
     {
         "black", "dark_blue", "dark_green", "dark_aqua", "dark_red",

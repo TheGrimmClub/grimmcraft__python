@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
+from grimmclub_standardlib import ABC, TYPE_CHECKING, abstractmethod, dataclass
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_data.block import Block
 

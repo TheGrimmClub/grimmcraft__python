@@ -11,8 +11,7 @@ placing a villager and placing the block that employs it use one source.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
+from grimmclub_standardlib import dataclass, field
 from grimmcraft_core.entity.mob import Mob
 from grimmcraft_data import VillagerProfession as VillagerProfession
 from grimmcraft_data.entity import Entity

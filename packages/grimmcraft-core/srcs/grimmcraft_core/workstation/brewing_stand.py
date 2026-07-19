@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
+from grimmclub_standardlib import dataclass, field
 from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_data.block import Block

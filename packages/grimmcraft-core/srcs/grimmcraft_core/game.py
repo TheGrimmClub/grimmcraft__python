@@ -9,8 +9,7 @@ key argument.
 # Includes
 from __future__ import annotations
 
-from enum import Enum
-from typing import Any
+from grimmclub_standardlib import Any, Enum
 
 
 # Types

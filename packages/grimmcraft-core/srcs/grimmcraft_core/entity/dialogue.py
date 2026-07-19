@@ -24,14 +24,15 @@ machine live in ``grimmcraft-npc``, because both need command constructors from
 depend on it.
 """
 
+# Includes
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
-
+from grimmclub_standardlib import dataclass, field, replace
 from grimmcraft_core.protocols import CommandLike
 from grimmcraft_core.text import Text, as_text
 
 
+# Functions
 #: The event name of the *n*-th option out of a scene. Options are identified
 #: positionally because a label is prose — it may be changed, translated or
 #: repeated — while its position in the menu is stable.
@@ -39,7 +40,7 @@ def option_event(index: int) -> str:
     """The machine event fired when the player picks option ``index``."""
     return f"choice_{index}"
 
-
+# Classes
 @dataclass(frozen=True, slots=True)
 class Condition:
     """A score check gating an option — the compilable form of Ren'Py's ``if``.

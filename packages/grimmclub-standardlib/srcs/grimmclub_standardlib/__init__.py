@@ -35,17 +35,29 @@ import random
 import re
 import sys
 import textwrap
+from abc import ABC, abstractmethod
 
 # --- common leaf names (imported directly in normal code) --------------------
 from collections import Counter, defaultdict, deque
-from collections.abc import Callable, Iterator, KeysView, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable, Iterator, KeysView, Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
 from functools import cache, lru_cache
 from importlib.resources import files
 from pathlib import Path as SystemPath
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, Optional, Protocol, TextIO, Union
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Optional,
+    Protocol,
+    TextIO,
+    Union,
+    runtime_checkable,
+)
+from uuid import UUID, uuid4
 
 from grimmclub_standardlib import _json as json
 from grimmclub_standardlib import _yaml as yaml
@@ -75,7 +87,14 @@ __all__ = [
     "cache",
     "lru_cache",
     "KeysView",
+    "ABC",
+    "abstractmethod",
     "Callable",
+    "Mapping",
+    "UUID",
+    "uuid4",
+    "replace",
+    "runtime_checkable",
     "Iterator",
     "Sequence",
     # dataclasses

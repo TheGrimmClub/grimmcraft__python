@@ -9,9 +9,7 @@ runtime; concrete domain types are referenced lazily to avoid import cycles.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
-from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
-
+from grimmclub_standardlib import TYPE_CHECKING, Any, Iterator, Mapping, Protocol, runtime_checkable
 from grimmcraft_core.coordinates import Coordinates
 
 if TYPE_CHECKING:

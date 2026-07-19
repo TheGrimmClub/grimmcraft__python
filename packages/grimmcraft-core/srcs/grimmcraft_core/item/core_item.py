@@ -8,10 +8,7 @@ inventories and placed chests.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from dataclasses import dataclass, field
-from typing import Any
-
+from grimmclub_standardlib import Any, Iterator, dataclass, field
 from grimmcraft_data.item import Item
 
 

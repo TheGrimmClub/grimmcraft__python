@@ -13,10 +13,7 @@ callback), so this module never imports the control package.
 # Includes
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from enum import Enum
-
+from grimmclub_standardlib import Callable, Enum, dataclass, field
 from grimmcraft_core.scoreboard import ScoreBoard
 
 # Constants
