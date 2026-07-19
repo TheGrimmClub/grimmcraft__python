@@ -20,6 +20,8 @@ Quick tour::
 from grimmclub_filesystem import archive, config, core, paths, transfer
 from grimmclub_filesystem.checks import (
     ContentError,
+    FileType,
+    expect,
     expect_directory,
     expect_file,
     expect_json,
@@ -35,6 +37,8 @@ __all__ = [
     "paths",
     "SystemPath",
     "ContentError",
+    "FileType",
+    "expect",
     "expect_file",
     "expect_directory",
     "expect_json",

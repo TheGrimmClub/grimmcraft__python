@@ -40,13 +40,13 @@ with an explanation of why levels 2–3 were skipped — it never just fails.
   together resolve a `Target` — with a recorded confidence, because format 48 is
   both 1.21 and 1.21.1. See [`docs/support-matrix.md`](docs/support-matrix.md).
 - **Reads commands backwards.** One parser per `Dialect` renderer. Every parse is
-  **verified by re-rendering it**, so a line can never be silently normalised;
+  **verified by re-rendering it**, so a line can never be silently normalized;
   what cannot be modelled is preserved verbatim as `raw`.
 - **Rebuilds machines.** Inverts `lower.py`: the `grimmcraft_state` writes,
   `on_<event>` dispatch tables, `do_…` bodies and `tick_<state>` loops become
   states, transitions, guards and cycle commands again.
 - **Diagnostics are first-class.** Version ambiguity, unparseable lines,
-  unliftable packs, unknown ids and ambiguous reconstructions each get a stable
+  non liftable packs, unknown ids and ambiguous reconstructions each get a stable
   `GD####` code — see [`docs/diagnostics.md`](docs/diagnostics.md).
 
 ## The round-trip guarantee
@@ -58,7 +58,7 @@ compiler — it has already caught one bug there. See
 [`docs/roundtrip.md`](docs/roundtrip.md).
 
 For hand-written packs the guarantee is weaker but still stated precisely: every
-`.mcfunction` reproduces exactly; formatting the emitter normalises may not.
+`.mcfunction` reproduces exactly; formatting the emitter normalizes may not.
 
 ## Docs
 
