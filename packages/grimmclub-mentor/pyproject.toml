@@ -1,0 +1,27 @@
+[project]
+name = "grimmclub-mentor"
+version = "0.1.0"
+description = "Turn diagnostics into teaching: explanations, lessons and links"
+readme = "README.md"
+authors = [
+    { name = "Andreas **Felix** Häberle", email = "felix@42sol.eu" }
+]
+requires-python = ">=3.12"
+# Deliberately minimal, and deliberately free of any grimmcraft dependency:
+# this package is meant to move to a repository of its own, and domain packages
+# extend it rather than the other way round.
+dependencies = [
+    "grimmclub-diagnostics",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.28,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "srcs"
+
+[tool.uv.sources]
+grimmclub-diagnostics = { workspace = true }

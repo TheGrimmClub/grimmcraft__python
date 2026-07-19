@@ -134,3 +134,20 @@ their own catalogues (32 codes) and nothing else.
 The package is domain-agnostic on purpose — a test asserts it imports nothing
 from `grimmcraft` — because the next thing to sit on top of it, `grimmclub-mentor`,
 has to explain every producer's codes without knowing what any of them mean.
+\n
+## feat(mentor): create grimmclub-mentor — 2026-07-19
+
+Diagnostics with a teaching layer: an explanation, a lesson, a link. Generic —
+codes are opaque strings and nothing imports `grimmcraft`, so the package can
+move to its own repository later without a rewrite. Explanations are registered
+from code or discovered as Markdown in the grimmoire submodule, so teachers
+contribute prose rather than Python. A missing teaching repository degrades
+quietly instead of failing. See `packages/grimmclub-mentor/CHANGELOG.md`.
+
+## docs(data): plan the villager profession and workstation registries — 2026-07-19
+
+`PROMPT__VILLAGER_REGISTRIES.md` records the outstanding work: `grimmcraft-data`
+ships no profession registry (`grimmcraft-core/entity/npc.py` carries a stopgap
+enum that says so) and nothing maps a profession to its workstation block. Both
+come from Mojang's server data report rather than PrismarineJS, so they need a
+generator the existing pipeline does not have.

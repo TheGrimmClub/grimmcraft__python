@@ -11,6 +11,7 @@ members = [
     "grimmclub",
     "grimmclub-diagnostics",
     "grimmclub-filesystem",
+    "grimmclub-mentor",
     "grimmclub-standardlib",
     "grimmcraft-cli",
     "grimmcraft-compiler",
@@ -136,6 +137,23 @@ dependencies = [
 requires-dist = [
     { name = "grimmclub-standardlib", editable = "packages/grimmclub-standardlib" },
     { name = "pyyaml", specifier = ">=6.0" },
+]
+
+[[package]]
+name = "grimmclub-mentor"
+version = "0.1.0"
+source = { editable = "packages/grimmclub-mentor" }
+dependencies = [
+    { name = "grimmclub-diagnostics" },
+    { name = "pyyaml" },
+    { name = "rich" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "grimmclub-diagnostics", editable = "packages/grimmclub-diagnostics" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "rich", specifier = ">=13.0" },
 ]
 
 [[package]]

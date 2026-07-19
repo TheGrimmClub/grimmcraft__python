@@ -54,6 +54,9 @@ includes:
   diagnostics:
     taskfile: ./packages/grimmclub-diagnostics/Taskfile.yml
     dir: ./packages/grimmclub-diagnostics
+  mentor:
+    taskfile: ./packages/grimmclub-mentor/Taskfile.yml
+    dir: ./packages/grimmclub-mentor
   fs:
     taskfile: ./packages/grimmclub-filesystem/Taskfile.yml
     dir: ./packages/grimmclub-filesystem

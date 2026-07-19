@@ -1,0 +1,117 @@
+# Task: generate the villager profession and workstation registries
+> [ ] TODO: execute PROMPT__VILLAGER_REGISTRIES.md
+
+Add `villager_profession` and `point_of_interest` to `grimmcraft-data`, generated
+like every other registry rather than hand-written, and delete the stopgap enum
+that `grimmcraft-core` currently carries.
+
+## Why this is outstanding
+
+`grimmcraft-core/entity/npc.py` defines `VillagerProfession` locally and says so:
+
+> `VillagerProfession` is defined locally as a stopgap: it is a Mojang *registry*
+> enum that `grimmcraft-data` does not yet ship (it requires the server data
+> report). When `grimmcraft_data.villager_profession` is generated, swap this
+> import to reuse it and delete the local enum.
+
+Nothing maps a profession to the block that creates it — `farmer` ↔ `composter`,
+`librarian` ↔ `lectern`, `toolsmith` ↔ `smithing_table`. A villager NPC needs
+exactly that mapping, and neither package has it. `grimmcraft-core/workstation/`
+models six workstations as *behaviour* (a furnace smelts); this is the missing
+*data*.
+
+## Why it needs a different pipeline
+
+Every other registry here comes from PrismarineJS/minecraft-data, which does not
+publish professions or points of interest. These come from Mojang's own **server
+data report**:
+
+```sh
+java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports
+# → generated/reports/registries.json   (all registry ids, incl. villager_profession
+#                                        and point_of_interest_type)
+```
+
+`data:generate-registry-enums` already accepts a `REGISTRIES=/path/to/registries.json`
+override, so the hook exists — what is missing is the profession/POI generator
+and the step that produces the report.
+
+**Note the version scheme.** The latest Minecraft is now **26.2** (calendar
+versioning; see `packages/grimmcraft-decompiler/docs/support-matrix.md`), and
+this workspace's support table still stops at 1.21.11. Decide which version the
+registries are generated for before running anything — regenerating against a
+newer game than the compiler supports would put ids in the data that no target
+can emit.
+
+## What to generate
+
+**`villager_profession.py`** — one enum member per profession, carrying its
+namespaced id, and the workstation block that creates it:
+
+```python
+class VillagerProfession(Enum):
+    FARMER = ("minecraft:farmer", "minecraft:composter")
+    LIBRARIAN = ("minecraft:librarian", "minecraft:lectern")
+    ...
+    @property
+    def string_id(self) -> str: ...
+    @property
+    def workstation(self) -> str | None: ...   # NONE and NITWIT have none
+```
+
+`string_id` matters: it is the accessor `grimmcraft-compiler`'s validation and
+`dialect.id_string()` already rely on for every other data enum. Match it.
+
+**`point_of_interest.py`** — the POI types and the blocks that provide them.
+This is the authoritative source for the workstation mapping above, and is
+useful on its own (beds, bells, and the nether portal are POIs too).
+
+**Accessors**, in the style of `loot.py` / `recipe.py`:
+
+```python
+def profession_for_workstation(block) -> VillagerProfession | None
+def workstation_for_profession(profession) -> Block | None
+```
+
+## Follow-through
+
+- Delete the stopgap enum in `grimmcraft-core/entity/npc.py` and import from
+  `grimmcraft_data`, removing the docstring note that describes it as temporary.
+  `Npc.profession` keeps its type; only its source changes.
+- `grimmcraft-core/workstation/` gains nothing automatically, but
+  `core_workstation.py` can then state which profession each models.
+- `grimmcraft-npc` (Taterzens presets) writes `Professions` entries with a
+  `ProfessionType` id — feed it from this enum rather than a string literal.
+
+## Tests
+
+- `string_id` round-trips for every member, and matches the `Block`/`Item`
+  convention — the compiler's validation depends on it.
+- The workstation mapping is complete and symmetric: every profession with a
+  workstation resolves back to itself through
+  `profession_for_workstation(workstation_for_profession(p))`.
+- `NONE` and `NITWIT` have **no** workstation, and the accessors return `None`
+  rather than raising — they are real professions with no block.
+- Every workstation block id exists in `Block` for the generated version. A
+  mapping that names a block the registry does not have is the failure mode
+  worth catching, since it only shows up in game.
+- The generator is deterministic: running it twice produces identical output.
+  The existing generated modules are checked in, so drift shows up as a diff.
+
+## Taskfile
+
+Add to `packages/grimmcraft-data/Taskfile.yaml`, beside the existing generators:
+
+```yaml
+  generate-villager-data:
+    desc: Generate the villager profession + point-of-interest registries from a
+          Mojang server data report (override the path with REGISTRIES=...)
+    cmds:
+      - uv run python srcs/grimmcraft_data/_generate/advanced_villager.py
+```
+
+Note the generators are themselves linted and type-checked, while their *output*
+is exempt from `E501` (see the root `pyproject.toml`) — so write the generator to
+the usual standard and let the emitted rows be as long as they need to be.
+Whatever it emits must use `X | None` rather than `Optional[X]`: the other
+generators were fixed for that and this one should not reintroduce it.
