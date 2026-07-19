@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime as DateTime
 from pathlib import Path as SystemPath
 from typing import Any
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 
 # Re-exported on purpose (see above) — naming them here tells both ruff and
 # mypy that these are part of this module's public surface.
@@ -17,6 +17,7 @@ __all__ = [
     "Any",
     "SystemPath",
     "ZIP_DEFLATED",
+    "BadZipFile",
     "ZipFile",
     "AnyOptional",
     "StringChecker",

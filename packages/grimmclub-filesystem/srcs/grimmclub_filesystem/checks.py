@@ -1,4 +1,4 @@
-"""Guards that fail *usefully* — ``expect_file``, ``expect_dir``, ``expect_json``.
+"""Guards that fail *usefully* — ``expect_file``, ``expect_directory``, ``expect_json``.
 
 A bare ``path.exists()`` tells you something is wrong but not what, and the four
 ways a path can disappoint you mean four different things:
@@ -14,6 +14,22 @@ JSON file has a stray comma should say which file, which line, and show it.
 These raise rather than collect diagnostics, because they guard programmer
 mistakes at the edges; the compiler's own :mod:`verify` stays diagnostic-shaped
 for problems a *user's* pack can have.
+
+# Classes:
+
+- `ContentError()`
+
+# Functions:
+
+- `expect_directory()`
+- `expect_file()`
+- `expect_archive()` TODO: implement this
+- `expect_executable()` TODO: implement this
+- `expect_script(language)` TODO: implement this
+- `expect_yaml(parser='SYON`)` TODO: implement this
+- `expect_json()`
+- `expect_json_object()`
+
 """
 
 # [ ] Includes standard
@@ -78,7 +94,7 @@ def expect_file(path: path_like, *, what: str = "file", allow_empty: bool = True
     raise FileNotFoundError(f"no {what} at {target}{_did_you_mean(target)}")
 
 
-def expect_dir(path: path_like, *, what: str = "directory") -> SystemPath:
+def expect_directory(path: path_like, *, what: str = "directory") -> SystemPath:
     """Return ``path`` as a :class:`SystemPath` directory, or raise."""
     target = as_path(path)
     if target.is_dir():

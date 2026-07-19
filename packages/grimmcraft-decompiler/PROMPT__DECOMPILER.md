@@ -1,5 +1,5 @@
 # Task: build the grimmcraft mcfunction → Python decompiler
-> [ ] TODO: execute PROMPT__DECOMPILER.md
+> [x] execute PROMPT__DECOMPILER.md
 
 Implement a Python **decompiler** that lifts an installed Minecraft **datapack**
 back into the grimmcraft domain model — the inverse of `grimmcraft-compiler`. Put
