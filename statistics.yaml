@@ -1,0 +1,56 @@
+# Thresholds for `task statistics` — when a number is worth worrying about.
+#
+# Each rule names a column, says which direction is good, and gives the two
+# boundaries. A value at least as good as `green` is green; at least as good as
+# `yellow` is yellow; anything worse is red. Columns with no rule are never
+# coloured, because a number nobody has decided a target for is just a number.
+#
+# Edit these rather than the tool. They are opinions, and opinions should live
+# somewhere a teacher can change without reading Python.
+
+colours:
+  green: green
+  yellow: yellow
+  red: red
+
+rules:
+  # --- what the numbers are for --------------------------------------------
+
+  doc%:
+    description: Share of modules, classes and functions carrying a docstring.
+    higher_is_better: true
+    green: 80
+    yellow: 60
+    note: >
+      Below 60% means most of the package explains itself only through its
+      names. Generated packages are exempt below.
+
+  test/code:
+    description: Lines of test per line of source.
+    higher_is_better: true
+    green: 0.5
+    yellow: 0.2
+    note: >
+      The single most useful column here. Below 0.2 a package is effectively
+      untested however many test files it has — grimmcraft-core sat at 0.07
+      with two test files covering 130 functions.
+
+  # --- shape ----------------------------------------------------------------
+
+  code/file:
+    description: Average lines of code per source file.
+    higher_is_better: false
+    green: 150
+    yellow: 300
+    note: >
+      Not a rule about style, a rule about reading: a 400-line module is one
+      nobody opens to check a detail.
+
+# Packages where a rule does not apply, with the reason. An exemption is a
+# decision, so it carries one — "generated" is a reason, silence is not.
+exemptions:
+  grimmcraft-data:
+    doc%: Registry modules are generated; their docstring is the file header.
+    code/file: A generated enum is one row per registry entry, by design.
+  grimmcraft-examples:
+    test/code: Examples are documentation that runs; the example is the test.

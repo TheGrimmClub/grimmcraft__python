@@ -13,7 +13,16 @@ Run it through the Taskfile::
     task statistics -- --facts      # plus derived observations
     task statistics -- --csv        # machine-readable
 
-Standard library only, so it needs no environment beyond Python itself.
+Standard library only *by default*, so it still runs on a fresh clone with no
+environment at all. Two optional upgrades are used when they happen to be
+importable, and silently skipped when they are not:
+
+- **rich** colours the numbers against the thresholds;
+- **PyYAML** reads those thresholds from ``statistics.yaml``.
+
+Without them the table is plain and the built-in thresholds apply, so the tool
+never fails because of what is missing — it just says less. ``task statistics``
+runs it through ``uv`` so both are present.
 """
 
 from __future__ import annotations
@@ -37,6 +46,44 @@ IGNORED_DIRECTORY_NAMES = frozenset(
 IGNORED_PATH_FRAGMENTS = ("/datapacks/",)
 
 
+#: Used when statistics.yaml cannot be read (no PyYAML, or no file). Kept in
+#: step with the shipped statistics.yaml, which is the editable copy.
+BUILT_IN_RULES: dict[str, dict[str, object]] = {
+    "doc%": {"higher_is_better": True, "green": 80, "yellow": 60},
+    "test/code": {"higher_is_better": True, "green": 0.5, "yellow": 0.2},
+    "code/file": {"higher_is_better": False, "green": 150, "yellow": 300},
+}
+
+
+def load_rules(root: Path) -> tuple[dict[str, dict[str, object]], dict[str, dict[str, str]]]:
+    """Thresholds and exemptions from ``statistics.yaml``, or the built-in ones.
+
+    A missing file or a missing PyYAML is not an error: the tool is meant to run
+    anywhere, and thresholds it cannot read are thresholds it does without.
+    """
+    configuration_file = root / "statistics.yaml"
+    try:
+        import yaml
+    except ModuleNotFoundError:
+        return BUILT_IN_RULES, {}
+    if not configuration_file.exists():
+        return BUILT_IN_RULES, {}
+    document = yaml.safe_load(configuration_file.read_text(encoding="utf-8")) or {}
+    return document.get("rules", BUILT_IN_RULES), document.get("exemptions", {})
+
+
+def grade(value: float, rule: dict[str, object]) -> str:
+    """``"green"``, ``"yellow"`` or ``"red"`` for ``value`` under ``rule``."""
+    green, yellow = float(rule["green"]), float(rule["yellow"])  # type: ignore[arg-type]
+    if rule.get("higher_is_better", True):
+        if value >= green:
+            return "green"
+        return "yellow" if value >= yellow else "red"
+    if value <= green:
+        return "green"
+    return "yellow" if value <= yellow else "red"
+
+
 @dataclass
 class SourceMetrics:
     """What one set of Python files contains."""
@@ -50,6 +97,13 @@ class SourceMetrics:
     documented_definitions: int = 0
     total_definitions: int = 0
     file_count: int = 0
+
+    @property
+    def lines_per_file(self) -> int:
+        """Average lines of code per source file, 0 when there are none."""
+        if not self.file_count:
+            return 0
+        return round(self.code_lines / self.file_count)
 
     @property
     def documentation_coverage_percent(self) -> int:
@@ -233,6 +287,8 @@ COLUMNS: list[tuple[str, int]] = [
     ("fn", 5),
     ("cls", 5),
     ("doc%", 6),
+    ("test/code", 10),
+    ("code/file", 10),
     ("srcF", 6),
     ("tests", 7),
     ("testC", 7),
@@ -251,6 +307,8 @@ def _row(statistics: PackageStatistics) -> list[str]:
         str(statistics.source.function_count),
         str(statistics.source.class_count),
         f"{statistics.source.documentation_coverage_percent}%",
+        f"{statistics.test_to_code_ratio:.2f}",
+        str(statistics.source.lines_per_file),
         str(statistics.source.file_count),
         str(statistics.test_function_count),
         str(statistics.tests.code_lines),
@@ -259,6 +317,121 @@ def _row(statistics: PackageStatistics) -> list[str]:
         str(statistics.file_count),
         str(statistics.directory_count),
     ]
+
+
+def totals(packages: list[PackageStatistics]) -> PackageStatistics:
+    """The whole workspace as one row.
+
+    Note the derived columns are recomputed from the summed lines rather than
+    averaged across packages: the mean of twelve ratios is not the ratio of the
+    workspace, and the difference is large when the packages differ in size.
+    """
+    total = PackageStatistics(name="TOTAL")
+    for statistics in packages:
+        total.source.code_lines += statistics.source.code_lines
+        total.source.docstring_lines += statistics.source.docstring_lines
+        total.source.function_count += statistics.source.function_count
+        total.source.class_count += statistics.source.class_count
+        total.source.file_count += statistics.source.file_count
+        total.tests.code_lines += statistics.tests.code_lines
+        total.test_function_count += statistics.test_function_count
+        total.markdown_file_count += statistics.markdown_file_count
+        total.markdown_line_count += statistics.markdown_line_count
+        total.file_count += statistics.file_count
+        total.directory_count += statistics.directory_count
+    return total
+
+
+#: Which column each rule grades, by column name.
+GRADED_COLUMNS = ("doc%", "test/code", "code/file")
+
+
+def _numeric(value: str) -> float:
+    """The number inside a rendered cell (``"82%"`` -> ``82.0``)."""
+    return float(value.rstrip("%"))
+
+
+def _family(name: str) -> str:
+    """Which half of the workspace a package belongs to.
+
+    The two are different kinds of thing — grimmclub is the general-purpose
+    teaching library, grimmcraft is the Minecraft toolchain — so a single
+    average across both describes neither.
+    """
+    return "grimmclub" if name.startswith("grimmclub") else "grimmcraft"
+
+
+def render_rich_table(
+    packages: list[PackageStatistics],
+    rules: dict[str, dict[str, object]],
+    exemptions: dict[str, dict[str, str]],
+) -> bool:
+    """Print the table in colour, grouped by family. False when rich is absent.
+
+    Exempt cells are dimmed rather than coloured: an exemption is a decision
+    someone made, so it should look different from a number nobody graded.
+    """
+    try:
+        from rich import box
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+    except ModuleNotFoundError:
+        return False
+
+    table = Table(box=box.SIMPLE_HEAVY, pad_edge=False, header_style="bold")
+    for index, (name, _width) in enumerate(COLUMNS):
+        table.add_column(name, justify="left" if index == 0 else "right")
+
+    def cells_for(statistics: PackageStatistics) -> list[str]:
+        rendered = []
+        for value, (name, _width) in zip(_row(statistics), COLUMNS, strict=True):
+            rule = rules.get(name)
+            exempt = exemptions.get(statistics.name, {}).get(name)
+            if exempt:
+                rendered.append(f"[dim]{value}[/]")
+            elif name in GRADED_COLUMNS and rule is not None:
+                rendered.append(f"[{grade(_numeric(value), rule)}]{value}[/]")
+            else:
+                rendered.append(value)
+        return rendered
+
+    for family in ("grimmclub", "grimmcraft"):
+        members = [p for p in packages if _family(p.name) == family]
+        if not members:
+            continue
+        for statistics in members:
+            table.add_row(*cells_for(statistics))
+
+        subtotal = _row(totals(members))
+        subtotal[0] = f"{family}  ({len(members)})"
+        subtotal[5] = ""  # a coverage average across packages would mean nothing
+        table.add_row(*(f"[bold cyan]{value}[/]" for value in subtotal))
+        table.add_section()
+
+    grand = _row(totals(packages))
+    grand[5] = ""
+    table.add_row(*(f"[bold]{value}[/]" for value in grand))
+
+    console = Console()
+    console.print(table)
+
+    legend = [
+        "[bold]code[/] executable lines only — docstrings, comments and blanks excluded",
+        "[bold]doc%[/] definitions carrying a docstring",
+        "[bold]test/code[/] lines of test per line of source",
+        "[bold]tests[/] test functions, before pytest expands parametrised cases",
+        "",
+        f"graded against statistics.yaml: {', '.join(n for n in GRADED_COLUMNS if n in rules)}",
+    ]
+    if exemptions:
+        legend.append("")
+        legend.append("[dim]dimmed cells are exempt, each for a stated reason:[/]")
+        for package, columns in exemptions.items():
+            for column, reason in columns.items():
+                legend.append(f"[dim]  {package} · {column} — {reason.strip()}[/]")
+    console.print(Panel("\n".join(legend), title="legend", title_align="left", box=box.ROUNDED))
+    return True
 
 
 def render_table(packages: list[PackageStatistics]) -> str:
@@ -274,20 +447,7 @@ def render_table(packages: list[PackageStatistics]) -> str:
             )
         )
 
-    total = PackageStatistics(name="TOTAL")
-    for statistics in packages:
-        total.source.code_lines += statistics.source.code_lines
-        total.source.docstring_lines += statistics.source.docstring_lines
-        total.source.function_count += statistics.source.function_count
-        total.source.class_count += statistics.source.class_count
-        total.source.file_count += statistics.source.file_count
-        total.tests.code_lines += statistics.tests.code_lines
-        total.test_function_count += statistics.test_function_count
-        total.markdown_file_count += statistics.markdown_file_count
-        total.markdown_line_count += statistics.markdown_line_count
-        total.file_count += statistics.file_count
-        total.directory_count += statistics.directory_count
-
+    total = totals(packages)
     lines.append("─" * sum(width for _, width in COLUMNS))
     row = _row(total)
     row[5] = ""  # a coverage average across packages would be meaningless
@@ -388,7 +548,9 @@ def main(argv: list[str] | None = None) -> int:
         print(render_csv(packages))
         return 0
 
-    print(render_table(packages))
+    rules, exemptions = load_rules(arguments.packages_directory.parent)
+    if not render_rich_table(packages, rules, exemptions):
+        print(render_table(packages))
     if arguments.facts:
         print(render_facts(packages))
     return 0
