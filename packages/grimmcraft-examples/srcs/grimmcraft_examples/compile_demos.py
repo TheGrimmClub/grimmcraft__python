@@ -11,11 +11,15 @@ Run it (from the package dir, or via ``task compiler:example``)::
 """
 
 # Imports
+from pathlib import Path
 
 from grimmcraft_compiler import Target, compile_machines, show_info
 from grimmcraft_control.demos import door_machine, furnace_machine
 
 # Constants
+#: The committed reference packs live at the examples package root, two levels
+#: up from this module. Resolved from __file__ so a run works from any cwd.
+GENERATED = Path(__file__).resolve().parents[2] / "generated"
 TARGETS = [("1.20.4", "vanilla"), ("1.21.11", "vanilla")]
 
 # Main function
@@ -23,7 +27,7 @@ def main() -> None:
     for version, flavor in TARGETS:
         target = Target.resolve(version, flavor)
         machines = [door_machine(), furnace_machine()]
-        output = f"examples/generated/demo-{version}-{flavor}"
+        output = GENERATED / f"demo-{version}-{flavor}"
         result = compile_machines(machines, target, namespace="grimmcraft", output=output)
 
         show_info(target)

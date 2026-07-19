@@ -63,6 +63,9 @@ includes:
   migrate:
     taskfile: ./packages/grimmcraft-migrate/Taskfile.yml
     dir: ./packages/grimmcraft-migrate
+  examples:
+    taskfile: ./packages/grimmcraft-examples/Taskfile.yml
+    dir: ./packages/grimmcraft-examples
 
 tasks:
   default:

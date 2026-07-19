@@ -19,18 +19,23 @@ Run it (from the package dir, or via ``task compiler:tree``)::
 """
 
 # Imports
+from pathlib import Path
+
 from grimmclub import StrEnum
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
 # Constants
+#: The committed reference packs live at the examples package root, two levels
+#: up from this module. Resolved from __file__ so a run works from any cwd.
+GENERATED = Path(__file__).resolve().parents[2] / "generated"
 BASE = BlockPos(0, 64, 0)  # the block the trunk grows from
 TRUNK_HEIGHT = 20
 # Foliage rings, bottom to top, as (y offset, radius): widest at the base,
 # shrinking to a single-block tip — the classic conifer silhouette.
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
-OUTPUT = "examples/generated/spruce"
+OUTPUT = GENERATED / "spruce"
 
 # Types
 class Event(StrEnum):

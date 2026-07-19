@@ -20,18 +20,23 @@ Run it (from the package dir, or via ``task compiler:grow``)::
 """
 
 # Imports
+from pathlib import Path
+
 from grimmclub import StrEnum
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
 # Constants
+#: The committed reference packs live at the examples package root, two levels
+#: up from this module. Resolved from __file__ so a run works from any cwd.
+GENERATED = Path(__file__).resolve().parents[2] / "generated"
 BASE = BlockPos(0, 64, 0)
 TRUNK_HEIGHT = 6
 FOLIAGE = ((2, 2), (3, 2), (4, 1), (5, 1), (6, 1), (7, 0))
 STAGE = "spruce_stage"  # scoreboard objective tracking how far grown
 ENTRY = "spruce"  # the score holder
-OUTPUT = "examples/generated/growing-spruce"
+OUTPUT = GENERATED / "growing-spruce"
 
 # Types
 class Event(StrEnum):

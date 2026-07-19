@@ -1,0 +1,111 @@
+# Per-package tasks for grimmcraft-examples.
+# Included by the root Taskfile as the `examples:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+#
+# Every example is a module, so it runs with `python -m` from anywhere; the
+# paths inside resolve from __file__ rather than the working directory.
+version: '3'
+
+env:
+  UV_NO_SYNC: "1"
+
+vars:
+  PKG: grimmcraft-examples
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  fix-venv:
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    internal: true
+    cmds:
+      - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
+  run:
+    desc: 'Run one example (usage: task examples:run -- tutorial_lamp)'
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.{{.CLI_ARGS}}
+
+  # --- compiler ------------------------------------------------------------
+  tutorial:
+    desc: Build a lamp machine from scratch and show how it lowers (teaching example)
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.tutorial_lamp
+
+  chess:
+    desc: Compile a machine that lays out an 8x8 wool chessboard (loop example)
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.chessboard
+
+  tree:
+    desc: Compile a machine that places a parametric spruce via fill (procedural example)
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.tree
+
+  grow:
+    desc: Compile a spruce that grows one ring per tick (cycle + scoreboard example)
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.tree_growing
+
+  demos:
+    desc: Compile the demo machines for 1.20.4 and 1.21.11 into generated/
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.compile_demos
+
+  # --- decompiler ----------------------------------------------------------
+  decompile:
+    desc: Decompile every committed example datapack back to Python
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.decompile_examples
+
+  roundtrip:
+    desc: Decompile then recompile every example pack and assert byte-equality
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.roundtrip_examples
+
+  # --- structures ----------------------------------------------------------
+  dungeon:
+    desc: Capture a room from a world, place it from a machine, decompile it back
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.dungeon_room
+
+  # --- redstone ------------------------------------------------------------
+  redstone:
+    desc: 'Run a redstone example (usage: task examples:redstone -- clock)'
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.redstone_{{.CLI_ARGS}}
+
+  regenerate:
+    desc: Regenerate every committed datapack under generated/
+    deps: [fix-venv]
+    cmds:
+      - task: demos
+      - task: tutorial
+      - task: chess
+      - task: tree
+      - task: grow
+
+  all:
+    desc: Run every example (a smoke test across the whole workspace)
+    cmds:
+      - task: regenerate
+      - task: decompile
+      - task: roundtrip
+      - task: dungeon
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs

@@ -11,15 +11,20 @@ Run it (from the package dir, or via ``task compiler:chess``)::
 """
 
 # Imports
+from pathlib import Path
+
 from grimmclub import StrEnum, yes
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
 # Constants
+#: The committed reference packs live at the examples package root, two levels
+#: up from this module. Resolved from __file__ so a run works from any cwd.
+GENERATED = Path(__file__).resolve().parents[2] / "generated"
 ORIGIN = BlockPos(0, 64, 0)  # north-west corner of the board (col = +x, row = +z)
 SIZE = 8
-OUTPUT = "examples/generated/chessboard"
+OUTPUT = GENERATED / "chessboard"
 
 # Types
 class Event(StrEnum):

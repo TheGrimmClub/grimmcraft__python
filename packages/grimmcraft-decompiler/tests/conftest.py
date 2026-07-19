@@ -20,11 +20,10 @@ from grimmcraft_control.demos import door_machine, furnace_machine
 from grimmcraft_control.machine import Machine
 
 #: The committed reference packs, used by the round-trip regression tests.
+#: They live with the examples that produce them; the tests below skip if the
+#: directory is absent, so this package stays installable on its own.
 EXAMPLES = (
-    Path(__file__).resolve().parents[2]
-    / "grimmcraft-compiler"
-    / "examples"
-    / "generated"
+    Path(__file__).resolve().parents[2] / "grimmcraft-examples" / "generated"
 )
 
 #: Two versions either side of every behavioural threshold this package cares

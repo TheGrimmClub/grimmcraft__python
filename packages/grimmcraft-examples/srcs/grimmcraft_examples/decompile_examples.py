@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Decompile every committed example datapack back into builder Python.
 
-The compiler's ``examples/generated/`` packs are the natural fixtures: each was
+The committed ``generated/`` packs are the natural fixtures: each was
 produced from a hand-written builder script, so the output here can be read
 side by side with the original to see how much survives the trip.
 
@@ -17,7 +17,7 @@ from grimmclub import banner
 from grimmcraft_decompiler import decompile
 
 # Constants
-EXAMPLES = Path(__file__).resolve().parents[2] / "grimmcraft-compiler" / "examples" / "generated"
+EXAMPLES = Path(__file__).resolve().parents[2] / "generated"
 OUTPUT = Path("dist/decompiled")
 
 

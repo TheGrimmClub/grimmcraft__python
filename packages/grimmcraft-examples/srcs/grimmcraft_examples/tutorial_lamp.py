@@ -20,17 +20,22 @@ Run it (from the package dir, or via ``task compiler:tutorial``)::
 """
 
 # Imports
+from pathlib import Path
+
 from grimmclub import StrEnum, banner, no
 from grimmcraft_compiler import Target, compile_machines
 from grimmcraft_control import TICK_EVENT, MachineDefault, new_machine
 from grimmcraft_core import BlockPos, BlockType
 
 # Constants
+#: The committed reference packs live at the examples package root, two levels
+#: up from this module. Resolved from __file__ so a run works from any cwd.
+GENERATED = Path(__file__).resolve().parents[2] / "generated"
 LAMP_POS = BlockPos(0, 64, 0)
 TIMER = "lamp_timer"
 # Committed reference copy lives next to the examples (run via `task`, whose cwd
 # is the package dir). See examples/generated/README.md.
-OUTPUT = "examples/generated/tutorial-lamp"
+OUTPUT = GENERATED / "tutorial-lamp"
 
 # Types
 class Event(StrEnum):

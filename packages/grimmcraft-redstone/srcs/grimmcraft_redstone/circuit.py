@@ -10,10 +10,16 @@ blocks (which conduct and give torches something to attach to) are tracked too.
 from __future__ import annotations
 
 from collections.abc import Iterator
+from typing import TypeVar
 
 from grimmcraft_core.coordinates import BlockPos, Direction
 from grimmcraft_data.block import Block
 from grimmcraft_redstone.component import RedstoneComponent
+
+#: `place` hands back exactly what it was given, so it is generic over the
+#: component type — otherwise `circuit.place(Lever(...))` would come back typed
+#: as the base class and every concrete method (`lever.flip()`) would be lost.
+AnyComponent = TypeVar("AnyComponent", bound=RedstoneComponent)
 
 
 class Circuit:
@@ -24,7 +30,7 @@ class Circuit:
         self._solids: dict[BlockPos, Block] = {}
 
     # -- building -------------------------------------------------------------
-    def place(self, component: RedstoneComponent) -> RedstoneComponent:
+    def place(self, component: AnyComponent) -> AnyComponent:
         """Place ``component`` at its own ``position`` and return it.
 
         Raises :class:`ValueError` if the cell is already occupied (remove first).

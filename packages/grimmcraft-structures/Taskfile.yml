@@ -48,13 +48,3 @@ tasks:
     cmds:
       - uv build --package {{.PKG}}
 
-  example:
-    desc: Capture a room from a world, place it from a machine, decompile it back
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} python examples/dungeon_room.py
-
-  lint-all:
-    desc: Lint this package including examples
-    cmds:
-      - uv run ruff check srcs tests examples

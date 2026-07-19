@@ -12,7 +12,6 @@ dependencies = [
     "grimmcraft-control",
     "grimmcraft-compiler",
     "grimmclub-filesystem",
-    "grimmclub",
     "click>=8.1",
     "rich>=13.0",
 ]
@@ -34,4 +33,3 @@ grimmcraft-core = { workspace = true }
 grimmcraft-control = { workspace = true }
 grimmcraft-compiler = { workspace = true }
 grimmclub-filesystem = { workspace = true }
-grimmclub = { workspace = true }

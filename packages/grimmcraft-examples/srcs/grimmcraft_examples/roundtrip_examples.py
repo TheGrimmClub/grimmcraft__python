@@ -20,7 +20,7 @@ from grimmcraft_decompiler import decompile, roundtrip
 from grimmcraft_decompiler.roundtrip import Level
 
 # Constants
-EXAMPLES = Path(__file__).resolve().parents[2] / "grimmcraft-compiler" / "examples" / "generated"
+EXAMPLES = Path(__file__).resolve().parents[2] / "generated"
 
 
 # Code

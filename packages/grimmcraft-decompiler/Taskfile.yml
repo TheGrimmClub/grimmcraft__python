@@ -11,8 +11,6 @@ env:
 
 vars:
   PKG: grimmcraft-decompiler
-  # The compiler's committed reference packs double as our decompile fixtures.
-  GENERATED: ../grimmcraft-compiler/examples/generated
 
 tasks:
   default:
@@ -50,34 +48,3 @@ tasks:
     cmds:
       - uv build --package {{.PKG}}
 
-  example:
-    desc: Decompile every committed example datapack back to Python
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} python examples/decompile_examples.py
-
-  roundtrip:
-    desc: Decompile then recompile every example pack and assert byte-equality
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} python examples/roundtrip_examples.py
-
-  run:
-    desc: 'Run the CLI (usage: task decompiler:run -- <pack> --emit python)'
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} grimmcraft-decompile {{.CLI_ARGS}}
-
-  lamp:
-    desc: Decompile the tutorial-lamp datapack back to builder Python (demo)
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} grimmcraft-decompile {{.GENERATED}}/tutorial-lamp --emit python
-
-  docs:
-    desc: Render the docs to dist/docs/ (Markdown copy; renders anywhere)
-    cmds:
-      - mkdir -p dist/docs
-      - cp -f docs/*.md dist/docs/
-      - cmd: echo "Docs are Markdown in docs/ (copied to dist/docs/)."
-        silent: true

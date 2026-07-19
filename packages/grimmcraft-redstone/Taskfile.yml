@@ -42,8 +42,3 @@ tasks:
     cmds:
       - uv build --package {{.PKG}}
 
-  example:
-    desc: 'Run an example circuit (usage: task redstone:example -- clock)'
-    deps: [fix-venv]
-    cmds:
-      - uv run --package {{.PKG}} python examples/{{.CLI_ARGS}}.py
