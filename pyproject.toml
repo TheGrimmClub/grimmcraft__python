@@ -57,6 +57,7 @@ strict = true
 mypy_path = [
     "packages/grimmclub/srcs",
     "packages/grimmclub-standardlib/srcs",
+    "packages/grimmclub-diagnostics/srcs",
     "packages/grimmclub-filesystem/srcs",
     "packages/grimmcraft-world/srcs",
     "packages/grimmcraft-data/srcs",

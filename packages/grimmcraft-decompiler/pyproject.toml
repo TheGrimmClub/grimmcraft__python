@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "grimmclub-diagnostics",
     "grimmcraft-core",
     "grimmcraft-data",
     "grimmcraft-control",
@@ -31,6 +32,7 @@ module-root = "srcs"
 
 # Resolve sibling packages from the local workspace instead of an index.
 [tool.uv.sources]
+grimmclub-diagnostics = { workspace = true }
 grimmcraft-core = { workspace = true }
 grimmcraft-data = { workspace = true }
 grimmcraft-control = { workspace = true }

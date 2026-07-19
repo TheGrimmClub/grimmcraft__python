@@ -1,9 +1,9 @@
 """The decompiler's diagnostic codes — the ``GD####`` range.
 
-The machinery (:class:`~grimmcraft_compiler.diagnostics.Diagnostic`,
-:class:`DiagnosticBag`, :class:`Severity`, :class:`Code`) is **reused verbatim**
-from the compiler; only the catalogue is new, so a decompile report reads exactly
-like a compile report and the two can share one bag.
+The machinery (:class:`Diagnostic`, :class:`DiagnosticBag`, :class:`Severity`,
+:class:`Code`) comes from ``grimmclub-diagnostics``; only the catalogue below is
+new. That shared machinery is why a decompile report reads exactly like a
+compile report, and why the two can share one bag.
 
 ``source`` on a decompiler diagnostic is a *file position* — ``"<file>:<line>"``
 — rather than the compiler's machine/transition path, since the input here is
@@ -12,7 +12,7 @@ text on disk.
 
 from __future__ import annotations
 
-from grimmcraft_compiler.diagnostics import (
+from grimmclub_diagnostics import (
     Code,
     Diagnostic,
     DiagnosticBag,

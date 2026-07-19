@@ -1,49 +1,39 @@
 """A first-class diagnostics system for redstone circuits.
 
-Mirrors the ``grimmcraft-compiler`` diagnostics design — stable ``RS####`` codes,
-ordered :class:`Severity`, a :class:`Diagnostic` carrying *what* is wrong, *where*
-(a :class:`~grimmcraft_core.coordinates.BlockPos`) and *how* to fix it, gathered
-in a :class:`DiagnosticBag` — but stays dependency-light (plain-text rendering,
-no ``rich``).  :func:`analyze` walks a :class:`~grimmcraft_redstone.circuit.Circuit`
-and reports the usual redstone mistakes.
+The machinery comes from ``grimmclub-diagnostics``; what stays here is the
+``RS####`` catalogue and :func:`analyze`, which walks a
+:class:`~grimmcraft_redstone.circuit.Circuit` and reports the usual redstone
+mistakes.
+
+A circuit fault has a real position, so these diagnostics carry the
+:class:`~grimmcraft_core.coordinates.BlockPos` in ``location`` and its readable
+form — ``(3, 1, 2)`` — in ``source``. The structured value survives for tools
+that want to jump to the fault; the label is what a person reads.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from dataclasses import dataclass
-from enum import IntEnum
 from typing import TYPE_CHECKING
 
+from grimmclub_diagnostics import Code, Diagnostic, DiagnosticBag, Severity
 from grimmcraft_core.coordinates import BlockPos
 
 if TYPE_CHECKING:
     from grimmcraft_redstone.circuit import Circuit
 
-
-class Severity(IntEnum):
-    """Diagnostic severity, ordered so ``max`` is the most serious."""
-
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
-
-    @property
-    def label(self) -> str:
-        return {Severity.INFO: "info", Severity.WARNING: "warning",
-                Severity.ERROR: "error"}[self]
+# Re-exported so `from grimmcraft_redstone.diagnostics import DiagnosticBag`
+# keeps working: the machinery moved to grimmclub-diagnostics, the RS catalogue
+# below stayed here. Naming them also stops ruff pruning the imports.
+__all__ = ["Code", "Codes", "Diagnostic", "DiagnosticBag", "Severity", "analyze"]
 
 
-@dataclass(frozen=True, slots=True)
-class Code:
-    """A stable diagnostic code (``RS1001``) with a human title."""
+def _position_label(pos: BlockPos) -> str:
+    """A position as it reads in a report: ``(3, 1, 2)``.
 
-    id: str
-    title: str
-    default_severity: Severity
-
-    def __str__(self) -> str:
-        return self.id
+    `str(BlockPos(...))` gives the dataclass repr, which is noise in a message
+    aimed at someone looking at a circuit.
+    """
+    return f"({pos.x}, {pos.y}, {pos.z})"
 
 
 class Codes:
@@ -67,84 +57,6 @@ class Codes:
         """Every registered code, in id order."""
         codes = [v for v in vars(cls).values() if isinstance(v, Code)]
         return sorted(codes, key=lambda c: c.id)
-
-
-@dataclass(frozen=True, slots=True)
-class Diagnostic:
-    """One problem: severity, stable code, message, actionable hint, and location."""
-
-    severity: Severity
-    code: Code
-    message: str
-    hint: str | None = None
-    at: BlockPos | None = None
-
-    def render(self) -> str:
-        """A single plain-text line: ``severity CODE: message`` + location/hint."""
-        parts = [f"{self.severity.label} {self.code.id}: {self.message}"]
-        if self.at is not None:
-            parts.append(f"    at ({self.at.x}, {self.at.y}, {self.at.z})")
-        if self.hint:
-            parts.append(f"    hint: {self.hint}")
-        return "\n".join(parts)
-
-
-class DiagnosticBag:
-    """An ordered collection of diagnostics with counts and a rendered report."""
-
-    def __init__(self) -> None:
-        self._items: list[Diagnostic] = []
-
-    def add(self, diagnostic: Diagnostic) -> None:
-        """Append a diagnostic."""
-        self._items.append(diagnostic)
-
-    def emit(
-        self,
-        code: Code,
-        message: str,
-        *,
-        hint: str | None = None,
-        at: BlockPos | None = None,
-        severity: Severity | None = None,
-    ) -> None:
-        """Build and append a diagnostic, defaulting severity from ``code``."""
-        self.add(
-            Diagnostic(severity or code.default_severity, code, message, hint, at)
-        )
-
-    def __iter__(self) -> Iterator[Diagnostic]:
-        return iter(self._items)
-
-    def __len__(self) -> int:
-        return len(self._items)
-
-    def of(self, severity: Severity) -> list[Diagnostic]:
-        """Every diagnostic of exactly ``severity``."""
-        return [d for d in self._items if d.severity is severity]
-
-    @property
-    def warnings(self) -> list[Diagnostic]:
-        return self.of(Severity.WARNING)
-
-    @property
-    def errors(self) -> list[Diagnostic]:
-        return self.of(Severity.ERROR)
-
-    @property
-    def has_errors(self) -> bool:
-        return any(d.severity is Severity.ERROR for d in self._items)
-
-    def report(self) -> str:
-        """A grouped, plain-text report ending in a counts summary."""
-        lines: list[str] = []
-        for severity in (Severity.ERROR, Severity.WARNING, Severity.INFO):
-            for diagnostic in self.of(severity):
-                lines.append(diagnostic.render())
-        lines.append(
-            f"{len(self.errors)} error(s), {len(self.warnings)} warning(s)"
-        )
-        return "\n".join(lines)
 
 
 def analyze(circuit: Circuit) -> DiagnosticBag:
@@ -187,7 +99,8 @@ def analyze(circuit: Circuit) -> DiagnosticBag:
                     Codes.TORCH_BAD_ATTACHMENT,
                     f"{component.name} at is not attached to a solid block",
                     hint="place the torch on the side/top of a full solid block",
-                    at=pos,
+                    source=_position_label(pos),
+                    location=pos,
                 )
         if isinstance(component, Comparator):
             read_pos = component.read_pos
@@ -199,7 +112,8 @@ def analyze(circuit: Circuit) -> DiagnosticBag:
                     "behind it, which has no container signal",
                     hint="face the comparator away from a container (chest, "
                     "barrel, furnace) to measure its fullness",
-                    at=pos,
+                    source=_position_label(pos),
+                    location=pos,
                 )
         if isinstance(component, Repeater):
             if circuit.get(component.read_pos) is None and not any(
@@ -209,7 +123,8 @@ def analyze(circuit: Circuit) -> DiagnosticBag:
                     Codes.INVALID_ORIENTATION,
                     "repeater has nothing wired to its input (back) face",
                     hint="wire redstone into the back of the repeater",
-                    at=pos,
+                    source=_position_label(pos),
+                    location=pos,
                 )
         # Floating: a non-source component that never sees power in 200 ticks.
         if pos not in ever_powered and not _is_source(component):
@@ -222,7 +137,8 @@ def analyze(circuit: Circuit) -> DiagnosticBag:
                 code,
                 f"{component.name} is never powered during simulation",
                 hint="connect it to a power source via dust, a block, or a diode",
-                at=pos,
+                source=_position_label(pos),
+                location=pos,
             )
 
     return bag

@@ -51,6 +51,9 @@ includes:
   stdlib:
     taskfile: ./packages/grimmclub-standardlib/Taskfile.yml
     dir: ./packages/grimmclub-standardlib
+  diagnostics:
+    taskfile: ./packages/grimmclub-diagnostics/Taskfile.yml
+    dir: ./packages/grimmclub-diagnostics
   fs:
     taskfile: ./packages/grimmclub-filesystem/Taskfile.yml
     dir: ./packages/grimmclub-filesystem

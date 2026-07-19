@@ -9,6 +9,7 @@ resolution-markers = [
 [manifest]
 members = [
     "grimmclub",
+    "grimmclub-diagnostics",
     "grimmclub-filesystem",
     "grimmclub-standardlib",
     "grimmcraft-cli",
@@ -112,6 +113,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "grimmclub-diagnostics"
+version = "0.1.0"
+source = { editable = "packages/grimmclub-diagnostics" }
+dependencies = [
+    { name = "rich" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "rich", specifier = ">=13.0" }]
+
+[[package]]
 name = "grimmclub-filesystem"
 version = "2026.2.0"
 source = { editable = "packages/grimmclub-filesystem" }
@@ -149,6 +161,7 @@ source = { editable = "packages/grimmcraft-compiler" }
 dependencies = [
     { name = "click" },
     { name = "grimmclub" },
+    { name = "grimmclub-diagnostics" },
     { name = "grimmcraft-control" },
     { name = "grimmcraft-core" },
     { name = "grimmcraft-data" },
@@ -159,6 +172,7 @@ dependencies = [
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
     { name = "grimmclub", editable = "packages/grimmclub" },
+    { name = "grimmclub-diagnostics", editable = "packages/grimmclub-diagnostics" },
     { name = "grimmcraft-control", editable = "packages/grimmcraft-control" },
     { name = "grimmcraft-core", editable = "packages/grimmcraft-core" },
     { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
@@ -203,6 +217,7 @@ source = { editable = "packages/grimmcraft-decompiler" }
 dependencies = [
     { name = "click" },
     { name = "grimmclub" },
+    { name = "grimmclub-diagnostics" },
     { name = "grimmclub-filesystem" },
     { name = "grimmcraft-compiler" },
     { name = "grimmcraft-control" },
@@ -215,6 +230,7 @@ dependencies = [
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
     { name = "grimmclub", editable = "packages/grimmclub" },
+    { name = "grimmclub-diagnostics", editable = "packages/grimmclub-diagnostics" },
     { name = "grimmclub-filesystem", editable = "packages/grimmclub-filesystem" },
     { name = "grimmcraft-compiler", editable = "packages/grimmcraft-compiler" },
     { name = "grimmcraft-control", editable = "packages/grimmcraft-control" },
@@ -285,12 +301,14 @@ name = "grimmcraft-redstone"
 version = "0.1.0"
 source = { editable = "packages/grimmcraft-redstone" }
 dependencies = [
+    { name = "grimmclub-diagnostics" },
     { name = "grimmcraft-core" },
     { name = "grimmcraft-data" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "grimmclub-diagnostics", editable = "packages/grimmclub-diagnostics" },
     { name = "grimmcraft-core", editable = "packages/grimmcraft-core" },
     { name = "grimmcraft-data", editable = "packages/grimmcraft-data" },
 ]

@@ -123,3 +123,14 @@ Every package now uses the `uv_build` backend with `module-root = "srcs"`; also 
 - All packages
 
 Created the initial uv-workspace packages: `grimmclub`.
+\n
+## refactor(diagnostics): one diagnostics implementation, not three — 2026-07-19
+
+`grimmclub-diagnostics` carries the `Severity`/`Code`/`Diagnostic`/`DiagnosticBag`
+machinery that `grimmcraft-compiler` and `grimmcraft-redstone` had grown
+separate, near-identical copies of. The compiler, decompiler and redstone keep
+their own catalogues (32 codes) and nothing else.
+
+The package is domain-agnostic on purpose — a test asserts it imports nothing
+from `grimmcraft` — because the next thing to sit on top of it, `grimmclub-mentor`,
+has to explain every producer's codes without knowing what any of them mean.
