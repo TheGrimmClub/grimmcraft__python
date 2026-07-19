@@ -24,6 +24,8 @@ class CommandName(StrEnum):
     GIVE = "give"
     PLAYSOUND = "playsound"
     PARTICLE = "particle"
+    PLACE = "place"
+    DIALOG_SHOW = "dialog_show"
     SCOREBOARD_SET = "scoreboard_set"
     SCOREBOARD_ADD = "scoreboard_add"
     RAW = "raw"

@@ -7,7 +7,7 @@ from typing import Any
 from grimmclub import yes
 from grimmcraft_compiler.diagnostics import Codes, DiagnosticBag, Severity
 from grimmcraft_compiler.emit import emit
-from grimmcraft_compiler.ir import Datapack, ResourceLocation
+from grimmcraft_compiler.ir import Datapack, Resource, ResourceLocation
 from grimmcraft_compiler.lower import lower
 from grimmcraft_compiler.target import Target
 from grimmcraft_compiler.validate import validate_ir, validate_machines
@@ -54,14 +54,17 @@ def compile_machines(
     force: bool = False,
     dry_run: bool = False,
     description: str | None = None,
+    resources: list[Resource] | None = None,
     DEBUG: bool = yes,
 ) -> CompileResult:
     """Compile ``machines`` for ``target`` into a datapack.
 
     Runs the full pipeline and collects diagnostics.  Emission is skipped when
     ``dry_run`` is set, or when errors exist and ``force`` is not; ``strict``
-    promotes warnings to errors.  The returned :class:`CompileResult` always
-    carries the IR and diagnostics, plus the output path when a pack was written.
+    promotes warnings to errors.  ``resources`` are extra JSON documents to ship
+    in the pack (e.g. the ``dialog`` screens a dialogue compiles to).  The
+    returned :class:`CompileResult` always carries the IR and diagnostics, plus
+    the output path when a pack was written.
 
     DEBUG: activates debug mode, printing target info and diagnostics on failure.
     """
@@ -70,6 +73,12 @@ def compile_machines(
 
     # 1-2. Collect + build the dialect-independent IR.
     pack = lower(machines, namespace, description=description)
+
+    # JSON resources a caller generated alongside the machines (dialog screens,
+    # loot tables, …). Lowering does not produce these — they come from domain
+    # layers built on top of it, such as grimmcraft-npc's dialogue backend.
+    if resources:
+        pack.resources.extend(resources)
 
     # Validate the user-supplied namespace up front (helpful, specific source).
     ns_reason = ResourceLocation(namespace, "x").invalid_reason()

@@ -9,8 +9,8 @@ runtime; concrete domain types are referenced lazily to avoid import cycles.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from collections.abc import Iterator, Mapping
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from grimmcraft_core.coordinates import Coordinates
 
@@ -47,6 +47,31 @@ class Container(Protocol):
         ...
 
     def __iter__(self) -> Iterator[CoreItem | None]: ...
+
+
+@runtime_checkable
+class CommandLike(Protocol):
+    """A declarative side effect: a name plus a payload.
+
+    Structurally this is ``grimmcraft_control.machine.Command``, but stated as a
+    protocol so core's domain types (a dialogue scene's effects, say) can hold
+    commands *without* core importing ``grimmcraft-control`` — which depends on
+    core, and would make the two circular.
+
+    Both members are declared read-only (as properties rather than attributes),
+    because ``Command`` is a *frozen* dataclass: a plain ``name: str`` would
+    demand a settable attribute and no immutable type could satisfy it.
+    """
+
+    @property
+    def name(self) -> str:
+        """The operation this command names (``"setblock"``, ``"give"``, …)."""
+        ...
+
+    @property
+    def payload(self) -> Mapping[str, Any]:
+        """Its arguments."""
+        ...
 
 
 @runtime_checkable

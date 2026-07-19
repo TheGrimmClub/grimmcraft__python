@@ -117,6 +117,58 @@ def test_if_score_gates_a_command_in_a_cycle() -> None:
     assert guarded.payload["run"].name == CommandName.FILL
 
 
+def test_if_score_as_a_with_block_guards_every_effect_inside() -> None:
+    """The block form writes the condition once; each effect is still guarded."""
+    builder = new_machine("grow")
+    with builder.add_state("GROWING") as growing:
+        with growing.cycle.if_score("stage", "grow", 1) as guarded:
+            guarded.say("first")
+            guarded.say("second")
+    machine = builder.initial(growing).build()
+
+    cycle = machine.states["GROWING"].cycle
+    assert len(cycle) == 2
+    for command, text in zip(cycle, ("first", "second"), strict=True):
+        assert command.name == "execute_if_score"
+        assert command.payload["value"] == 1
+        assert command.payload["objective"] == "stage"
+        assert command.payload["run"].payload["text"] == text
+
+
+def test_if_score_block_and_chained_forms_agree() -> None:
+    """The `with` form is grouping only — it must produce the same commands."""
+    chained = new_machine("a")
+    with chained.add_state("S") as state:
+        state.cycle.if_score("stage", "a", 1).say("x")
+    blocked = new_machine("a")
+    with blocked.add_state("S") as state_b:
+        with state_b.cycle.if_score("stage", "a", 1) as guarded:
+            guarded.say("x")
+
+    assert (
+        chained.initial("S").build().states["S"].cycle
+        == blocked.initial("S").build().states["S"].cycle
+    )
+
+
+def test_with_block_groups_a_transition_definition() -> None:
+    builder = new_machine("lamp")
+    off = builder.add_state("OFF")
+    on = builder.add_state("ON")
+    with builder.add_transition(off, "pull", to=on) as edge:
+        edge.do.say("click")
+        edge.when_score("timer", "lamp", 0)
+    machine = builder.initial(off).build()
+
+    (transition,) = machine.transitions
+    assert (transition.source, transition.event, transition.target) == (
+        "OFF", "pull", "ON",
+    )
+    assert transition.commands[0].payload["text"] == "click"
+    assert transition.condition is not None
+    assert transition.condition.payload["value"] == 0
+
+
 def test_with_block_groups_a_state_definition() -> None:
     builder = new_machine("lamp")
     with builder.add_state("OFF") as off:

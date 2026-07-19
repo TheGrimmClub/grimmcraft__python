@@ -10,14 +10,46 @@ one place.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from grimmcraft_compiler.target import Target
 from grimmcraft_compiler.version import VersionTuple
 from grimmcraft_control.machine import Command
+from grimmcraft_core.text import Text, as_text
 
 #: First version whose text components are written as SNBT rather than JSON.
+#: The same release renamed ``clickEvent``/``hoverEvent`` and gave their payloads
+#: action-specific field names, so this one threshold governs both.
 SNBT_TEXT_SINCE: VersionTuple = (1, 21, 5)
+
+#: SNBT keys that need no quoting — anything else is quoted like a string.
+_BARE_KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def _snbt(value: Any) -> str:
+    """Serialise a plain document as SNBT (Minecraft's NBT-flavoured JSON).
+
+    Differences from JSON that matter here: keys are unquoted where they can be,
+    and booleans are written ``true``/``false`` exactly as in JSON — so only the
+    key quoting and the absence of spaces distinguish the two.
+    """
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, dict):
+        parts = []
+        for key, item in value.items():
+            name = key if _BARE_KEY.match(str(key)) else f'"{key}"'
+            parts.append(f"{name}:{_snbt(item)}")
+        return "{" + ",".join(parts) + "}"
+    if isinstance(value, (list, tuple)):
+        return "[" + ",".join(_snbt(item) for item in value) + "]"
+    raise TypeError(f"cannot render {type(value).__name__} as SNBT")
 
 
 def id_string(value: Any) -> str:
@@ -59,13 +91,79 @@ class Dialect:
         self.info = target.info
 
     # --- text components -----------------------------------------------------
-    def text_component(self, text: str) -> str:
-        """A ``{"text": ...}`` component as JSON or SNBT per target version."""
+    def text_component(self, text: str | Text) -> str:
+        """A text component as JSON or SNBT per target version.
+
+        A plain ``str`` (or an unstyled :class:`Text`) renders exactly as it
+        always has — that equivalence is what lets rich text be added without
+        changing a single byte of any existing pack.
+        """
+        component = as_text(text)
+        if component.is_plain:
+            if self.info.version_tuple >= SNBT_TEXT_SINCE:
+                # SNBT: unquoted keys, double-quoted string values.
+                escaped = component.text.replace("\\", "\\\\").replace('"', '\\"')
+                return f'{{text:"{escaped}"}}'
+            return json.dumps({"text": component.text}, separators=(",", ":"))
+        return self.rich_text(component)
+
+    def rich_text(self, component: Text) -> str:
+        """Render a styled/clickable component for this target."""
+        document = self.text_document(component)
         if self.info.version_tuple >= SNBT_TEXT_SINCE:
-            # SNBT: unquoted keys, double-quoted string values.
-            escaped = text.replace("\\", "\\\\").replace('"', '\\"')
-            return f'{{text:"{escaped}"}}'
-        return json.dumps({"text": text}, separators=(",", ":"))
+            return _snbt(document)
+        return json.dumps(document, separators=(",", ":"))
+
+    def text_document(self, component: Text) -> dict[str, Any]:
+        """The component as a plain dict, in this version's field vocabulary.
+
+        The 1.21.5 rewrite renamed ``clickEvent``/``hoverEvent`` to
+        ``click_event``/``hover_event`` and replaced their single ``value`` with
+        action-specific fields (``command``, ``url``, …), so the shape — not just
+        the syntax — depends on the target.
+        """
+        modern = self.info.version_tuple >= SNBT_TEXT_SINCE
+        document: dict[str, Any] = {"text": component.text}
+
+        for name in ("color", "bold", "italic", "underlined", "strikethrough",
+                     "obfuscated"):
+            value = getattr(component, name)
+            if value is not None:
+                document[name] = value
+
+        if component.click is not None:
+            click = component.click
+            if modern:
+                document["click_event"] = {
+                    "action": click.action,
+                    click.modern_field: click.value,
+                }
+            else:
+                # Pre-1.21.5, a run_command value had to carry the leading slash.
+                value = (
+                    f"/{click.value}"
+                    if click.action in ("run_command", "suggest_command")
+                    else click.value
+                )
+                document["clickEvent"] = {"action": click.action, "value": value}
+
+        if component.hover is not None:
+            if modern:
+                document["hover_event"] = {
+                    "action": "show_text",
+                    "value": {"text": component.hover},
+                }
+            else:
+                document["hoverEvent"] = {
+                    "action": "show_text",
+                    "contents": {"text": component.hover},
+                }
+
+        if component.extra:
+            document["extra"] = [
+                self.text_document(child) for child in component.extra
+            ]
+        return document
 
     # --- items ---------------------------------------------------------------
     def item_with_name(self, item_id: str, name: str | None) -> str:
@@ -135,6 +233,27 @@ class Dialect:
     def _r_particle(self, p: dict[str, Any]) -> str:
         pos = position(p["pos"]) if "pos" in p else "~ ~ ~"
         return f"particle {id_string(p['particle'])} {pos}"
+
+    def _r_dialog_show(self, p: dict[str, Any]) -> str:
+        """``dialog show <targets> <dialog>`` (1.21.6+)."""
+        return f"dialog show {p.get('target', '@s')} {id_string(p['dialog'])}"
+
+    def _r_place(self, p: dict[str, Any]) -> str:
+        """``place template <id> <pos> [rotation [mirror]]``.
+
+        The trailing arguments are positional in Minecraft, so a mirror can only
+        be given alongside a rotation; ``none`` is the neutral rotation.
+        """
+        pos = position(p["pos"]) if "pos" in p else "~ ~ ~"
+        line = f"place template {id_string(p['structure'])} {pos}"
+        rotation, mirror = p.get("rotation"), p.get("mirror")
+        if rotation is None and mirror is not None:
+            rotation = "none"
+        if rotation is not None:
+            line += f" {rotation}"
+        if mirror is not None:
+            line += f" {mirror}"
+        return line
 
     def _r_raw(self, p: dict[str, Any]) -> str:
         return str(p["text"])

@@ -54,7 +54,7 @@ class EffectWriter:
         """Broadcast ``text`` to chat."""
         return self._add(effects.say(text))
 
-    def tellraw(self, text: str, *, target: str = "@a") -> EffectWriter:
+    def tellraw(self, text: Any, *, target: str = "@a") -> EffectWriter:
         """Send ``text`` as a formatted message to ``target``."""
         return self._add(effects.tellraw(text, target=target))
 
@@ -67,6 +67,19 @@ class EffectWriter:
     def particle(self, name: str, pos: Any) -> EffectWriter:
         """Spawn the ``name`` particle at ``pos``."""
         return self._add(effects.particle(name, pos))
+
+    def place(
+        self, structure: Any, pos: Any = None, *, rotation: str | None = None,
+        mirror: str | None = None,
+    ) -> EffectWriter:
+        """Place a saved structure template (``place template``, 1.19+)."""
+        return self._add(
+            effects.place(structure, pos, rotation=rotation, mirror=mirror)
+        )
+
+    def dialog_show(self, dialog: Any, *, target: str = "@s") -> EffectWriter:
+        """Open a dialog screen for ``target`` (1.21.6+)."""
+        return self._add(effects.dialog_show(dialog, target=target))
 
     def summon(self, entity: Any, pos: Any | None = None) -> EffectWriter:
         """Summon ``entity`` (at ``pos``, or where the function runs)."""
@@ -86,23 +99,44 @@ class EffectWriter:
         """Add ``delta`` to ``entry``'s ``objective`` score."""
         return self._add(effects.add_score(objective, entry, delta))
 
-    def if_score(self, objective: str, entry: str, value: int) -> EffectWriter:
+    def if_score(self, objective: str, entry: str, value: int) -> _GuardedWriter:
         """Return a writer whose next effect(s) run only when ``entry``'s
         ``objective`` score equals ``value`` (an ``execute if score`` guard)::
 
             state.cycle.if_score("stage", "tree", 1).fill(a, b, Block.OAK_LOG)
+
+        For more than one guarded effect, use it as a ``with`` block so the
+        condition is written once instead of being repeated per line::
+
+            with state.cycle.if_score("stage", "tree", 1) as guarded:
+                guarded.fill(a, b, Block.OAK_LOG)
+                guarded.fill(c, d, Block.OAK_LEAVES)
+
+        Both forms produce the same commands — each effect is guarded
+        individually, since ``mcfunction`` has no block syntax to nest them in.
         """
         return _GuardedWriter(self._sink, objective, entry, value)
 
 
 class _GuardedWriter(EffectWriter):
-    """An :class:`EffectWriter` that wraps each command in an ``if_score`` guard."""
+    """An :class:`EffectWriter` that wraps each command in an ``if_score`` guard.
+
+    Usable as a context manager (see :meth:`EffectWriter.if_score`); the
+    ``with`` block is grouping only, so the guard applies to each effect inside
+    it exactly as it would to a chained call.
+    """
 
     def __init__(self, sink: list[Command], objective: str, entry: str, value: int) -> None:
         super().__init__(sink)
         self._objective = objective
         self._entry = entry
         self._value = value
+
+    def __enter__(self) -> _GuardedWriter:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
 
     def _add(self, command: Command) -> EffectWriter:
         self._sink.append(
