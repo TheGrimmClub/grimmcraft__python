@@ -55,8 +55,21 @@ BUILT_IN_RULES: dict[str, dict[str, object]] = {
 }
 
 
-def load_rules(root: Path) -> tuple[dict[str, dict[str, object]], dict[str, dict[str, str]]]:
-    """Thresholds and exemptions from ``statistics.yaml``, or the built-in ones.
+#: Used when no groups are configured: one section, everything in it.
+BUILT_IN_GROUPS: list[dict[str, object]] = [{"name": "all packages", "match": ["*"]}]
+
+
+@dataclass
+class Configuration:
+    """What statistics.yaml says, or the built-in defaults when it says nothing."""
+
+    rules: dict[str, dict[str, object]] = field(default_factory=lambda: BUILT_IN_RULES)
+    exemptions: dict[str, dict[str, str]] = field(default_factory=dict)
+    groups: list[dict[str, object]] = field(default_factory=lambda: BUILT_IN_GROUPS)
+
+
+def load_configuration(root: Path) -> Configuration:
+    """Read ``statistics.yaml``, falling back to the built-in defaults.
 
     A missing file or a missing PyYAML is not an error: the tool is meant to run
     anywhere, and thresholds it cannot read are thresholds it does without.
@@ -65,11 +78,44 @@ def load_rules(root: Path) -> tuple[dict[str, dict[str, object]], dict[str, dict
     try:
         import yaml
     except ModuleNotFoundError:
-        return BUILT_IN_RULES, {}
+        return Configuration()
     if not configuration_file.exists():
-        return BUILT_IN_RULES, {}
+        return Configuration()
     document = yaml.safe_load(configuration_file.read_text(encoding="utf-8")) or {}
-    return document.get("rules", BUILT_IN_RULES), document.get("exemptions", {})
+    return Configuration(
+        rules=document.get("rules", BUILT_IN_RULES),
+        exemptions=document.get("exemptions", {}),
+        groups=document.get("groups", BUILT_IN_GROUPS),
+    )
+
+
+def group_packages(
+    packages: list[PackageStatistics], groups: list[dict[str, object]]
+) -> list[tuple[str, list[PackageStatistics]]]:
+    """Gather packages into their configured sections, in configured order.
+
+    A package joins the first group that matches it, so a broad pattern can sit
+    after narrow ones and act as the catch-all for its family. Anything matched
+    by nothing is returned under "ungrouped" rather than dropped — a package
+    left out of the configuration should be visible, not invisible.
+    """
+    from fnmatch import fnmatch
+
+    remaining = list(packages)
+    sections: list[tuple[str, list[PackageStatistics]]] = []
+    for group in groups:
+        patterns = [str(pattern) for pattern in group.get("match", [])]  # type: ignore[union-attr]
+        members = [
+            package
+            for package in remaining
+            if any(fnmatch(package.name, pattern) for pattern in patterns)
+        ]
+        if members:
+            sections.append((str(group.get("name", "?")), members))
+            remaining = [package for package in remaining if package not in members]
+    if remaining:
+        sections.append(("ungrouped", remaining))
+    return sections
 
 
 def grade(value: float, rule: dict[str, object]) -> str:
@@ -351,21 +397,7 @@ def _numeric(value: str) -> float:
     return float(value.rstrip("%"))
 
 
-def _family(name: str) -> str:
-    """Which half of the workspace a package belongs to.
-
-    The two are different kinds of thing — grimmclub is the general-purpose
-    teaching library, grimmcraft is the Minecraft toolchain — so a single
-    average across both describes neither.
-    """
-    return "grimmclub" if name.startswith("grimmclub") else "grimmcraft"
-
-
-def render_rich_table(
-    packages: list[PackageStatistics],
-    rules: dict[str, dict[str, object]],
-    exemptions: dict[str, dict[str, str]],
-) -> bool:
+def render_rich_table(packages: list[PackageStatistics], configuration: Configuration) -> bool:
     """Print the table in colour, grouped by family. False when rich is absent.
 
     Exempt cells are dimmed rather than coloured: an exemption is a decision
@@ -386,8 +418,8 @@ def render_rich_table(
     def cells_for(statistics: PackageStatistics) -> list[str]:
         rendered = []
         for value, (name, _width) in zip(_row(statistics), COLUMNS, strict=True):
-            rule = rules.get(name)
-            exempt = exemptions.get(statistics.name, {}).get(name)
+            rule = configuration.rules.get(name)
+            exempt = configuration.exemptions.get(statistics.name, {}).get(name)
             if exempt:
                 rendered.append(f"[dim]{value}[/]")
             elif name in GRADED_COLUMNS and rule is not None:
@@ -396,15 +428,12 @@ def render_rich_table(
                 rendered.append(value)
         return rendered
 
-    for family in ("grimmclub", "grimmcraft"):
-        members = [p for p in packages if _family(p.name) == family]
-        if not members:
-            continue
+    for section_name, members in group_packages(packages, configuration.groups):
         for statistics in members:
             table.add_row(*cells_for(statistics))
 
         subtotal = _row(totals(members))
-        subtotal[0] = f"{family}  ({len(members)})"
+        subtotal[0] = f"{section_name}  ({len(members)})"
         subtotal[5] = ""  # a coverage average across packages would mean nothing
         table.add_row(*(f"[bold cyan]{value}[/]" for value in subtotal))
         table.add_section()
@@ -416,18 +445,19 @@ def render_rich_table(
     console = Console()
     console.print(table)
 
+    graded_columns = [name for name in GRADED_COLUMNS if name in configuration.rules]
     legend = [
         "[bold]code[/] executable lines only — docstrings, comments and blanks excluded",
         "[bold]doc%[/] definitions carrying a docstring",
         "[bold]test/code[/] lines of test per line of source",
         "[bold]tests[/] test functions, before pytest expands parametrised cases",
         "",
-        f"graded against statistics.yaml: {', '.join(n for n in GRADED_COLUMNS if n in rules)}",
+        f"graded against statistics.yaml: {', '.join(graded_columns)}",
     ]
-    if exemptions:
+    if configuration.exemptions:
         legend.append("")
         legend.append("[dim]dimmed cells are exempt, each for a stated reason:[/]")
-        for package, columns in exemptions.items():
+        for package, columns in configuration.exemptions.items():
             for column, reason in columns.items():
                 legend.append(f"[dim]  {package} · {column} — {reason.strip()}[/]")
     console.print(Panel("\n".join(legend), title="legend", title_align="left", box=box.ROUNDED))
@@ -548,8 +578,8 @@ def main(argv: list[str] | None = None) -> int:
         print(render_csv(packages))
         return 0
 
-    rules, exemptions = load_rules(arguments.packages_directory.parent)
-    if not render_rich_table(packages, rules, exemptions):
+    configuration = load_configuration(arguments.packages_directory.parent)
+    if not render_rich_table(packages, configuration):
         print(render_table(packages))
     if arguments.facts:
         print(render_facts(packages))

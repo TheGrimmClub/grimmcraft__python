@@ -8,6 +8,29 @@
 # Edit these rather than the tool. They are opinions, and opinions should live
 # somewhere a teacher can change without reading Python.
 
+# How packages are gathered into sections, each with its own subtotal. Order
+# here is the order they print. A package matches the first group that names it;
+# anything matched by nothing lands in a final "ungrouped" section rather than
+# vanishing, so a new package is impossible to lose by forgetting to list it.
+#
+# `match` accepts exact names and glob patterns.
+groups:
+  - name: grimmclub
+    description: The general-purpose teaching library — no Minecraft in it.
+    match: ["grimmclub*"]
+
+  - name: grimmcraft · base
+    description: The registry data and the domain model everything else builds on.
+    match: ["grimmcraft-data", "grimmcraft-core"]
+
+  - name: grimmcraft · tools
+    description: The toolchain that turns machines into datapacks and back.
+    match: ["grimmcraft-cli", "grimmcraft-compiler", "grimmcraft-decompiler"]
+
+  - name: grimmcraft · high level
+    description: Everything built on top, plus the examples that exercise it.
+    match: ["grimmcraft-*"]
+
 colours:
   green: green
   yellow: yellow
