@@ -1,8 +1,24 @@
-"""Entry point for the ``grimm`` command."""
+"""Entry point for the ``grimm`` command.
 
+Still a scaffold: it greets someone. The two PROMPT__*.md files beside this one
+describe what it is meant to become.
+
+The greeting is defined here rather than imported. It used to come from
+``grimmcraft_core``, which meant the domain model carried a hello-world to keep
+a placeholder CLI working; the example now lives in ``grimmcraft-examples``,
+which depends on this package rather than the other way round.
+"""
+
+from __future__ import annotations
+
+# Includes standard
 import argparse
 
-from grimmcraft_core import greet
+
+# Functions
+def greet(name: str) -> str:
+    """Return a friendly greeting for ``name``."""
+    return f"Hello, {name}!"
 
 
 def main(argv: list[str] | None = None) -> int:

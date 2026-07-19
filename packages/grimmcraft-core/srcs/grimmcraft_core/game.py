@@ -6,12 +6,14 @@ accessor methods rather than properties — a Python ``property`` cannot take a
 key argument.
 """
 
+# Includes
 from __future__ import annotations
 
 from enum import Enum
 from typing import Any
 
 
+# Types
 class GameModeType(Enum):
     """A Minecraft game mode."""
 
@@ -20,13 +22,15 @@ class GameModeType(Enum):
     ADVENTURE = "adventure"
     SPECTATOR = "spectator"
 
-
+#
 class GameRulesType(Enum):
     """A supported game rule key."""
 
-    DO_DAYLIGHT_CYCLE = "doDaylightCycle"
+    DO_DAYLIGHT_CYCLE = "do_daylight_cycle"
+    # TODO: add other game rules
+    # TODO: ensure the correct writing (i assume it is snake case)
 
-
+# Class
 class Game:
     """A game session: a roster of players, each with a game mode, plus rules.
 

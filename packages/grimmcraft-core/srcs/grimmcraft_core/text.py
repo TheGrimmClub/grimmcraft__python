@@ -19,8 +19,10 @@ Two version splits the renderer has to honour, both landing on **1.21.5**:
 
 from __future__ import annotations
 
+# Includes standard
 from dataclasses import dataclass, field, replace
 
+# Constants
 #: Click actions a component may carry.
 CLICK_ACTIONS = frozenset(
     {
@@ -43,7 +45,7 @@ COLORS = frozenset(
     }
 )
 
-
+# Classes
 @dataclass(frozen=True, slots=True)
 class ClickEvent:
     """What happens when a player clicks this text.
@@ -75,27 +77,6 @@ class ClickEvent:
         if self.action == "show_dialog":
             return "dialog"
         return "value"
-
-
-def run_command(command: str) -> ClickEvent:
-    """Click to run ``command`` (given without a leading ``/``)."""
-    return ClickEvent("run_command", command.lstrip("/"))
-
-
-def suggest_command(command: str) -> ClickEvent:
-    """Click to put ``command`` in the player's chat box."""
-    return ClickEvent("suggest_command", command.lstrip("/"))
-
-
-def open_url(url: str) -> ClickEvent:
-    """Click to open ``url``."""
-    return ClickEvent("open_url", url)
-
-
-def show_dialog(dialog: str) -> ClickEvent:
-    """Click to open the ``ns:name`` dialog screen (1.21.6+)."""
-    return ClickEvent("show_dialog", dialog)
-
 
 @dataclass(frozen=True, slots=True)
 class Text:
@@ -162,6 +143,27 @@ class Text:
     def __str__(self) -> str:
         """The plain text, children included — useful for logs and tests."""
         return self.text + "".join(str(child) for child in self.extra)
+
+
+# Functions
+def run_command(command: str) -> ClickEvent:
+    """Click to run ``command`` (given without a leading ``/``)."""
+    return ClickEvent("run_command", command.lstrip("/"))
+
+
+def suggest_command(command: str) -> ClickEvent:
+    """Click to put ``command`` in the player's chat box."""
+    return ClickEvent("suggest_command", command.lstrip("/"))
+
+
+def open_url(url: str) -> ClickEvent:
+    """Click to open ``url``."""
+    return ClickEvent("open_url", url)
+
+
+def show_dialog(dialog: str) -> ClickEvent:
+    """Click to open the ``ns:name`` dialog screen (1.21.6+)."""
+    return ClickEvent("show_dialog", dialog)
 
 
 def _is_hex_color(value: str) -> bool:

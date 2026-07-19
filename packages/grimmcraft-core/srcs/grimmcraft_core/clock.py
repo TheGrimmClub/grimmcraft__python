@@ -156,7 +156,13 @@ class MinecraftClock:
         if not (0 <= hour < 24 and 0 <= minute < 60):
             raise ValueError(f"invalid time {hour:02d}:{minute:02d}")
         target = (hour * 60 + minute - DAWN_OFFSET_MINUTES) % MINUTES_PER_DAY
-        day_ticks = target * TICKS_PER_DAY // MINUTES_PER_DAY
+        # Ceiling division, not truncation. A minute is 16⅔ ticks, so reading the
+        # time back divides by 16⅔ and floors; truncating here lands on the tick
+        # *below* the minute boundary and reads back as the previous minute. Two
+        # thirds of all minutes were unreachable that way — set_time(6, 1) gave
+        # 06:00. The interval for each minute is 16⅔ ticks wide, so it always
+        # contains a whole tick: the smallest one is the exact answer.
+        day_ticks = -(-target * TICKS_PER_DAY // MINUTES_PER_DAY)
         self.scoreboard.set(_TIME_COUNTER, self.day * TICKS_PER_DAY + day_ticks)
 
     def advance(self, delta_ticks: int) -> list[ClockFire]:

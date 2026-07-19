@@ -18,7 +18,6 @@ from grimmcraft_core.entity import (
     Trade,
     VillagerProfession,
 )
-from grimmcraft_core.greetings import greet
 from grimmcraft_core.item import Book, Chest, CoreItem, Inventory, SlotContainer
 from grimmcraft_core.protocols import Container, Interactable, Positioned
 from grimmcraft_core.scoreboard import ScoreBoard
@@ -77,5 +76,4 @@ __all__ = [
     "Anvil",
     "EnchantingTable",
     # misc
-    "greet",
 ]

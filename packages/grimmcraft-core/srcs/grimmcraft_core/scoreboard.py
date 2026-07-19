@@ -1,8 +1,10 @@
 """A minimal Minecraft-style scoreboard of named integer counters."""
 
+# Includes
 from __future__ import annotations
 
 
+# Classes
 class ScoreBoard:
     """A set of integer counters keyed by name (a single scoreboard objective).
 
