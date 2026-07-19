@@ -7,7 +7,7 @@ import pytest
 from grimmcraft_compiler.dialect import Dialect
 from grimmcraft_compiler.target import Target
 from grimmcraft_control.machine import CommandName
-from grimmcraft_core.entity.dialogue import option_event
+from grimmcraft_core.dialogue import option_event
 from grimmcraft_npc import lower_dialogue, new_dialogue, uses_dialog_screens
 
 #: Either side of the 1.21.6 dialog-registry threshold.

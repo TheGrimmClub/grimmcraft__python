@@ -9,6 +9,7 @@ with the job-site block each profession needs — ``profession.workstation`` —
 placing a villager and placing the block that employs it use one source.
 """
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import dataclass, field
@@ -18,6 +19,7 @@ from grimmcraft_data.entity import Entity
 from grimmcraft_data.item import Item
 
 
+# Classes
 @dataclass(frozen=True, slots=True)
 class Trade:
     """One villager trade offer: give ``gives`` in exchange for ``wants``."""

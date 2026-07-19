@@ -1,8 +1,9 @@
 """A chest: simultaneously a carriable item and a placeable storage block."""
 
+# Includes
 from __future__ import annotations
 
-from grimmclub_standardlib import TYPE_CHECKING, Iterator, dataclass
+from grimmclub_standardlib import TYPE_CHECKING, Iterator, dataclass, field
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_core.item.core_item import CoreItem, SlotContainer
 from grimmcraft_data.item import Item
@@ -10,10 +11,11 @@ from grimmcraft_data.item import Item
 if TYPE_CHECKING:
     from grimmcraft_core.entity.core_entity import CoreEntity
 
+# Constants
 SINGLE_CHEST_SLOTS = 27
 DOUBLE_CHEST_SLOTS = 54
 
-
+# Classes
 @dataclass(kw_only=True)
 class Chest(CoreItem):
     """A chest that is both a :class:`CoreItem` and a container of items.
@@ -27,12 +29,18 @@ class Chest(CoreItem):
     item_type: Item = Item.CHEST
     double: bool = False
     position: Coordinates | None = None
+    last_opened_by: CoreEntity | None = None
+    # Built in __post_init__ from `double`, so it is not a constructor argument:
+    # the size is derived, and accepting a container would let the two disagree.
+    # `init=False` also keeps it non-optional, which is what it really is — it
+    # was `SlotContainer | None` purely to have a default, and every access then
+    # had to be justified against a None that never happens.
+    _contents: SlotContainer = field(init=False)
 
     def __post_init__(self) -> None:
         super().__post_init__()
         size = DOUBLE_CHEST_SLOTS if self.double else SINGLE_CHEST_SLOTS
         self._contents = SlotContainer(size)
-        self.last_opened_by: CoreEntity | None = None
 
     # --- placement -----------------------------------------------------------
     @property

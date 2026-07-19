@@ -33,7 +33,7 @@ from grimmcraft_control.machine import (
     MachineBuilder,
 )
 from grimmcraft_control.machine import effects as fx
-from grimmcraft_core.entity.dialogue import Dialogue, Scene, option_event
+from grimmcraft_core.dialogue import Dialogue, Scene, option_event
 from grimmcraft_core.text import Text, run_command
 
 #: First version with the vanilla ``dialog`` registry (data/<ns>/dialog/*.json).

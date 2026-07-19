@@ -6,18 +6,20 @@ the :class:`~grimmcraft_core.protocols.Container` protocol shared by player
 inventories and placed chests.
 """
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import Any, Iterator, dataclass, field
 from grimmcraft_data.item import Item
 
 
+# Functions
 def _stack_limit(item_type: Item) -> int:
     """Maximum stack size for ``item_type``, defaulting to 64 when unknown."""
     size = getattr(item_type, "stack_size", None)
     return int(size) if size else 64
 
-
+# Classes
 @dataclass(kw_only=True)
 class CoreItem:
     """A stack of one item kind.

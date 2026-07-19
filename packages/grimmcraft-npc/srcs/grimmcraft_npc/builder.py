@@ -22,7 +22,7 @@ from typing import Any
 
 from grimmcraft_control.machine import Command
 from grimmcraft_control.machine.writer import EffectWriter
-from grimmcraft_core.entity.dialogue import (
+from grimmcraft_core.dialogue import (
     Condition,
     Dialogue,
     Option,

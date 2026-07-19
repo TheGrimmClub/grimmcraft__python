@@ -1,5 +1,6 @@
 """A written book item."""
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import dataclass, field
@@ -7,6 +8,7 @@ from grimmcraft_core.item.core_item import CoreItem
 from grimmcraft_data.item import Item
 
 
+# Classes
 @dataclass(kw_only=True)
 class Book(CoreItem):
     """A writable/written book carrying title, author and page text.

@@ -29,6 +29,19 @@ tasks:
     cmds:
       - uv run --package {{.PKG}} python -m grimmcraft_examples.{{.CLI_ARGS}}
 
+  # --- dialogue ------------------------------------------------------------
+  dialogue:
+    desc: The smallest branching dialogue — scenes, a menu, and both backends
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.dialogue_greeting
+
+  quest:
+    desc: A quest dialogue — gated options, effects, remembered flags and a loop
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python -m grimmcraft_examples.dialogue_quest
+
   # --- compiler ------------------------------------------------------------
   tutorial:
     desc: Build a lamp machine from scratch and show how it lowers (teaching example)

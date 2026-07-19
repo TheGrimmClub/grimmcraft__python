@@ -1,5 +1,6 @@
 """The :class:`Player` entity and its :class:`GameMode`."""
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import Enum, dataclass, field
@@ -8,6 +9,7 @@ from grimmcraft_core.item.core_item import Inventory
 from grimmcraft_data.entity import Entity
 
 
+# Types
 class GameMode(Enum):
     """How a player interacts with the world."""
 
@@ -16,7 +18,7 @@ class GameMode(Enum):
     ADVENTURE = "adventure"
     SPECTATOR = "spectator"
 
-
+# Classes
 @dataclass(kw_only=True)
 class Player(CoreEntity):
     """A human-controlled entity with an inventory, game mode and progression."""

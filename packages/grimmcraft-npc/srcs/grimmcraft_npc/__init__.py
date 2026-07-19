@@ -28,7 +28,7 @@ The behaviour is identical either way, because both drive the same machine.
 
 from __future__ import annotations
 
-from grimmcraft_core.entity.dialogue import (
+from grimmcraft_core.dialogue import (
     Condition,
     Dialogue,
     Option,
