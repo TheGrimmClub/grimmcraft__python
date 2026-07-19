@@ -2,7 +2,8 @@
 
 # Classes:
 
-- `StorageBlock`: an item that is also a placeable container
+- `PlaceableBlock`: an item that can be stood up in the world and opened
+- `StorageBlock`: a placeable block that holds its own items
 
 # Why a base class rather than a "kind" field
 
@@ -28,6 +29,7 @@ Chest boats, chest minecarts and the chested horses carry inventories at an
 them silently today.
 """
 
+# Includes
 from __future__ import annotations
 
 # Includes standard
@@ -45,14 +47,51 @@ if TYPE_CHECKING:
 STANDARD_SLOTS = 27
 
 
-# Main Class
+# Classes
 @dataclass(kw_only=True)
-class StorageBlock(CoreItem):
-    """An item that is also a placeable container.
+class PlaceableBlock(CoreItem):
+    """An item that can be stood up in the world and opened.
 
     Carried in an inventory it has ``position is None``; placed in the world it
-    gains :class:`Coordinates`. Storage satisfies the ``Container`` protocol and
-    interacting satisfies ``Interactable``.
+    gains :class:`Coordinates`. Interacting satisfies ``Interactable``.
+
+    Separate from :class:`StorageBlock` because not every openable block holds
+    its own items: an ender chest is a *view* onto storage kept elsewhere, so it
+    is placeable and openable without being a container.
+    """
+
+    position: Coordinates | None = None
+    last_opened_by: CoreEntity | None = None
+
+    @property
+    def is_placed(self) -> bool:
+        """True when the block has been placed in the world."""
+        return self.position is not None
+
+    def place(self, position: Coordinates) -> None:
+        """Place the block at ``position`` in the world."""
+        self.position = position
+
+    def break_block(self) -> None:
+        """Take the block back out of the world.
+
+        The counterpart to :meth:`place`. What happens to any contents is the
+        subclass's business — a chest would drop them, an ender chest has none
+        of its own to drop.
+        """
+        self.position = None
+
+    def interact(self, actor: CoreEntity) -> None:
+        """Open the block for ``actor`` (records the most recent viewer)."""
+        self.last_opened_by = actor
+
+
+# Main Class
+@dataclass(kw_only=True)
+class StorageBlock(PlaceableBlock):
+    """A placeable block that holds its own items.
+
+    Storage satisfies the ``Container`` protocol.
     """
 
     #: Slots this kind of block holds. Subclasses that vary at runtime — only
@@ -63,8 +102,6 @@ class StorageBlock(CoreItem):
     #: profession id. Only the barrel does, of the storage blocks.
     job_site_profession: ClassVar[str | None] = None
 
-    position: Coordinates | None = None
-    last_opened_by: CoreEntity | None = None
     # Derived from slot_count, so not a constructor argument: accepting a
     # container would let the size and the contents disagree.
     _contents: SlotContainer = field(init=False)
@@ -82,16 +119,6 @@ class StorageBlock(CoreItem):
     def is_job_site(self) -> bool:
         """Whether standing this block near a villager gives them a profession."""
         return self.job_site_profession is not None
-
-    # --- placement -----------------------------------------------------------
-    @property
-    def is_placed(self) -> bool:
-        """True when the block has been placed in the world."""
-        return self.position is not None
-
-    def place(self, position: Coordinates) -> None:
-        """Place the block at ``position`` in the world."""
-        self.position = position
 
     # --- Container protocol (delegated to the internal slot grid) ------------
     @property
@@ -116,8 +143,3 @@ class StorageBlock(CoreItem):
 
     def __iter__(self) -> Iterator[CoreItem | None]:
         return iter(self._contents)
-
-    # --- Interactable protocol -----------------------------------------------
-    def interact(self, actor: CoreEntity) -> None:
-        """Open the block for ``actor`` (records the most recent viewer)."""
-        self.last_opened_by = actor

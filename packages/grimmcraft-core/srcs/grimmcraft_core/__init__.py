@@ -18,7 +18,19 @@ from grimmcraft_core.entity import (
     Trade,
     VillagerProfession,
 )
-from grimmcraft_core.item import Book, Chest, CoreItem, Inventory, SlotContainer
+from grimmcraft_core.item import (
+    Barrel,
+    Book,
+    Chest,
+    CoreItem,
+    EnderChest,
+    EnderStorage,
+    Inventory,
+    PlaceableBlock,
+    SlotContainer,
+    StorageBlock,
+    ender_storage,
+)
 from grimmcraft_core.protocols import Container, Interactable, Positioned
 from grimmcraft_core.scoreboard import ScoreBoard
 from grimmcraft_core.workstation import (
@@ -69,6 +81,10 @@ __all__ = [
     "Book",
     "Barrel",
     "Chest",
+    "EnderChest",
+    "EnderStorage",
+    "ender_storage",
+    "PlaceableBlock",
     "StorageBlock",
     # workstations
     "CoreWorkstation",
