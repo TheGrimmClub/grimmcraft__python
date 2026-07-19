@@ -2,6 +2,34 @@
 
 Workspace-level summary. Per-package detail lives in each package's `CHANGELOG.md`.
 
+## feat(decompiler): implement grimmcraft-decompiler — 2026-07-19
+
+Datapack → IR → machines → Python, the inverse of the compiler, in three levels that degrade into each other. The reader is self-verifying: each parse is rendered back through the real `Dialect` and accepted only if it reproduces the line byte-for-byte, so a parser cannot silently normalise a pack. `compile(decompile(pack)) == pack` byte-for-byte over every committed example, at both levels, across two versions — which doubles as a regression guard on the forward compiler. See `packages/grimmcraft-decompiler/CHANGELOG.md`.
+
+## feat(monorepo): import filesystem + world from grimmcraft__town — 2026-07-19
+
+`filesystem` → `grimmclub-filesystem` and `minecraft` → `grimmcraft-world`, converted to this repo's conventions (srcs/ layout, uv_build, absolute imports, Taskfiles, mypy --strict). Gained an NBT *writer*, `read_chunk`, and the `expect_*` guards. The town repo still has its copies; removing them needs a PR there. See each package's `CHANGELOG.md`.
+
+## feat(structures): create the grimmcraft-structures package — 2026-07-19
+
+Save and restore Minecraft `.nbt` structures: capture a box of blocks out of a saved world's region files, store it as a template in a datapack, and place it from a machine. See `packages/grimmcraft-structures/CHANGELOG.md`.
+
+## feat(npc): create the grimmcraft-npc package — 2026-07-19
+
+Branching NPC dialogue in the shape Ren'Py made familiar. A dialogue *is* a state machine, so it lowers to a `Machine` and inherits validation, compilation, round-trip and decompilation. Two presentation backends from one source: native `dialog` screens on 1.21.6+, clickable `tellraw` below. See `packages/grimmcraft-npc/CHANGELOG.md`.
+
+## feat(migrate): create the grimmcraft-migrate package — 2026-07-19
+
+Migrate command-block commands from 1.19 to 1.21 syntax, with a real SNBT parser, an explicit mapping table, and a verification datapack that hands checking to the game's own parser. Standard-library only, so it also runs standalone. See `packages/grimmcraft-migrate/CHANGELOG.md`.
+
+## feat(vocabulary): rich text, place and dialog_show — 2026-07-19
+
+`grimmcraft_core.text` models styled, clickable text components; the `Dialect` renders them, honouring the 1.21.5 `clickEvent` → `click_event` rewrite on the same threshold as JSON → SNBT. `place` and `dialog_show` join `CommandName` so structures and dialogue round-trip like any other effect. `if_score` became a context manager. A plain `str` still renders byte-for-byte as before, so no existing pack changed.
+
+## fix(compiler): never pluralise the always-singular resource folders — 2026-07-19
+
+`dimension`, `dimension_type`, `worldgen` and `dialog` were being written to pluralised folders the game does not read. Found by round-tripping a third-party datapack through the new decompiler.
+
 ## feat(monorepo): scaffold the grimmcraft_* workspace packages — 2026-07-17
 
 Created the initial uv-workspace packages using task and `Taskfile.yaml`: `grimmcraft_core`, `grimmcraft_data`, `grimmcraft_control`, `grimmcraft_cli`, and `grimmcraft_compiler`.
