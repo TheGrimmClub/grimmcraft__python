@@ -1,5 +1,31 @@
 # Changelog — grimmcraft-core
 
+## feat(seat): the other half of the trait — 2026-07-19
+
+`Seat` carries its occupant as its host moves, which is the whole of what makes
+it not a bed. It overrides `occupant_position` and **nothing else** — a test
+asserts that, by checking the class overrides none of `enter`, `exit`,
+`refusal_reason` or `settle_occupant`. That claim previously rested on a
+throwaway `Seat` defined inside `test_occupancy.py`; it is now carried by
+shipped code, and the throwaway is gone.
+
+**A host is anything `Positioned`.** A boat is an entity, a minecart is an
+entity, a saddled horse is a mob, and a seat should not have to know which —
+so the host is the structural protocol, which also keeps this module free of
+entity imports exactly as the trait is free of block ones.
+
+`ride_offset` puts a rider above their mount rather than inside it; left unset
+the occupant shares the host's position, which is what a minecart wants.
+
+**Nothing ticks.** `occupant_position` is computed from the host on every read,
+so it is never stale, but the occupant is only teleported when
+`settle_occupant()` is called — by whoever moved the host. When a movement-event
+or ticking system arrives, that call relocates and this class does not change.
+
+**A vehicle is seats, not a seat that counts.** A seat holds one, because that
+is what makes "the seat is taken" a question with an answer; a boat is two
+seats. A test builds that two-seater to show it needs nothing new.
+
 ## feat(bed): the bed, as a block that is also occupiable — 2026-07-19
 
 `Bed` is a `PlaceableBlock` and a `Sleepable`, and this module is the only place

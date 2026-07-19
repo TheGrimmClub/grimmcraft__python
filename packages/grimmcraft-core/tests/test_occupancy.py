@@ -8,6 +8,7 @@ from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_core.entity.npc import Npc
 from grimmcraft_core.entity.player import Player
 from grimmcraft_core.occupiable.occupancy import Occupiable, Sleepable
+from grimmcraft_core.occupiable.seat import Seat
 
 HERE = Coordinates(0.0, 64.0, 0.0)
 BED = Coordinates(10.0, 64.0, 10.0)
@@ -123,24 +124,16 @@ def test_settling_is_safe_when_empty() -> None:
 
 
 def test_a_moving_host_can_drag_its_occupant_along(alice: Player) -> None:
-    """The whole design claim: a seat is a Sleepable whose position moves.
+    """The whole design claim: a seat is an Occupiable whose position moves.
 
-    Written as a test rather than a comment, because "drops in without
-    refactoring" is only true if it can be demonstrated without changing
-    Occupiable — and this does it by overriding the one property.
+    This used to build a throwaway `Seat` here to show the seam worked. The real
+    :class:`~grimmcraft_core.occupiable.seat.Seat` now exists and does it by
+    overriding the same one property, so the claim is carried by shipped code
+    rather than by a class that only lived in a test. What stays here is the
+    minimal statement of it; :mod:`tests.test_seat` covers the class itself.
     """
-
-    class Seat(Occupiable):
-        def __init__(self, host: Player) -> None:
-            super().__init__()
-            self.host = host
-
-        @property
-        def occupant_position(self) -> Coordinates:
-            return self.host.position
-
     boat = Player(position=HERE, name="boat")
-    seat = Seat(boat)
+    seat = Seat(host=boat)
     seat.enter(alice)
     assert alice.position == HERE
 

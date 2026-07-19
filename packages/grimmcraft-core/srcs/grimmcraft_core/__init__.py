@@ -33,7 +33,7 @@ from grimmcraft_core.item import (
     StorageBlock,
     ender_storage,
 )
-from grimmcraft_core.occupiable import Bed, Occupiable, Sleepable
+from grimmcraft_core.occupiable import Bed, Occupiable, Seat, Sleepable
 from grimmcraft_core.protocols import Container, Interactable, Positioned
 from grimmcraft_core.scoreboard import ScoreBoard
 from grimmcraft_core.workstation import (
@@ -57,6 +57,7 @@ __all__ = [
     # occupancy
     "Occupiable",
     "Sleepable",
+    "Seat",
     "Bed",
     # session
     "Game",
