@@ -122,6 +122,13 @@ tasks:
       - task: typecheck
       - task: test
 
+  statistics:
+    desc: 'Per-package size, shape, tests and docs (usage: task statistics -- --facts)'
+    silent: true
+    cmds:
+      # Standard library only, so it needs no venv and works on a fresh clone.
+      - python3 tools/statistics.py {{.CLI_ARGS}}
+
   clean:
     desc: Remove build artifacts and tooling caches
     cmds:

@@ -9,11 +9,12 @@ Minecraft-specific reading (NBT, regions, world info) lives in the sibling
 ``grimmcraft_world`` package, which builds on this one.
 
 Quick tour::
-
+    ```python
     from grimmclub_filesystem import paths, archive, transfer, config
 
     world = paths.locate_directory("./_input")   # find a folder with level.dat
     archive.create_archive(world, "out.zip")     # zip it (skips macOS junk)
+    ```
 """
 
 from grimmclub_filesystem import archive, config, core, paths, transfer

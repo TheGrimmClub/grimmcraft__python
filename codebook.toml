@@ -94,10 +94,12 @@ words = [
     "mcrcon",
     "netherrack",
     "overworld",
+    "pathlib",
     "playerdata",
     "pth",
     "rcon",
     "repo's",
     "setblock",
+    "tellraw",
     "xyz",
 ]
