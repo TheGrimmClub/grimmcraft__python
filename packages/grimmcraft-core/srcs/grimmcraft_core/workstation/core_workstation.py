@@ -3,7 +3,7 @@
 # Includes
 from __future__ import annotations
 
-from grimmclub_standardlib import ABC, TYPE_CHECKING, dataclass
+from grimmclub_standardlib import ABC, TYPE_CHECKING, ClassVar, dataclass
 from grimmcraft_core.coordinates import Coordinates
 from grimmcraft_data import VillagerProfession, profession_for_workstation
 from grimmcraft_data.block import Block
@@ -24,6 +24,11 @@ class CoreWorkstation(ABC):
     has; :meth:`menu_title` is derived from the block and only overridden where
     the game's own title differs.
     """
+
+    #: The menu title, when the game's own differs from the block's name. Left
+    #: as ``None`` by every station whose menu is simply called after its block,
+    #: which is all of them but the enchanting table.
+    menu_name: ClassVar[str | None] = None
 
     block_type: Block
     position: Coordinates
@@ -49,14 +54,15 @@ class CoreWorkstation(ABC):
         """The display title shown when the station's menu opens.
 
         Derived from :attr:`block_type` — ``minecraft:crafting_table`` becomes
-        ``"Crafting Table"`` — which is right for most stations, so a subclass
-        only writes this out when the game disagrees. The enchanting table does:
-        its menu is titled ``"Enchant"``, not ``"Enchanting Table"``.
+        ``Crafting Table`` — which is right for every station but one, so no
+        subclass restates what the block id already says.
 
-        Overridable rather than abstract, so the one station that differs is
-        visible as an override instead of being lost among four identical
-        siblings that all restate the obvious.
+        A station whose menu the game titles differently sets :attr:`menu_name`
+        instead of overriding this. That keeps the exception as one line of data
+        next to the block it belongs to, and leaves the logic in one place.
         """
+        if self.menu_name is not None:
+            return self.menu_name
         return self.block_type.string_id.split(":", 1)[-1].replace("_", " ").title()
 
     def interact(self, actor: CoreEntity) -> None:
