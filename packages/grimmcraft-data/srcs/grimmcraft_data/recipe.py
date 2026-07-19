@@ -12,12 +12,8 @@ Do not edit by hand; regenerate with _generate/advanced_recipe.py."""
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from functools import cache, lru_cache
-from importlib.resources import files
-from pathlib import Path
-from typing import Union
+from grimmclub_standardlib import SystemPath as Path
+from grimmclub_standardlib import Union, cache, dataclass, files, json, lru_cache
 
 _DATA = "data/1.21.11/recipes.json"
 _HERE = Path(__file__).parent
@@ -45,7 +41,7 @@ class Recipe:
         return self.shape is not None
 
 
-def _resolve_item(num_id):
+def _resolve_item(num_id: int | None):
     if Item is None or num_id is None:
         return num_id
     try:
@@ -54,7 +50,7 @@ def _resolve_item(num_id):
         return num_id
 
 
-def _norm_cell(cell):
+def _norm_cell(cell: dict[str,str]):
     if cell is None:
         return None
     if isinstance(cell, dict):  # older shape: {id, metadata}

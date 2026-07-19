@@ -1,5 +1,18 @@
 # Changelog — grimmcraft-data
 
+## refactor(imports): go through grimmclub-standardlib — 2026-07-19
+
+Every module now imports through the house facade rather than reaching into
+`enum`, `dataclasses`, `functools`, `importlib.resources`, `pathlib`, `json` and
+`typing` directly. The package gained one dependency to allow it —
+`grimmclub-standardlib`, which has none of its own.
+
+**The generator templates were changed too, not just their output.** Sixteen
+shipped modules are generated; patching only those would have been undone by the
+next `task data:generate-*`. The generators' own imports stay on the standard
+library — they are build scripts, not shipped code.
+
+
 ## feat(villager): profession and job-site registries — 2026-07-19
 
 `VillagerProfession` (15 members) and `VillagerWorkstation` (13), with lookups

@@ -1,5 +1,19 @@
 # Changelog — grimmclub-standardlib
 
+## feat(facade): the names grimmcraft-data needed — 2026-07-19
+
+`SystemPath`, `TextIO`, `IO`, `BinaryIO`, `TYPE_CHECKING`, `Union`, `files`,
+`cache`, `lru_cache`, `KeysView`, `Iterator`, `Sequence`.
+
+`SystemPath` is now *defined* here and re-exported by `grimmclub-filesystem`,
+which used to define it. One definition: two spellings of the same idea is how
+the duplicate `yes` happened.
+
+Note the pair `Path` and `SystemPath` mean different things and both are wanted:
+`Path` logs what it reads and writes (the teaching aid), `SystemPath` is plain
+`pathlib.Path` for library code that should stay quiet.
+
+
 ## feat(yaml): a YAML facade, and honest Path aliases — 2026-07-19
 
 `yaml` joins `json` with the same four calls, so a lesson that reads one reads

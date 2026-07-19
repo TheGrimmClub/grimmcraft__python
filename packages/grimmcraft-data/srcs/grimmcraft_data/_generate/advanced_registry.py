@@ -137,7 +137,7 @@ def build_module(full_key, data, version):
         "across versions.",
         'Do not edit by hand; regenerate with _generate/advanced_registry.py."""',
         "",
-        "from enum import Enum",
+        "from grimmclub_standardlib import Enum",
         "",
         "",
         f"class {cls}(Enum):",

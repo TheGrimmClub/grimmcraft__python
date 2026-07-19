@@ -12,7 +12,10 @@ against language.json and the Block enum at generation time."""
 
 from __future__ import annotations
 
-from enum import Enum
+from grimmclub_standardlib import TYPE_CHECKING, Enum
+
+if TYPE_CHECKING:
+    from .block import Block
 
 
 class VillagerProfession(Enum):
@@ -41,7 +44,7 @@ class VillagerProfession(Enum):
     WEAPONSMITH = ("minecraft:weaponsmith", "Weaponsmith", "minecraft:grindstone")
 
 
-def profession_for_workstation(block) -> VillagerProfession | None:
+def profession_for_workstation(block: Block | str) -> VillagerProfession | None:
     """The profession a villager takes from ``block``, or None."""
     wanted = getattr(block, "string_id", block)
     for profession in VillagerProfession:
@@ -50,7 +53,7 @@ def profession_for_workstation(block) -> VillagerProfession | None:
     return None
 
 
-def workstation_for_profession(profession) -> str | None:
+def workstation_for_profession(profession: VillagerProfession | str) -> str | None:
     """The namespaced block id that creates ``profession``, or None."""
     wanted = getattr(profession, "string_id", profession)
     for candidate in VillagerProfession:

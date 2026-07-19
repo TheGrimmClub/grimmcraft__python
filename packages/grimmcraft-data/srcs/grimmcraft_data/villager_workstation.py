@@ -11,7 +11,10 @@ Each member's .value and .string_id are the namespaced block id;
 
 from __future__ import annotations
 
-from enum import Enum
+from grimmclub_standardlib import TYPE_CHECKING, Enum
+
+if TYPE_CHECKING:
+    from .block import Block
 
 
 class VillagerWorkstation(Enum):
@@ -37,7 +40,7 @@ class VillagerWorkstation(Enum):
     STONECUTTER = ("minecraft:stonecutter", "minecraft:mason")
 
 
-def workstation_for_block(block) -> VillagerWorkstation | None:
+def workstation_for_block(block: Block | str) -> VillagerWorkstation | None:
     """The job site ``block`` is, or None if it is not one."""
     wanted = getattr(block, "string_id", block)
     for workstation in VillagerWorkstation:

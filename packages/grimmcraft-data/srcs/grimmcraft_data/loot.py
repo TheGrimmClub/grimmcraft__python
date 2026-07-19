@@ -12,11 +12,16 @@ Do not edit by hand; regenerate with _generate/advanced_loot.py."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from functools import lru_cache
-from importlib.resources import files
-
-from grimmclub_standardlib import TYPE_CHECKING, Any, SystemPath, TextIO, json
+from grimmclub_standardlib import (
+    TYPE_CHECKING,
+    Any,
+    SystemPath,
+    TextIO,
+    dataclass,
+    files,
+    json,
+    lru_cache,
+)
 
 if TYPE_CHECKING:
     from .block import Block

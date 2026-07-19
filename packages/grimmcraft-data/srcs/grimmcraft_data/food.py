@@ -11,7 +11,7 @@ NOTE: numeric ids are stable within a version but change between
 versions (Java has no permanent numeric ids since 1.13).
 Do not edit by hand; regenerate with _generate/foods.py."""
 
-from enum import Enum
+from grimmclub_standardlib import Enum
 
 
 class Food(Enum):

@@ -66,11 +66,8 @@ Do not edit by hand; regenerate with _generate/advanced_recipe.py."""
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from functools import lru_cache
-from importlib.resources import files
-from pathlib import Path
+from grimmclub_standardlib import SystemPath as Path
+from grimmclub_standardlib import dataclass, files, json, lru_cache
 from typing import Optional, Union
 
 _DATA = {json.dumps(data_rel)}

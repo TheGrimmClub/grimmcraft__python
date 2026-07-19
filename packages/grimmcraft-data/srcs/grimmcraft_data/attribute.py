@@ -9,7 +9,7 @@ Do not edit by hand; regenerate with _generate/advanced_attribute.py."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from grimmclub_standardlib import dataclass
 
 
 @dataclass(frozen=True, slots=True)

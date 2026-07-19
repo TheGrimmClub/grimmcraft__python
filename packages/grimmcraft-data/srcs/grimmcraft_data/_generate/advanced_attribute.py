@@ -59,7 +59,7 @@ def build_module(version, records):
         "",
         "from __future__ import annotations",
         "",
-        "from dataclasses import dataclass",
+        "from grimmclub_standardlib import dataclass",
         "",
         "",
         "@dataclass(frozen=True, slots=True)",

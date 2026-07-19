@@ -72,7 +72,7 @@ def build_enum(entries, version):
         "versions (Java has no permanent numeric ids since 1.13).",
         'Do not edit by hand; regenerate with _generate/particles.py."""',
         "",
-        "from enum import Enum",
+        "from grimmclub_standardlib import Enum",
         "",
         "",
         "class Particle(Enum):",

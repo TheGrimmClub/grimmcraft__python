@@ -9,12 +9,8 @@ Do not edit by hand; regenerate with _generate/advanced_language.py."""
 
 from __future__ import annotations
 
-import json
-from collections.abc import KeysView
-from functools import lru_cache
-from importlib.resources import files
-from pathlib import Path
-from typing import Any
+from grimmclub_standardlib import Any, KeysView, files, json, lru_cache
+from grimmclub_standardlib import SystemPath as Path
 
 _DATA = "data/1.21.11/language.json"
 _HERE = Path(__file__).parent

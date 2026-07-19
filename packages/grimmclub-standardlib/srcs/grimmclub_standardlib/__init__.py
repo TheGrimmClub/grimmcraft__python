@@ -37,11 +37,14 @@ import textwrap
 
 # --- common leaf names (imported directly in normal code) --------------------
 from collections import Counter, defaultdict, deque
+from collections.abc import Iterator, KeysView, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from enum import Enum, IntEnum, StrEnum, auto
+from functools import cache, lru_cache
+from importlib.resources import files
 from pathlib import Path as SystemPath
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, Optional, Protocol, TextIO
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, Optional, Protocol, TextIO, Union
 
 from grimmclub_standardlib import _json as json
 from grimmclub_standardlib import _yaml as yaml
@@ -66,6 +69,12 @@ __all__ = [
     # pathlib
     "Path",
     "SystemPath",
+    "files",
+    "cache",
+    "lru_cache",
+    "KeysView",
+    "Iterator",
+    "Sequence",
     # dataclasses
     "dataclass",
     "field",
@@ -77,6 +86,7 @@ __all__ = [
     # typing
     "Any",
     "Optional",
+    "Union",
     "Protocol",
     "TYPE_CHECKING",
     "IO",
