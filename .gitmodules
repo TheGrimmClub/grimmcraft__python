@@ -1,0 +1,3 @@
+[submodule "grimmoire"]
+	path = grimmoire
+	url = https://github.com/TheGrimmClub/grimmoire.git

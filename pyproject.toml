@@ -20,7 +20,11 @@ line-length = 100
 src = ["packages/*/srcs", "packages/*/tests"]
 # Datapack fixtures are test *data*, not source: the .py files inside them are
 # the generator scripts that shipped with the pack and are linted by nobody.
-extend-exclude = ["**/tests/**/datapacks/**"]
+#
+# grimmoire is a git submodule holding the teaching materials — another repo,
+# with its own rules. Its snippets are lesson content (deliberately imperfect,
+# built up step by step), so linting them here would be both wrong and noisy.
+extend-exclude = ["**/tests/**/datapacks/**", "grimmoire/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -76,3 +80,6 @@ follow_imports = "silent"
 # importlib mode lets sibling packages share test-file basenames (e.g. several
 # packages each having tests/test_diagnostics.py) without import collisions.
 addopts = "-ra --import-mode=importlib"
+# Never collect from the grimmoire submodule: it is another repo's teaching
+# material, not this workspace's tests.
+norecursedirs = ["grimmoire", ".venv", "dist", "build"]
