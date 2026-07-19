@@ -56,6 +56,7 @@ strict = true
 # files, which mypy does not process). Mirrors the ruff `src` setting above.
 mypy_path = [
     "packages/grimmclub/srcs",
+    "packages/grimmclub-standardlib/srcs",
     "packages/grimmclub-filesystem/srcs",
     "packages/grimmcraft-world/srcs",
     "packages/grimmcraft-data/srcs",

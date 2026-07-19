@@ -15,6 +15,6 @@ def test_is_junk_detects_macos_clutter():
 
 def test_ensure_dir_creates_nested(tmp_path: Path):
     target = tmp_path / "a" / "b" / "c"
-    result = paths.ensure_dir(target)
+    result = paths.create_full_path(target)
     assert result.is_dir()
     assert result == target

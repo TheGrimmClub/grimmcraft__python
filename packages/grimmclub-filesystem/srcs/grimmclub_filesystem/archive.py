@@ -31,7 +31,7 @@ from grimmclub_filesystem.core import (
     path_like_optional,
     yes,
 )
-from grimmclub_filesystem.paths import as_path, ensure_dir, is_junk
+from grimmclub_filesystem.paths import as_path, create_full_path, is_junk
 
 # Constants
 
@@ -221,7 +221,7 @@ class Archive:
         filter_name = source_path.name
 
         destination_path = as_path(to_path)
-        _ = ensure_dir(destination_path)
+        _ = create_full_path(destination_path)
 
         archive_name = self.append_date(self.name) if do_date else self.name
         full_path = destination_path / archive_name
@@ -258,7 +258,7 @@ class Archive:
         if not source_path.is_file():
             raise FileNotFoundError(f"Archive not found: {source_path}")
 
-        destination_path = ensure_dir(to_path)
+        destination_path = create_full_path(to_path)
         with ZipFile(source_path) as zf:
             for member in zf.namelist():
                 if is_junk(member):

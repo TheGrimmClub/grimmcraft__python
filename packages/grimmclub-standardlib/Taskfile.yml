@@ -1,0 +1,49 @@
+# Per-package tasks for grimmclub-standardlib.
+# Included by the root Taskfile as the `stdlib:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+version: '3'
+
+env:
+  # `uv run` auto-syncs, which under iCloud re-hides the editable .pth files
+  # (see the root Taskfile's fix-venv). Skip the implicit sync here; run
+  # `task install` at the root when dependencies change.
+  UV_NO_SYNC: "1"
+
+vars:
+  PKG: grimmclub-standardlib
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  fix-venv:
+    # Local copy of the root task: this Taskfile also runs standalone, so it
+    # cannot depend on the root's. UV_NO_SYNC stops us re-hiding the .pth
+    # files, but anything already hidden by an earlier sync stays hidden —
+    # without this, every task below fails with ModuleNotFoundError.
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    internal: true
+    cmds:
+      - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
+  test:
+    desc: Run this package's tests
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} pytest tests
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs tests
+
+  typecheck:
+    desc: Type-check this package
+    cmds:
+      - uv run mypy srcs
+
+  build:
+    desc: Build wheel + sdist for this package
+    cmds:
+      - uv build --package {{.PKG}}

@@ -48,6 +48,9 @@ includes:
   decompiler:
     taskfile: ./packages/grimmcraft-decompiler/Taskfile.yml
     dir: ./packages/grimmcraft-decompiler
+  stdlib:
+    taskfile: ./packages/grimmclub-standardlib/Taskfile.yml
+    dir: ./packages/grimmclub-standardlib
   fs:
     taskfile: ./packages/grimmclub-filesystem/Taskfile.yml
     dir: ./packages/grimmclub-filesystem

@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "grimmclub-standardlib",
     "pyyaml>=6.0",
 ]
 
@@ -18,3 +19,7 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 # Package sources live under srcs/ (not the uv default src/).
 module-root = "srcs"
+
+# Resolve sibling packages from the local workspace instead of an index.
+[tool.uv.sources]
+grimmclub-standardlib = { workspace = true }

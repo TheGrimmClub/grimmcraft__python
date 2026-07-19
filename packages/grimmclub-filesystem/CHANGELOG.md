@@ -120,7 +120,7 @@ is discharged.
 Moved out of `TheGrimmClub/grimmcraft__town` (where it was `filesystem`) and renamed to fit this workspace's naming. The single interface to `os`, `pathlib`, `zipfile`, `ftplib` and `urllib`, under `srcs/grimmclub_filesystem/`.
 
 - `core.py` — shared aliases (`SystemPath`, `path_like`) and the `yes`/`no` constants. Deliberately re-exports the standard-library names the sibling modules use, so the package is their only point of contact with it; `__all__` now states that intent to both ruff and mypy.
-- `paths.py` — `as_path`, `ensure_dir`, `is_junk` (macOS/editor clutter), `locate_directory` (find a folder by marker file).
+- `paths.py` — `as_path`, `create_full_path`, `is_junk` (macOS/editor clutter), `locate_directory` (find a folder by marker file).
 - `archive.py` — `Archive` class plus `create_archive` / `extract_archive` / `list_archive`, skipping `__MACOSX` and friends.
 - `transfer.py` — `http_download`, `ftp_download`, `download`, and a YAML-describable `fetch`.
 - `config.py` — load/save the shared `config.yaml`, with a `.bak` safety net.

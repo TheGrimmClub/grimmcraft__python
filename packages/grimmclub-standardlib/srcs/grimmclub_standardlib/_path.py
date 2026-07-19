@@ -12,7 +12,7 @@ from __future__ import annotations
 import pathlib
 from typing import IO, Any
 
-from grimmclub.log import debug
+from grimmclub_standardlib.log import debug
 
 
 class Path(pathlib.Path):

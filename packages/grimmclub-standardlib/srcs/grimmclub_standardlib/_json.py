@@ -11,7 +11,7 @@ from __future__ import annotations
 import json as _json
 from typing import Any
 
-from grimmclub.log import debug
+from grimmclub_standardlib.log import debug
 
 
 def dumps(obj: Any, **kwargs: Any) -> str:

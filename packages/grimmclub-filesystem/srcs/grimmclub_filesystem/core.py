@@ -1,16 +1,27 @@
 """
-Includes standard
-This module is the package's single point of contact with the standard
-library: the sibling modules import these names *from here* rather than
-reaching for `zipfile` or `pathlib` themselves, which is the whole premise of
-the package. They are therefore deliberate re-exports, not unused imports.
+This module is the package's single point of contact with the standard library
+for *file* things: the sibling modules import `SystemPath`, `ZipFile` and the
+rest from here rather than reaching for `pathlib` or `zipfile` themselves,
+which is the whole premise of the package. They are deliberate re-exports, not
+unused imports.
+
+The house vocabulary — `yes`/`no`/`true`/`false` and `Any` — is **not** defined
+here. It comes from `grimmclub_standardlib`, which sits below this package, so
+that there is one definition of `yes` in the workspace rather than two that can
+drift apart.
+
+Note that `SystemPath` is plain `pathlib.Path`, *not* `grimmclub.Path`. The
+latter debug-logs every read and write, which is right for a lesson and wrong
+for a backup tool that copies thousands of files.
 """
 from __future__ import annotations
 
 from datetime import datetime as DateTime
 from pathlib import Path as SystemPath
-from typing import Any
 from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile, is_zipfile
+
+# The shared vocabulary, defined once at the bottom of the stack.
+from grimmclub_standardlib import Any, false, no, true, yes
 
 # Re-exported on purpose (see above) — naming them here tells both ruff and
 # mypy that these are part of this module's public surface.
@@ -41,12 +52,6 @@ SystemPathOptional = SystemPath | None
 AnyOptional = Any | None
 
 # Constants
-# - Boolean
-yes = True
-true = True
-
-no = False
-false = False
 
 # Classes
 #

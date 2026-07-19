@@ -14,13 +14,13 @@ from typing import Any
 from urllib.parse import urlparse
 
 from grimmclub_filesystem.core import SystemPath, path_like
-from grimmclub_filesystem.paths import as_path, ensure_dir
+from grimmclub_filesystem.paths import as_path, create_full_path
 
 
 def _prepare(path: path_like) -> SystemPath:
     """Convert to a :class:`SystemPath`, ensuring its parent directory exists."""
     path = as_path(path)
-    ensure_dir(path.parent)
+    create_full_path(path.parent)
     return path
 
 

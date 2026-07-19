@@ -3,6 +3,23 @@
 > **NOTE:**
 > Workspace-level summary. Per-package detail lives in each package's `CHANGELOG.md`.
 
+## refactor(grimmclub): make grimmclub the single access point — 2026-07-19
+
+Settles an architecture question that had never actually been decided: is
+`grimmclub` the main API, or does it sit below `grimmclub-filesystem`? Neither —
+it had been doing two jobs, which is why the answer was unclear.
+
+    grimmclub                 front door for teachers and trainees
+      ├── grimmclub-standardlib   stdlib facade, logging, house vocabulary
+      └── grimmclub-filesystem    files, archives, transfers, config, guards
+
+`grimmclub-standardlib` is new, carrying what moved out of `grimmclub`.
+`grimmclub` now holds no implementation, only re-exports. `grimmclub-filesystem`
+depends on standardlib and drops the second copy of `yes`/`no`/`true`/`false`/
+`Any` it had grown — there is now one definition in the workspace, not two that
+can drift. Every previous import still resolves.
+
+
 ## feat(filesystem): typed file guards, a Config class, and `task new-filetype` — 2026-07-19
 
 `expect_*` guards for every `FileType`, split into the structural / content /

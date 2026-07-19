@@ -1,4 +1,13 @@
-"""Path helpers — find things and make folders without ceremony."""
+"""Path helpers — find things and make folders without ceremony.
+
+# Classes:
+-
+
+# Functions:
+- `as_path(str)`
+- `create_full_path()`
+- `locate_directory()`
+"""
 
 # Includes internal
 from grimmclub_filesystem.core import SystemPath, SystemPathOptional, path_like
@@ -13,7 +22,7 @@ def as_path(value: path_like) -> SystemPath:
     return SystemPath(value).expanduser()
 
 
-def ensure_dir(path: path_like) -> SystemPath:
+def create_full_path(path: path_like) -> SystemPath:
     """Create ``path`` (and parents) if missing, then return it."""
     p = as_path(path)
     p.mkdir(parents=True, exist_ok=True)
@@ -21,7 +30,10 @@ def ensure_dir(path: path_like) -> SystemPath:
 
 
 def is_junk(path: path_like) -> bool:
-    """True if any part of the path is macOS / editor clutter."""
+    """True if any part of the path is macOS / editor clutter.
+    TODO: make windows compatible
+    TODO: make linux compatible
+    """
     parts = as_path(path).parts
     name = as_path(path).name
     return name in JUNK_NAMES or any(part in JUNK_NAMES for part in parts)
