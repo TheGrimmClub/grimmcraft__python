@@ -67,7 +67,9 @@ __all__ = [
     "SlotContainer",
     "Inventory",
     "Book",
+    "Barrel",
     "Chest",
+    "StorageBlock",
     # workstations
     "CoreWorkstation",
     "CraftingTable",
