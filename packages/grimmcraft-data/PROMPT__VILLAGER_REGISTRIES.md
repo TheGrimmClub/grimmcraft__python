@@ -107,6 +107,17 @@ is the wider registry rather than a synonym for the one above. Generate it from
 the same report; it is what makes the workstation mapping verifiable rather than
 hand-copied.
 
+Two POIs matter as much as the job sites and must not be treated as trimmings:
+
+- **`home` — the bed.** Beds decide village population and breeding. A village
+  with workstations and no beds has no villagers in it for long.
+- **`meeting` — the bell.** The midday gathering point.
+
+**There is no hearth or fireplace POI.** A campfire is not a point of interest
+and villagers ignore it; the bell is the gathering point. If a village layout
+wants a hearth it is a `grimmcraft-structures` decoration, not a registry entry —
+do not add one here and do not let a generated file imply one exists.
+
 **Accessors**, in the style of `loot.py` / `recipe.py`:
 
 ```python
@@ -126,6 +137,29 @@ def workstation_for_profession(profession) -> Block | None
   rest. Do not widen `CoreWorkstation` to mean both things.
 - `grimmcraft-npc` (Taterzens presets) writes `Professions` entries with a
   `ProfessionType` id — feed it from this enum rather than a string literal.
+
+## Out of scope: containers that move
+
+A related gap, deliberately *not* part of this task, recorded so it is not
+mistaken for one. Chests exist on entities as well as blocks, and the registry
+already names them:
+
+```
+OAK_CHEST_BOAT … PALE_OAK_CHEST_BOAT, BAMBOO_CHEST_RAFT   (11 hulls)
+CHEST_MINECART
+DONKEY, MULE, LLAMA, TRADER_LLAMA                          (ChestedHorse)
+```
+
+Camels carry **no** chest — no inventory at all. Easy to assume otherwise, since
+they are the ride introduced after donkeys.
+
+This is not a point of interest and not a block, so it belongs to
+`grimmcraft-core` and `grimmcraft-structures`, not here. It matters because
+`item/chest.py` satisfies `Container` but also carries `place(position)` and
+`is_placed`, which assume a *block* position. A structure file stores blocks and
+entities as separate lists, so a capture that only walks blocks loses a chest
+boat and everything in it, silently. Fix that where capture lives, not by
+widening a registry.
 
 ## Tests
 
