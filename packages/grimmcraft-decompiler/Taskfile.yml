@@ -1,0 +1,83 @@
+# Per-package tasks for grimmcraft-decompiler.
+# Included by the root Taskfile as the `decompiler:` namespace, and reusable
+# standalone: run `task` from inside this directory.
+version: '3'
+
+env:
+  # `uv run` auto-syncs, which under iCloud re-hides the editable .pth files
+  # (see the root Taskfile's fix-venv). Skip the implicit sync here; run
+  # `task install` at the root when dependencies change.
+  UV_NO_SYNC: "1"
+
+vars:
+  PKG: grimmcraft-decompiler
+  # The compiler's committed reference packs double as our decompile fixtures.
+  GENERATED: ../grimmcraft-compiler/examples/generated
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  fix-venv:
+    # Local copy of the root task: this Taskfile also runs standalone, so it
+    # cannot depend on the root's. UV_NO_SYNC stops us re-hiding the .pth
+    # files, but anything already hidden by an earlier sync stays hidden —
+    # without this, every task below fails with ModuleNotFoundError.
+    desc: Clear the macOS 'hidden' flag off editable .pth files (iCloud workaround)
+    internal: true
+    cmds:
+      - "chflags nohidden ../../.venv/lib/python*/site-packages/*.pth 2>/dev/null || true"
+
+  test:
+    desc: Run this package's tests
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} pytest tests
+
+  lint:
+    desc: Lint this package
+    cmds:
+      - uv run ruff check srcs tests examples
+
+  typecheck:
+    desc: Type-check this package
+    cmds:
+      - uv run mypy srcs
+
+  build:
+    desc: Build wheel + sdist for this package
+    cmds:
+      - uv build --package {{.PKG}}
+
+  example:
+    desc: Decompile every committed example datapack back to Python
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python examples/decompile_examples.py
+
+  roundtrip:
+    desc: Decompile then recompile every example pack and assert byte-equality
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} python examples/roundtrip_examples.py
+
+  run:
+    desc: 'Run the CLI (usage: task decompiler:run -- <pack> --emit python)'
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} grimmcraft-decompile {{.CLI_ARGS}}
+
+  lamp:
+    desc: Decompile the tutorial-lamp datapack back to builder Python (demo)
+    deps: [fix-venv]
+    cmds:
+      - uv run --package {{.PKG}} grimmcraft-decompile {{.GENERATED}}/tutorial-lamp --emit python
+
+  docs:
+    desc: Render the docs to dist/docs/ (Markdown copy; renders anywhere)
+    cmds:
+      - mkdir -p dist/docs
+      - cp -f docs/*.md dist/docs/
+      - cmd: echo "Docs are Markdown in docs/ (copied to dist/docs/)."
+        silent: true

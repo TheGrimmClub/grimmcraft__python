@@ -1,68 +1,101 @@
 # Diagnostics index
-TODO: fix diagnostics.md file
 
-Every problem the compiler reports carries a stable `GC####` code, a severity, a
-`source` (which machine / transition / function it came from) and an actionable
-`hint`. Errors abort emission unless `--force`; `--strict` promotes warnings to
-errors. Codes are defined in `diagnostics.py` (`Codes`).
+Every problem the decompiler reports carries a stable `GD####` code, a severity,
+a `source` (the file and line it came from) and an actionable `hint`. The
+machinery is the compiler's — same `Diagnostic`, `DiagnosticBag` and `Severity` —
+so a decompile report reads exactly like a compile report and the two can share
+one bag. Codes are defined in `diagnostics.py` (`Codes`).
+
+`--strict` promotes warnings to errors; errors suppress writing output unless
+`--force`. The CLI exits non-zero when any error is present.
+
+Compiler codes are `GC####`; decompiler codes are `GD####`, so a mixed report is
+never ambiguous about which direction produced a message.
 
 ## Errors
 
-### `GC1001` — Unknown registry id
-A referenced `Block`/`Item`/`Entity` id does not exist in the target version.
-Uses `grimmcraft-data` for existence, a curated table for historic renames, and
-`difflib` for suggestions.
+### `GD1001` — Unknown pack format
+The `pack_format` (or `min_format`) maps to no supported Minecraft version, so
+no `Target` could be resolved from it. Detection falls back to the newest version
+matching the folder scheme and continues.
 
-> `GC1001: block 'minecraft:grass' does not exist in 1.21.1. It was renamed to
-> 'minecraft:short_grass' in 1.20.3. Did you mean 'minecraft:short_grass'?`
-> — hint: `use 'minecraft:short_grass'`
+> `GD1001: pack format 10 does not map to any supported Minecraft version`
+> — hint: `pass --version to decompile anyway; supported versions are: 1.20.1, …`
 
-### `GC1002` — Invalid resource location
-A namespace or path contains characters outside the allowed set (`[a-z0-9_.-]`
-for namespaces, `[a-z0-9_./-]` for paths).
+### `GD1002` — Missing or invalid pack.mcmeta
+The pack root has no `pack.mcmeta`, it is not valid JSON, or it has no `pack`
+object. Usually means the path points one level too high or too low.
 
-> `GC1002: invalid namespace 'Bad NS': namespace 'Bad NS' has invalid characters; allowed: [a-z0-9_.-]`
+> `GD1002: 'pack.mcmeta' not found at the pack root`
+> — hint: `point at the datapack folder itself (the one containing pack.mcmeta)`
 
-### `GC1003` — Unresolved function reference
-A function `call`s another function that the pack does not define.
+### `GD1003` — Unknown registry id
+A recovered `Block`/`Item`/`Entity` id does not exist in the detected version.
+Backed by `grimmcraft-data`, the same curated rename table the compiler uses, and
+`difflib` for suggestions — so the message matches `GC1001` exactly.
 
-> `GC1003: function 'grimmcraft:door/on_open' calls 'grimmcraft:door/do_x', which the pack does not define`
+### `GD1004` — Datapack has no data/ directory
+The pack defines nothing. A datapack stores everything under `data/<namespace>/`.
 
-### `GC1004` — Unresolved function-tag member
-A function tag (e.g. `minecraft:load`) lists a function that is not emitted.
-
-### `GC1005` — Feature unavailable in target version
-A command needs a newer version than the target — e.g. item/block **components**
-on a pre-1.20.5 target, where data must be NBT tags.
-
-> `GC1005: item/block components are only available from 1.20.5; before that, data must be written as NBT tags (target is 1.20.4)`
-
-### `GC1006` — Unknown command (cannot lower)
-A command or transition condition the dialect/lowering does not understand (e.g.
-an unsupported `Condition` kind).
-
-### `GC4001` — Output verification failed
-The emitted tree failed a post-write check: wrong `pack_format`, wrong folder
-scheme, invalid JSON, or a dangling call/tag reference on disk.
+### `GD1005` — Round-trip produced a different pack
+Raised by `--roundtrip` when re-emitting the decompiled result does not reproduce
+the original. Either the pack was edited after compilation, or the reader and the
+`Dialect` have drifted apart — the report names every differing file.
 
 ## Warnings
 
-### `GC2001` — Deprecated id
-The id exists but is discouraged in the target version.
+### `GD2001` — Folder scheme disagrees with pack_format
+The tree uses singular `function/` folders but the format says pre-1.21 (or the
+reverse). Minecraft renamed the datapack resource folders to their singular form
+in 1.21, so one of the two signals is wrong.
 
-### `GC2002` — Command not portable to this flavor
-A command flagged for another flavor — `requires_flavor="paper"` on a vanilla
-target, or `requires_mod_api` on Fabric (which a datapack cannot satisfy).
+> `GD2001: the tree uses singular 'function/' folders, but pack format 26 (1.20.4)
+> expects plural 'functions/'`
 
-### `GC2003` — Runtime guard cannot be compiled
-A transition has a Python `guard` but no declarative `Condition`; it is emitted
-as an *unconditional* transition. Add a `Condition` (e.g. `score_matches`) to
-guard it in the datapack.
+### `GD2002` — Unrecognised command line
+A line the reader cannot model declaratively. It is kept verbatim as a `raw`
+command, so it re-emits unchanged and nothing is lost — but `--emit
+machine`/`python` cannot interpret it. Expected in bulk on hand-written packs.
 
-### `GC2004` — Machine has no transitions
-The machine would do nothing once loaded.
+> `GD2002: cannot model this command declaratively: summon firework_rocket ~ ~1 ~ {LifeTime:45,…`
+
+### `GD2003` — Ambiguous version detection
+Several supported versions share this `pack_format` (48 is both 1.21 and 1.21.1)
+and the description carries no hint. The newest candidate is assumed.
+
+> `GD2003: pack format 48 is shared by 1.21, 1.21.1; assuming 1.21.1`
+> — hint: `pass --version to pin one (e.g. --version 1.21)`
+
+### `GD2004` — Ambiguous machine reconstruction
+The IR admits more than one reading. Raised for: two states claiming the same
+scoreboard index; a state entered with different command sequences by different
+paths; a `do_…` function that no dispatcher reaches; and the common case — a
+state with a single outgoing transition, where the exit/commands split cannot be
+decided (see [architecture](architecture.md)).
+
+### `GD2005` — Item data model disagrees with the detected version
+Item data is written as NBT tags on a components-era target, or vice versa.
+Minecraft moved item data from NBT to components in 1.20.5.
+
+### `GD2006` — Deprecated id
+The id exists but is discouraged in the detected version. Mirrors `GC2001`.
+
+### `GD2007` — Ambiguous pack namespace
+The pack defines functions in several namespaces, so which one *names* the pack
+is a guess (the alphabetically first is used). Harmless — the namespace only
+labels the pack, and every function keeps its own.
 
 ## Info
 
-### `GC3001` — Compilation summary
-The machine / function / tag counts for the compile. Purely informational.
+### `GD3001` — Not liftable to a machine
+The IR does not follow the grimmcraft lowering convention, so levels 2 and 3 were
+skipped and the IR was returned instead. Expected for any hand-written pack.
+
+> `GD3001: no '<machine>/init' function found, so this pack does not follow the
+> grimmcraft state-machine convention`
+> — hint: `--emit ir works on any datapack; --emit machine/python needs a pack
+> produced by grimmcraft-compile`
+
+### `GD3002` — Decompilation summary
+Function, tag and machine counts, the resolved target, and the detection
+confidence. Purely informational.

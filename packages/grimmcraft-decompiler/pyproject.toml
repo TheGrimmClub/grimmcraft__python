@@ -13,12 +13,13 @@ dependencies = [
     "grimmcraft-control",
     "grimmcraft-compiler",
     "grimmclub",
+    "grimmclub-filesystem",
     "click>=8.1",
     "rich>=13.0",
 ]
 
 [project.scripts]
-compile = "grimmcraft_decompiler.cli:main"
+grimmcraft-decompile = "grimmcraft_decompiler.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.11.28,<0.12.0"]
@@ -35,3 +36,4 @@ grimmcraft-data = { workspace = true }
 grimmcraft-control = { workspace = true }
 grimmcraft-compiler = { workspace = true }
 grimmclub = { workspace = true }
+grimmclub-filesystem = { workspace = true }

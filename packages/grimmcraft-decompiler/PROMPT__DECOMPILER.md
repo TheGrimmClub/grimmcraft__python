@@ -42,6 +42,8 @@ they already provide.** The compiler is the source of truth for the IR, the
 
 ## Pipeline
 
+> For this to work properly we might need to introduce comments or external files that keep some knowledge of the original code in python. This would not work no data packs that have been manually created but that would be fine with me.
+
 1. **Load** a datapack from a directory **or** a `.zip` (reuse the archive
    handling in `grimmcraft-world`/`filesystem` if present; else unzip to a temp
    dir). Locate `pack.mcmeta` and the `data/<ns>/…` tree.
