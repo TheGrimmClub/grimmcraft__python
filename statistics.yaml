@@ -24,8 +24,14 @@ groups:
     match: ["grimmcraft-data", "grimmcraft-core"]
 
   - name: grimmcraft · tools
-    description: The toolchain that turns machines into datapacks and back.
-    match: ["grimmcraft-cli", "grimmcraft-compiler", "grimmcraft-decompiler"]
+    description: >
+      The toolchain: machines to datapacks and back, plus the migrator that
+      moves existing packs between game versions.
+    match:
+      - grimmcraft-cli
+      - grimmcraft-compiler
+      - grimmcraft-decompiler
+      - grimmcraft-migrate
 
   - name: grimmcraft · high level
     description: Everything built on top, plus the examples that exercise it.
