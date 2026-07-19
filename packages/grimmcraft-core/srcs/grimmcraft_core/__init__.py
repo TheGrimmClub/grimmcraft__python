@@ -7,6 +7,7 @@ and are used, never re-declared, here.
 
 from __future__ import annotations
 
+from grimmcraft_core.bossbar import BossBar, BossBarColor, BossBarSet, BossBarStyle
 from grimmcraft_core.clock import ClockEvent, ClockFire, MinecraftClock, TimeOfDay
 from grimmcraft_core.coordinates import BlockPos, Coordinates, Direction
 from grimmcraft_core.entity import (
@@ -18,6 +19,7 @@ from grimmcraft_core.entity import (
     Trade,
     VillagerProfession,
 )
+from grimmcraft_core.hud import Bearing, Compass, Hud, Waypoint
 from grimmcraft_core.item import (
     Barrel,
     Book,
@@ -50,6 +52,15 @@ from grimmcraft_data import Entity as EntityType
 from grimmcraft_data import Item as ItemType
 
 __all__ = [
+    # displays
+    "Hud",
+    "Compass",
+    "Waypoint",
+    "Bearing",
+    "BossBar",
+    "BossBarColor",
+    "BossBarStyle",
+    "BossBarSet",
     # registry enum types (re-exported from grimmcraft-data)
     "BlockType",
     "ItemType",

@@ -1,5 +1,6 @@
 """The :class:`Anvil` workstation (repair/rename) — behavioural stub."""
 
+# Includes
 from __future__ import annotations
 
 from grimmclub_standardlib import dataclass
@@ -8,6 +9,7 @@ from grimmcraft_core.workstation.core_workstation import CoreWorkstation
 from grimmcraft_data.block import Block
 
 
+# Classes
 @dataclass(kw_only=True)
 class Anvil(CoreWorkstation):
     """Combines/repairs/renames items for an XP cost. Combination logic TBD."""

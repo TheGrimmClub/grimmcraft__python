@@ -22,7 +22,7 @@ from grimmcraft_core.hud import (
     compass_point,
     facing_direction,
     horizontal_distance,
-    normalise_yaw,
+    normalize_yaw,
     turn_to,
 )
 
@@ -68,7 +68,7 @@ def test_the_diagonals_land_on_the_eight_points() -> None:
     [(0.0, 0.0), (180.0, -180.0), (190.0, -170.0), (-190.0, 170.0), (360.0, 0.0), (540.0, -180.0)],
 )
 def test_yaw_is_folded_into_the_range_minecraft_reports(raw: float, folded: float) -> None:
-    assert normalise_yaw(raw) == pytest.approx(folded)
+    assert normalize_yaw(raw) == pytest.approx(folded)
 
 
 def test_distance_ignores_height() -> None:

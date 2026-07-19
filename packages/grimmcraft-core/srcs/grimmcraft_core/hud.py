@@ -42,6 +42,7 @@ on it. :class:`Hud` therefore accepts a string, a callable, or any object with a
 module knowing they exist — and without either of them importing the other.
 """
 
+# Includes
 from __future__ import annotations
 
 # Includes standard
@@ -70,7 +71,7 @@ ARRIVAL_DISTANCE = 1.0
 
 
 # Functions
-def normalise_yaw(yaw: float) -> float:
+def normalize_yaw(yaw: float) -> float:
     """Fold ``yaw`` into ``[-180, 180)``, the range Minecraft itself reports."""
     return (yaw + 180.0) % 360.0 - 180.0
 
@@ -80,7 +81,7 @@ def bearing_to(origin: Coordinates, target: Coordinates) -> float:
 
     Vertical difference is ignored: this is where to *walk*, not where to look.
     """
-    return normalise_yaw(math.degrees(math.atan2(-(target.x - origin.x), target.z - origin.z)))
+    return normalize_yaw(math.degrees(math.atan2(-(target.x - origin.x), target.z - origin.z)))
 
 
 def horizontal_distance(origin: Coordinates, target: Coordinates) -> float:
@@ -117,7 +118,7 @@ def turn_to(facing: float, yaw: float) -> float:
     Always the shorter way round, so the result is within ``[-180, 180)`` and a
     player is never told to spin 350 degrees rather than 10 the other way.
     """
-    return normalise_yaw(yaw - facing)
+    return normalize_yaw(yaw - facing)
 
 
 # Classes
