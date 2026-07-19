@@ -41,32 +41,39 @@ class Path(pathlib.Path):
         debug("write_bytes", self, f"({len(data)} bytes)")
         return super().write_bytes(data)
 
-    def open(self, *args: Any, **kwargs: Any) -> IO[Any]:  # type: ignore[override]
+    # The explicit house names are the real definitions; pathlib's short names
+    # are aliases onto the same function object.
+    #
+    # The aliases are not decoration -- they are required. ``pathlib`` calls
+    # ``self.open()`` and ``self.mkdir()`` internally (``write_text`` goes
+    # through ``open``, ``mkdir(parents=True)`` recurses through ``mkdir``), so
+    # a class that offers only the long names stops overriding anything: the
+    # short names still exist, inherited, and quietly log nothing. Defining them
+    # this way round keeps both spellings working while putting the name worth
+    # teaching on the ``def`` line, where tracebacks and ``help()`` show it.
+
+    def open_file(self, *args: Any, **kwargs: Any) -> IO[Any]:
         debug("open file", self, args[0] if args else kwargs.get("mode", "r"))
         handle: IO[Any] = super().open(*args, **kwargs)
         return handle
 
-    def mkdir(self, *args: Any, **kwargs: Any) -> None:
+    open = open_file  # type: ignore[assignment]
+
+    def make_directory(self, *args: Any, **kwargs: Any) -> None:
         debug("make directory", self)
         return super().mkdir(*args, **kwargs)
 
-    # The house style prefers explicit names, and ``create_directory`` /
-    # ``open_file`` are the ones to teach. They must be *aliases* rather than
-    # replacements: ``pathlib`` calls ``self.open()`` and ``self.mkdir()``
-    # internally (``write_text`` goes through ``open``, ``mkdir(parents=True)``
-    # recurses through ``mkdir``), so dropping those names does not rename the
-    # operation -- it silently stops logging the two things students do most,
-    # while both names keep working. Same reasoning for remove_file/rmdir.
-    open_file = open
-    create_directory = mkdir
+    mkdir = make_directory
+    create_directory = make_directory
 
-    def unlink(self, *args: Any, **kwargs: Any) -> None:
+    def remove_file(self, *args: Any, **kwargs: Any) -> None:
         debug("remove file", self)
         return super().unlink(*args, **kwargs)
 
-    def rmdir(self) -> None:
+    unlink = remove_file
+
+    def remove_directory(self) -> None:
         debug("remove directory", self)
         return super().rmdir()
 
-    remove_file = unlink
-    remove_directory = rmdir
+    rmdir = remove_directory

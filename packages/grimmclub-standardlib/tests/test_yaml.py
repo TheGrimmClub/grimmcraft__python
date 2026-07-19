@@ -54,8 +54,9 @@ def test_the_package_still_declares_no_dependencies() -> None:
 
     PyYAML is imported lazily, so importing the facade must not require it.
     """
-    import tomllib
     from pathlib import Path
+
+    import tomllib
 
     root = Path(__file__).resolve().parents[1]
     manifest = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))

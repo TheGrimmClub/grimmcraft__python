@@ -1,5 +1,5 @@
 # Task: generate richer data loaders + exhaustive registry enums
-> [\] TODO: execute PROMPT__ADVANCED.md
+> [x] execute PROMPT__ADVANCED.md
  
 This extends the `_generate/{type}.py` enum generators.
 

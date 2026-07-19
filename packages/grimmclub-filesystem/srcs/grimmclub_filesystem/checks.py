@@ -62,11 +62,10 @@ import os
 from enum import Enum
 from typing import Any
 
-from grimmclub_standardlib import yaml
-
 # Includes internal
 from grimmclub_filesystem.core import SystemPath, is_zipfile, path_like
 from grimmclub_filesystem.paths import as_path
+from grimmclub_standardlib import yaml
 
 
 # Types

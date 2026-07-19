@@ -29,8 +29,6 @@ registers its own::
 """
 
 # Includes external
-from grimmclub_standardlib import yaml
-
 # Includes internal
 from grimmclub_filesystem.core import (
     Any,
@@ -42,6 +40,7 @@ from grimmclub_filesystem.core import (
     yes,
 )
 from grimmclub_filesystem.paths import as_path
+from grimmclub_standardlib import yaml
 
 # Constants
 
