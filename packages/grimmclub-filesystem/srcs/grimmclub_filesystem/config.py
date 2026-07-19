@@ -21,6 +21,7 @@ from grimmclub_filesystem.paths import as_path
 CONFIG_NAME = "config.yaml"
 BACKUP_SUFFIX = ".bak"
 
+# TODO: make this more generic — it has the `grimmcraft__town` smell all over it
 DEFAULT_CONFIG: dict[str, Any] = {
     "guard": {
         "world_dir": "./_input",
@@ -34,6 +35,15 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "town": {"host": "127.0.0.1", "port": 8080},
 }
 
+# Classes
+
+class Config:
+    # [ ] TODO: add a config class with the full function interface, and move
+    #           the working code out of the functions below into it
+    # [ ] TODO: check whether a `with` block makes sense for the config class
+    pass
+
+# Functions
 
 def find_config(start: path_like_optional = None) -> SystemPathOptional:
     """Walk up from ``start`` (or cwd) looking for a ``config.yaml``."""

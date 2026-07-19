@@ -136,6 +136,13 @@ tasks:
       - find . -type d -name __pycache__ -prune -exec rm -rf {} +
       - rm -rf .pytest_cache .ruff_cache .mypy_cache
 
+  new-filetype:
+    desc: 'Add a FileType + its expect_ guard (usage: task new-filetype -- YAML --value 102 --suffixes .yaml,.yml)'
+    silent: true
+    cmds:
+      # Standard library only, so it needs no venv.
+      - python3 tools/new_file_type.py {{.CLI_ARGS}}
+
   new-package:
     desc: 'Scaffold a new workspace package (usage: task new-package -- <name>)'
     cmds:

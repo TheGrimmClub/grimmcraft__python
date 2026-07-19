@@ -21,14 +21,35 @@ for problems a *user's* pack can have.
 
 # Functions:
 
+- `expect(file_type, path)` — dispatches on a `FileType`
+
+Layer one (structural — what the filesystem itself can answer):
+
 - `expect_directory()`
 - `expect_file()`
-- `expect_archive()` TODO: implement this
-- `expect_executable()` TODO: implement this
-- `expect_script(language)` TODO: implement this
-- `expect_yaml(parser='SYON`)` TODO: implement this
+- `expect_link()`
+
+Layer two (content — text):
+
+- `expect_text()`
+- `expect_markdown()`
+- `expect_script()`
+
+Layer two (content — binary):
+
+- `expect_binary()`
+- `expect_archive()`
+- `expect_executable()`
+
+Layer three (structured documents):
+
 - `expect_json()`
 - `expect_json_object()`
+- `expect_yaml()` TODO: needs a parser choice, so it is not yet written
+
+Every guard raises and returns the path, so they compose. For a plain
+predicate use `FileType.ARCHIVE.matches(path)`, which is where the actual
+test lives — the guards only add the error message.
 
 """
 
@@ -63,6 +84,7 @@ class FileType(Enum):
     LINK = 3
     TEXT = 100
     MARKDOWN = 101
+    YAML = 102
     SCRIPT = 150
     BINARY = 200
     ARCHIVE = 211
@@ -119,6 +141,7 @@ class FileType(Enum):
 
 #: Conventional extensions per kind, for the types only a name can identify.
 _FILE_TYPE_SUFFIXES: dict[FileType, frozenset[str]] = {
+    FileType.YAML: frozenset({".yaml", ".yml"}),
     FileType.MARKDOWN: frozenset({".md", ".markdown", ".mdown"}),
     FileType.SCRIPT: frozenset({".py", ".sh", ".bash", ".zsh", ".fish"}),
     FileType.ARCHIVE: frozenset({".zip", ".jar", ".mcpack", ".mcworld"}),
@@ -179,6 +202,9 @@ def _did_you_mean(path: SystemPath) -> str:
     return hint
 
 
+# Functions: Layer one — directories, files and links
+
+
 def expect_file(
     path: path_like,
     *,
@@ -206,7 +232,7 @@ def expect_file(
             raise ContentError(f"{what} is empty: {target}")
         if file_type is not None and not file_type.matches(target):
             raise ContentError(
-                f"{what} is not a {file_type.describe()} file: {target}"
+                f"{what} is not a valid {file_type.describe()}: {target}"
                 + (
                     f"\n  expected one of: {', '.join(sorted(file_type.suffixes))}"
                     if file_type.suffixes and not file_type.is_structural
@@ -234,12 +260,75 @@ def expect_directory(path: path_like, *, what: str = "directory") -> SystemPath:
     raise FileNotFoundError(f"no {what} at {target}{_did_you_mean(target)}")
 
 
+def expect_link(path: path_like, *, what: str = "symbolic link") -> SystemPath:
+    """Require ``path`` to be a symbolic link.
+
+    Checked with ``is_symlink()``, which does not follow the link — so a
+    dangling link is still a link, which is usually what you want to know.
+    """
+    target = as_path(path)
+    if target.is_symlink():
+        return target
+    if target.exists():
+        raise ContentError(f"expected a {what} but found a regular path: {target}")
+    raise FileNotFoundError(f"no {what} at {target}{_did_you_mean(target)}")
+
+
 def _quote_line(text: str, lineno: int) -> str:
     """The offending source line, with its number — context for a parse error."""
     lines = text.splitlines()
     if not 1 <= lineno <= len(lines):
         return ""
     return f"\n  {lineno} | {lines[lineno - 1]}"
+
+
+
+# Functions, layer 2: Text files
+
+def expect_yaml(path: path_like, *, what: str = "YAML file") -> SystemPath:
+    """Require a YAML file, identified by its suffix."""
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.YAML)
+
+
+
+def expect_text(path: path_like, *, what: str = "text file") -> SystemPath:
+    """Require a file whose bytes decode as UTF-8 and contain no NUL byte."""
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.TEXT)
+
+
+def expect_markdown(path: path_like, *, what: str = "Markdown file") -> SystemPath:
+    """Require a Markdown file, identified by its suffix."""
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.MARKDOWN)
+
+
+def expect_script(path: path_like, *, what: str = "script") -> SystemPath:
+    """Require a script, identified by its suffix (``.py``, ``.sh``, …)."""
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.SCRIPT)
+
+
+# Functions, layer 2: Binary files
+
+
+def expect_binary(path: path_like, *, what: str = "binary file") -> SystemPath:
+    """Require a file that is *not* decodable text."""
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.BINARY)
+
+
+def expect_archive(path: path_like, *, what: str = "archive") -> SystemPath:
+    """Require a readable zip archive, checked by magic number rather than name.
+
+    This is the guard that catches a truncated download called ``pack.zip`` —
+    the case where knowing the file exists tells you the least.
+    """
+    return expect_file(path, what=what, allow_empty=False, file_type=FileType.ARCHIVE)
+
+
+def expect_executable(path: path_like, *, what: str = "executable") -> SystemPath:
+    """Require a file the current user may execute."""
+    return expect_file(path, what=what, file_type=FileType.EXECUTABLE)
+
+
+# Functions, layer 3: JSON files
 
 
 def expect_json(path: path_like, *, what: str = "JSON file") -> Any:
@@ -294,13 +383,28 @@ def expect(
     label = what if what is not None else file_type.describe()
 
     match file_type:
+        # layer one — structural
         case FileType.DIRECTORY:
             return expect_directory(path, what=label)
-        case FileType.TEXT | FileType.MARKDOWN | FileType.SCRIPT:
-            # Text kinds are empty-checkable: a zero-byte Markdown file is
-            # almost always a write that failed, not a deliberate blank.
-            return expect_file(
-                path, what=label, allow_empty=False, file_type=file_type
-            )
-        case _:
-            return expect_file(path, what=label, file_type=file_type)
+        case FileType.FILE:
+            return expect_file(path, what=label)
+        case FileType.LINK:
+            return expect_link(path, what=label)
+        # layer two — text
+        case FileType.TEXT:
+            return expect_text(path, what=label)
+        case FileType.MARKDOWN:
+            return expect_markdown(path, what=label)
+        case FileType.SCRIPT:
+            return expect_script(path, what=label)
+        # layer two — binary
+        case FileType.BINARY:
+            return expect_binary(path, what=label)
+        case FileType.ARCHIVE:
+            return expect_archive(path, what=label)
+        case FileType.EXECUTABLE:
+            return expect_executable(path, what=label)
+        case FileType.YAML:
+            return expect_yaml(path, what=label)
+
+# [ ] TODO: check if a with block makes sense for the expect and directory class

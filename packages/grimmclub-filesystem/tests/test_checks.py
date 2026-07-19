@@ -98,7 +98,7 @@ def test_markdown_is_matched_by_suffix(tmp_path: Path):
 def test_expect_file_enforces_the_type(tmp_path: Path):
     impostor = tmp_path / "pack.zip"
     impostor.write_bytes(b"truncated download")
-    with pytest.raises(ContentError, match="not a archive file"):
+    with pytest.raises(ContentError, match="not a valid archive"):
         expect_file(impostor, what="datapack", file_type=FileType.ARCHIVE)
 
 
