@@ -152,3 +152,40 @@ def test_expect_directory_rejects_a_file(tmp_path: Path):
     target.write_text("x", encoding="utf-8")
     with pytest.raises(NotADirectoryError):
         expect_directory(target)
+
+
+# --- YAML (layer three) ------------------------------------------------------
+def test_yaml_document_is_parsed(tmp_path: Path):
+    path = tmp_path / "config.yaml"
+    path.write_text("town:\n  port: 8080\n", encoding="utf-8")
+    from grimmclub_filesystem.checks import expect_yaml_document
+
+    assert expect_yaml_document(path) == {"town": {"port": 8080}}
+
+
+def test_bad_yaml_reports_the_line(tmp_path: Path):
+    """The suffix check cannot catch this — only parsing can."""
+    from grimmclub_filesystem.checks import expect_yaml_document
+
+    path = tmp_path / "config.yaml"
+    path.write_text("town:\n  port: 8080\n bad indent here\n", encoding="utf-8")
+    with pytest.raises(ContentError, match="not valid YAML"):
+        expect_yaml_document(path)
+
+
+def test_yaml_mapping_rejects_a_bare_list(tmp_path: Path):
+    from grimmclub_filesystem.checks import expect_yaml_mapping
+
+    path = tmp_path / "config.yaml"
+    path.write_text("- one\n- two\n", encoding="utf-8")
+    with pytest.raises(ContentError, match="should hold a YAML mapping"):
+        expect_yaml_mapping(path)
+
+
+def test_yaml_suffix_guard_does_not_parse(tmp_path: Path):
+    """Layer two checks the name; layer three checks the content."""
+    from grimmclub_filesystem.checks import expect_yaml
+
+    path = tmp_path / "config.yaml"
+    path.write_text("this: is: not: valid: yaml\n", encoding="utf-8")
+    assert expect_yaml(path) == path, "the suffix guard is satisfied"

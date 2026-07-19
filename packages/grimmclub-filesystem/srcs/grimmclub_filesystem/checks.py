@@ -45,7 +45,8 @@ Layer three (structured documents):
 
 - `expect_json()`
 - `expect_json_object()`
-- `expect_yaml()` TODO: needs a parser choice, so it is not yet written
+- `expect_yaml_document()`
+- `expect_yaml_mapping()`
 
 Every guard raises and returns the path, so they compose. For a plain
 predicate use `FileType.ARCHIVE.matches(path)`, which is where the actual
@@ -53,12 +54,15 @@ test lives — the guards only add the error message.
 
 """
 
+# Includes external
 # Includes standard
 import difflib
 import json
 import os
 from enum import Enum
 from typing import Any
+
+import yaml
 
 # Includes internal
 from grimmclub_filesystem.core import SystemPath, is_zipfile, path_like
@@ -349,6 +353,46 @@ def expect_json(path: path_like, *, what: str = "JSON file") -> Any:
         ) from None
 
 
+def expect_yaml_document(path: path_like, *, what: str = "YAML file") -> Any:
+    """Read and parse a YAML file, raising with the offending line on failure.
+
+    The layer-two :func:`expect_yaml` only checks the suffix, which is all a
+    name can tell you. This actually parses, so a file that *is* called
+    ``.yaml`` but is not YAML is caught here rather than by whatever tries to
+    use the result.
+
+    Uses ``safe_load``: a configuration file is data, and should never be able
+    to construct arbitrary Python objects.
+    """
+    target = expect_file(path, what=what, allow_empty=False, file_type=FileType.YAML)
+    text = target.read_text(encoding="utf-8")
+    try:
+        return yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        mark = getattr(error, "problem_mark", None)
+        where = f" (line {mark.line + 1}, column {mark.column + 1})" if mark else ""
+        problem = getattr(error, "problem", None) or str(error).splitlines()[0]
+        raise ContentError(
+            f"{what} is not valid YAML: {target}\n  {problem}{where}"
+            + (_quote_line(text, mark.line + 1) if mark else "")
+        ) from None
+
+
+def expect_yaml_mapping(path: path_like, *, what: str = "YAML file") -> dict[str, Any]:
+    """Like :func:`expect_yaml_document`, but require a mapping at the top level.
+
+    Configuration files are mappings; a bare list or scalar is a mistake worth
+    naming, and naming it here beats a ``AttributeError`` three frames away.
+    """
+    document = expect_yaml_document(path, what=what)
+    if not isinstance(document, dict):
+        kind = "nothing" if document is None else type(document).__name__
+        raise ContentError(
+            f"{what} should hold a YAML mapping, but holds {kind}: {as_path(path)}"
+        )
+    return document
+
+
 def expect_json_object(path: path_like, *, what: str = "JSON file") -> dict[str, Any]:
     """Like :func:`expect_json`, but also require the document to be an object.
 
@@ -407,4 +451,15 @@ def expect(
         case FileType.YAML:
             return expect_yaml(path, what=label)
 
-# [ ] TODO: check if a with block makes sense for the expect and directory class
+# A `with` block was considered for these guards and deliberately not added.
+#
+# A context manager earns its place when there is something to acquire and
+# something to release — `Config` has exactly that (load, then save on a clean
+# exit), which is why it has one. These functions have neither: they inspect a
+# path and either return it or raise. Wrapping that in `with` would add a scope
+# with no meaning at its edges, and hide the raise inside a block that looks
+# like it manages something.
+#
+# The thing that *would* be useful — "check several paths and report all the
+# failures at once" — is a different shape, and would be a function taking a
+# list, not a context manager.

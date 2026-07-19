@@ -51,7 +51,14 @@ false = False
 #
 class StringChecker:
     """A simple string checker for archive names.
-    TODO: create tests
+
+    Holds the set of characters :meth:`Archive.get_valid_name` strips, and the
+    space-to-underscore rule used when a name has to survive a shell or a URL.
+
+    Note that ``special_chars`` includes ``.``, so cleaning a name removes its
+    extension — ``backup.zip`` becomes ``backupzip``. That is deliberate for a
+    *label*, but callers naming an actual file should keep the suffix
+    themselves; see ``tests/test_core.py``.
     """
     def __init__(self) -> None:
         self.special_chars : set[str] = set("!@#$%^&*()_+{}[]|\\:;\"'<>,.?/~`")

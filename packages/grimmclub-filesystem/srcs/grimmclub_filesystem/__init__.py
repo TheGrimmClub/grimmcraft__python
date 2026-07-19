@@ -34,6 +34,14 @@ from grimmclub_filesystem.checks import (
     expect_script,
     expect_text,
     expect_yaml,
+    expect_yaml_document,
+    expect_yaml_mapping,
+)
+from grimmclub_filesystem.config import (
+    Config,
+    default_config,
+    register_defaults,
+    unregister_defaults,
 )
 from grimmclub_filesystem.core import SystemPath
 
@@ -48,6 +56,8 @@ __all__ = [
     "FileType",
     "expect",
     "expect_yaml",
+    "expect_yaml_mapping",
+    "expect_yaml_document",
     "expect_archive",
     "expect_binary",
     "expect_executable",
@@ -59,6 +69,10 @@ __all__ = [
     "expect_directory",
     "expect_json",
     "expect_json_object",
+    "default_config",
+    "unregister_defaults",
+    "register_defaults",
+    "Config",
     "transfer",
 ]
 
